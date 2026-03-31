@@ -1,0 +1,28 @@
+# Project place file
+/Aethelgard.rbxlx
+
+# Roblox Studio lock files
+*.rbxlx.lock
+*.rbxl.lock
+
+# Wally
+wally.lock
+Packages/
+
+# Roblox Studio
+*.rbxl
+*.rbxlx
+*.rbxm
+*.rbxmx
+
+# IDE
+.idea/
+.vscode/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Aftman (Roblox version manager)
+aftman.toml
