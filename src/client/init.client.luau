@@ -1,121 +1,43 @@
+--!nonstrict
+-- Client initialization script
+-- Handles UI rendering and communication with server for role, race, and class selection
+
 local React = require(game.ReplicatedStorage.Shared.React)
 local ReactRoblox = require(game.ReplicatedStorage.Shared.ReactRoblox)
+local TeamData = require(game.ReplicatedStorage.Shared.TeamData)
+local RaceData = require(game.ReplicatedStorage.Shared.RaceData)
+local ClassData = require(game.ReplicatedStorage.Shared.ClassData)
 
 local ClientFolder = script.Parent:WaitForChild("Client")
 local RoleSelectionMenu = require(ClientFolder:WaitForChild("RoleSelectionMenu"))
 
-local playerGui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
 
--- Get or create teams
-local Teams = game:GetService("Teams")
+local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- Team data organized by category with emojis
-local TEAM_DATA = {
-	{
-		category = "Royalty",
-		teams = {
-			{ name = "King", emoji = "👑", slots = 1, description = "Political decisions, influence over Nobles & Commoners", perks = "global notifications, spawn commands" },
-			{ name = "Queen", emoji = "👸", slots = 1, description = "Political decisions, diplomacy, ceremonial representation", perks = "global notifications" },
-			{ name = "Princes", emoji = "👦", slots = 4, description = "Limited influence, diplomatic missions, RP learning", perks = "diplomatic chat" },
-			{ name = "Princesses", emoji = "👧", slots = 4, description = "Limited influence, diplomatic missions, RP learning", perks = "diplomatic chat" },
-		},
-	},
-	{
-		category = "Nobility",
-		teams = {
-			{ name = "Dukes", emoji = "🏰", slots = 5, description = "Management of Counts / Minor Houses, diplomacy, alliances", perks = "region management, fast travel" },
-			{ name = "Counts", emoji = "⚔️", slots = 10, description = "Regional RP organization, management of Minor Houses", perks = "region management" },
-			{ name = "Minor Houses", emoji = "🛡️", slots = 20, description = "Intrigues, alliances, secondary missions", perks = "house chat" },
-		},
-	},
-	{
-		category = "Special",
-		teams = {
-			{ name = "Hero", emoji = "⚡", slots = 1, description = "Defense missions, morale influence, legends", perks = "spawn commands, hero abilities" },
-			{ name = "Saint", emoji = "✨", slots = 1, description = "Moral / religious mediation, social influence", perks = "healing abilities" },
-		},
-	},
-	{
-		category = "Demon Faction",
-		teams = {
-			{ name = "Demon King", emoji = "😈", slots = 1, description = "Leadership of demon faction, mission planning", perks = "demon abilities, spawn commands" },
-			{ name = "Demon Queen", emoji = "👹", slots = 1, description = "Demon diplomacy, influence over Generals", perks = "demon abilities" },
-			{ name = "Demon Generals", emoji = "👿", slots = 10, description = "Command servants, infiltration/sabotage missions", perks = "stealth mode" },
-			{ name = "Demon Servants", emoji = "💀", slots = -1, description = "Execute missions, espionage, corruption", perks = "stealth mode" },
-		},
-	},
-	{
-		category = "Commoners",
-		teams = {
-			{ name = "Commoners", emoji = "👤", slots = -1, description = "Trade, social networks, contracts, social progression", perks = "trade chat" },
-		},
-	},
-	{
-		category = "Elves",
-		teams = {
-			{ name = "Elves Faction", emoji = "🧝", slots = -1, description = "Surveillance, diplomatic tests, magical rituals", perks = "elf vision, nature abilities" },
-		},
-	},
-	{
-		category = "Free Lineages",
-		teams = {
-			{ name = "Free Lineages", emoji = "🗡️", slots = -1, description = "Commercial/military contracts, flexible loyalty", perks = "mercenary chat" },
-		},
-	},
-	{
-		category = "Academy",
-		teams = {
-			{ name = "Academy Professors", emoji = "📚", slots = -1, description = "Teach classes, supervise duels, mentorship, clubs", perks = "teaching tools, class management" },
-			{ name = "Academy Year 1", emoji = "🎒", slots = -1, description = "Attend classes, participate in clubs, limited social RP", perks = "student abilities" },
-			{ name = "Academy Year 2", emoji = "📖", slots = -1, description = "Attend classes, participate in clubs, intermediate missions", perks = "student abilities" },
-			{ name = "Academy Year 3 Plus", emoji = "🎓", slots = -1, description = "Advanced courses, clubs, mentorship Year1/Year2, advanced duels", perks = "advanced abilities" },
-			{ name = "Academy Externals", emoji = "🌍", slots = -1, description = "Limited access, learning and social RP", perks = "external access" },
-		},
-	},
-	{
-		category = "Events",
-		teams = {
-			{ name = "Event Teams", emoji = "🎭", slots = 0, description = "Temporary RP objectives, unstable alliances", perks = "event tools" },
-		},
-	},
-}
+-- Get RemoteEvent for role selection
+local selectRoleRemote = ReplicatedStorage:WaitForChild("SelectRole")
 
--- Store team instances
-local teamInstances = {}
-
--- Create all teams from data
-local teamColors = {
-	["Royalty"] = BrickColor.new("Bright red"),
-	["Nobility"] = BrickColor.new("Bright violet"),
-	["Special"] = BrickColor.new("Bright yellow"),
-	["Demon Faction"] = BrickColor.new("Dark red"),
-	["Commoners"] = BrickColor.new("Bright blue"),
-	["Elves"] = BrickColor.new("Bright green"),
-	["Free Lineages"] = BrickColor.new("Grey"),
-	["Academy"] = BrickColor.new("White"),
-	["Events"] = BrickColor.new("Black"),
-}
-
-for _, category in ipairs(TEAM_DATA) do
-	for _, teamInfo in ipairs(category.teams) do
-		local team = Teams:FindFirstChild(teamInfo.name)
-		if not team then
-			team = Instance.new("Team")
-			team.Name = teamInfo.name
-			team.TeamColor = teamColors[category.category] or BrickColor.new("Medium stone grey")
-			team.AutoAssignable = false
-			team.Parent = Teams
-		end
-		teamInstances[teamInfo.name] = team
-	end
+-- Get RemoteEvent for race/class selection
+local selectRaceRemote = ReplicatedStorage:FindFirstChild("SelectRace")
+if not selectRaceRemote then
+	selectRaceRemote = Instance.new("RemoteEvent")
+	selectRaceRemote.Name = "SelectRace"
+	selectRaceRemote.Parent = ReplicatedStorage
 end
 
--- Assign player to Commoners team by default
-local player = game.Players.LocalPlayer
-local defaultTeam = teamInstances["Commoners"]
-if defaultTeam then
-	player.Team = defaultTeam
+local selectClassRemote = ReplicatedStorage:FindFirstChild("SelectClass")
+if not selectClassRemote then
+	selectClassRemote = Instance.new("RemoteEvent")
+	selectClassRemote.Name = "SelectClass"
+	selectClassRemote.Parent = ReplicatedStorage
 end
+
+-- Get data from shared modules
+local TEAM_DATA = TeamData.getTeamData()
+local RACE_DATA = RaceData.getRaceData()
+local CLASS_DATA = ClassData.getClassData()
 
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "ReactRoot"
@@ -129,13 +51,25 @@ local root = ReactRoblox.createRoot(screenGui)
 local function App()
 	local menuVisible, setMenuVisible = React.useState(true)
 
-	local function handleRoleSelected(role)
-		local player = game.Players.LocalPlayer
-		local selectedTeam = teamInstances[role]
-		if selectedTeam then
-			player.Team = selectedTeam
-			print("Player assigned to team: " .. role)
-		end
+	-- Handle role (team) selection - sends request to server via RemoteEvent
+	local function handleRoleSelected(roleName: string)
+		-- Fire the RemoteEvent to request role change
+		selectRoleRemote:FireServer(roleName)
+		print("[Client] Requested role: " .. roleName)
+	end
+
+	-- Handle race selection - sends request to server via RemoteEvent
+	local function handleRaceSelected(raceName: string)
+		-- Fire the RemoteEvent to request race change
+		selectRaceRemote:FireServer(raceName)
+		print("[Client] Requested race: " .. raceName)
+	end
+
+	-- Handle class selection - sends request to server via RemoteEvent
+	local function handleClassSelected(className: string)
+		-- Fire the RemoteEvent to request class change
+		selectClassRemote:FireServer(className)
+		print("[Client] Requested class: " .. className)
 	end
 
 	local function handleMenuClose()
@@ -146,13 +80,20 @@ local function App()
 		setMenuVisible(true)
 	end
 
+	-- Show role selection menu with integrated race/class selection
 	return React.createElement(RoleSelectionMenu, {
 		visible = menuVisible,
 		teamData = TEAM_DATA,
+		raceData = RACE_DATA,
+		classData = CLASS_DATA,
 		onRoleSelected = handleRoleSelected,
+		onRaceSelected = handleRaceSelected,
+		onClassSelected = handleClassSelected,
 		onMenuClose = handleMenuClose,
 		onRebirth = handleRebirth,
 	})
 end
 
 root:render(React.createElement(App))
+
+print("[Client] Aethelgard client initialized")
