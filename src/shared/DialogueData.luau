@@ -1,11 +1,9 @@
-local DialogueData = {}
+--!nonstrict
+-- Dialogue configuration data (data only, no functions)
 
 export type DialogueOption = {
 	text: string,
 	nextNode: string?,
-	team: string?,
-	class: string?,
-	race: string?,
 }
 
 export type DialogueRule = {
@@ -13,11 +11,11 @@ export type DialogueRule = {
 	class: string?,
 	race: string?,
 	npcText: string,
-	options: {DialogueOption}?,
+	options: { DialogueOption }?,
 }
 
 export type DialogueNode = {
-	rules: {DialogueRule}
+	rules: { DialogueRule }
 }
 
 export type NPCDialogueData = {
@@ -25,96 +23,60 @@ export type NPCDialogueData = {
 	[string]: DialogueNode
 }
 
-local ALL_DIALOGUES: {[string]: NPCDialogueData} = {
+local DIALOGUE_DATA: { [string]: NPCDialogueData } = {
 	["Village_Elder"] = {
-		npcName = "Village_Elder",
+		npcName = "Village Elder",
 
 		start = {
 			rules = {
 				{
-					team = "Commoners", class = "Classless", race = "Human",
-					npcText = "Ah, un nouveau villageois ! Bienvenue. Que souhaitez-vous savoir ?",
+					npcText = "Welcome, newcomer! This game works through YOUR ACTIONS and YOUR INTERACTIONS with other players.",
 					options = {
-						{ text = "Je veux apprendre les règles du village.", nextNode = "Village_Elder_Line_1" },
-					}
-				},
-				{
-					team = "Hero", class = "Paladin", race = "Human",
-					npcText = "Ah, le héros humain ! Écoutez bien, voici les règles de notre village.",
-					options = {
-						{ text = "Je suis prêt à écouter.", nextNode = "Village_Elder_Line_1" },
-					}
-				},
-				{
-					team = "King", class = "Warrior", race = "Dwarf",
-					npcText = "Votre Majesté naine ! Voici comment fonctionne le village.",
-					options = {
-						{ text = "Merci, je souhaite apprendre.", nextNode = "Village_Elder_Line_1" },
-					}
-				},
-				{
-					team = "DemonKing", class = "Rogue", race = "Demon",
-					npcText = "…Un Roi Démon parmi nous ? Je dois faire attention.",
-					options = {
-						{ text = "Je suis ici pour observer.", nextNode = "Village_Elder_Line_1" },
+						{ text = "How does it work?", nextNode = "Village_Elder_Gameplay" },
 					}
 				},
 			}
 		},
 
-		Village_Elder_Line_1 = {
+		Village_Elder_Gameplay = {
 			rules = {
 				{
-					team = "Commoners", class = "Classless", race = "Human",
-					npcText = "Ici, chacun peut trouver sa voie : guerrier, mage, artisan… cela dépend de vos actions.",
+					npcText = "The game uses an ACTION-BASED progression system. Right-click on NPCs or locations to interact! Your actions define your CLASS, your TEAM, and your RACE.",
 					options = {
-						{ text = "Où commencer ?", nextNode = "Village_Elder_Line_2" },
-					}
-				},
-				{
-					team = "Hero", class = "Paladin", race = "Human",
-					npcText = "Chaque habitant a un rôle : guerrier, mage, artisan… chacun trouve sa place.",
-					options = {
-						{ text = "Quels rôles puis-je remplir ?", nextNode = "Village_Elder_Line_2" },
-					}
-				},
-				{
-					team = "King", class = "Warrior", race = "Dwarf",
-					npcText = "Chaque personnage peut améliorer ses stats, apprendre des compétences et interagir avec les autres factions.",
-					options = {
-						{ text = "Comment interagir avec les autres ?", nextNode = "Village_Elder_Line_2" },
-					}
-				},
-				{
-					team = "DemonKing", class = "Rogue", race = "Demon",
-					npcText = "Chaque joueur a des compétences uniques selon sa race, classe et faction. Observez bien !",
-					options = {
-						{ text = "Je vais observer attentivement.", nextNode = "Village_Elder_Line_2" },
+						{ text = "How do I get a new class?", nextNode = "Village_Elder_Class" },
+						{ text = "How do I change team?", nextNode = "Village_Elder_Team" },
+						{ text = "Thank you!", nextNode = "Village_Elder_End" },
 					}
 				},
 			}
 		},
 
-		Village_Elder_Line_2 = {
+		Village_Elder_Class = {
 			rules = {
 				{
-					team = "Commoners", class = "Classless", race = "Human",
-					npcText = "Allez voir le Maître de Guilde pour commencer vos premières quêtes !",
-					options = {}
+					npcText = "Your CLASS changes based on your actions: attacking = warrior/rogue, using magic = mage/necromancer, negotiating = bard, protecting = knight/paladin.",
+					options = {
+						{ text = "Back", nextNode = "Village_Elder_Gameplay" },
+					}
 				},
+			}
+		},
+
+		Village_Elder_Team = {
+			rules = {
 				{
-					team = "Hero", class = "Paladin", race = "Human",
-					npcText = "Vos choix auront un impact sur le village et ses habitants.",
-					options = {}
+					npcText = "Your TEAM (faction) changes based on your actions and interactions: helping others = Hero/Saint, attacking = Demon, negotiating with nobility = Nobility.",
+					options = {
+						{ text = "Back", nextNode = "Village_Elder_Gameplay" },
+					}
 				},
+			}
+		},
+
+		Village_Elder_End = {
+			rules = {
 				{
-					team = "King", class = "Warrior", race = "Dwarf",
-					npcText = "Certaines quêtes et dialogues ne sont accessibles qu’avec la bonne combinaison de race, classe et rôle.",
-					options = {}
-				},
-				{
-					team = "DemonKing", class = "Rogue", race = "Demon",
-					npcText = "Faites attention à vos actions : elles influencent votre réputation et la manière dont les autres vous voient.",
+					npcText = "Good adventure! Right-click on NPCs and locations to interact. Your actions define who you are!",
 					options = {}
 				},
 			}
@@ -122,38 +84,4 @@ local ALL_DIALOGUES: {[string]: NPCDialogueData} = {
 	},
 }
 
-function DialogueData.getNPCDialogue(npcName: string): NPCDialogueData?
-	return ALL_DIALOGUES[npcName]
-end
-
-function DialogueData.getDialogueNode(npcName: string, nodeName: string): DialogueNode?
-	local npcDialogue = ALL_DIALOGUES[npcName]
-	if not npcDialogue then return nil end
-	return npcDialogue[nodeName]
-end
-
-function DialogueData.getDialogueForPlayer(npcName: string, nodeName: string, player: {team: string?, class: string?, race: string?}): DialogueRule?
-	local node = DialogueData.getDialogueNode(npcName, nodeName)
-	if not node then return nil end
-
-	local playerClass = player.class or "Classless"
-	local playerRace = player.race or "Human"
-
-	for _, rule in ipairs(node.rules) do
-		local teamMatch = not rule.team or rule.team == player.team
-		local classMatch = not rule.class or rule.class == playerClass or playerClass == "Classless"
-		local raceMatch = not rule.race or rule.race == playerRace
-
-		if teamMatch and classMatch and raceMatch then
-			return rule
-		end
-	end
-
-	return nil
-end
-
-function DialogueData.hasDialogue(npcName: string): boolean
-	return ALL_DIALOGUES[npcName] ~= nil
-end
-
-return DialogueData
+return DIALOGUE_DATA

@@ -1,322 +1,230 @@
 --!nonstrict
 -- Player Display System for Aethelgard
--- Shows player info (DisplayName, Team, Class, Guild Rank) above their character
--- This is the ONLY UI element - the billboard above players
--- All data comes from the ActionBasedProgressionSystem
+-- Shows player name, team, level, race and class above their character
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
-local ActionBasedProgressionSystem = require(ReplicatedStorage.Shared:WaitForChild("ActionBasedProgressionSystem"))
+local sharedFolder = ReplicatedStorage:WaitForChild("Shared")
+local DataHelpers = require(sharedFolder:WaitForChild("DataHelpers"))
+local PlayerDataSystem = require(script.Parent:WaitForChild("PlayerDataSystem"))
 
 local PlayerDisplaySystem = {}
 
--- Configuration
 local DISPLAY_CONFIG = {
-    enabled = true,
-    updateInterval = 2, -- seconds
-    offset = Vector3.new(0, 3.5, 0), -- Height above player head
-    maxDistance = 25, -- Max distance to see billboard
+	enabled = true,
+	updateInterval = 2,
+	offset = Vector3.new(0, 3.5, 0),
+	maxDistance = 25,
 }
 
--- Team colors by category (from ActionBasedProgressionSystem)
-local TEAM_COLORS = {
-    -- Monarchy
-    ["King"] = Color3.fromRGB(255, 215, 0),
-    ["Queen"] = Color3.fromRGB(255, 182, 193),
-    ["Princes"] = Color3.fromRGB(70, 130, 180),
-    ["Princesses"] = Color3.fromRGB(255, 105, 180),
-    -- Nobility
-    ["Dukes"] = Color3.fromRGB(128, 0, 128),
-    ["Counts"] = Color3.fromRGB(148, 0, 211),
-    ["Minor Houses"] = Color3.fromRGB(186, 85, 211),
-    -- Demons
-    ["Demon King"] = Color3.fromRGB(139, 0, 0),
-    ["Demon Queen"] = Color3.fromRGB(178, 34, 34),
-    ["Demon Generals"] = Color3.fromRGB(220, 20, 60),
-    ["Demon Servants"] = Color3.fromRGB(255, 69, 0),
-    -- Academy
-    ["Academy Externals"] = Color3.fromRGB(192, 192, 192),
-    ["Academy Professors"] = Color3.fromRGB(255, 255, 255),
-    ["Academy Year 1"] = Color3.fromRGB(173, 216, 230),
-    ["Academy Year 2"] = Color3.fromRGB(135, 206, 235),
-    ["Academy Year 3"] = Color3.fromRGB(0, 191, 255),
-    -- Heroes & Saints
-    ["Hero"] = Color3.fromRGB(255, 215, 0),
-    ["Saint"] = Color3.fromRGB(255, 255, 224),
-    -- Other Groups
-    ["Elves Faction"] = Color3.fromRGB(34, 139, 34),
-    ["Event Teams"] = Color3.fromRGB(75, 0, 130),
-    ["Free Lineages"] = Color3.fromRGB(128, 128, 128),
-    ["Commoners"] = Color3.fromRGB(100, 149, 237),
-}
+local function createPlayerDisplay(player)
+	local character = player.Character
+	if not character then return end
 
--- Class emojis for display
-local CLASS_EMOJIS = {
-    ["Warrior"] = "⚔️",
-    ["Mage"] = "🔮",
-    ["Rogue"] = "🗡️",
-    ["Archer"] = "🏹",
-    ["Priest"] = "✨",
-    ["Paladin"] = "⚜️",
-    ["Necromancer"] = "💀",
-    ["Bard"] = "🎵",
-    ["Druid"] = "🌿",
-    ["Knight"] = "🛡️",
-    ["Summoner"] = "👁️",
-    ["Monk"] = "🥋",
-}
+	local head = character:FindFirstChild("Head")
+	if not head then return end
 
--- Create BillboardGui for a player
-local function createPlayerDisplay(player: Player)
-    local character = player.Character
-    if not character then return end
+	local billboard = Instance.new("BillboardGui")
+	billboard.Name = "PlayerDisplay"
+	billboard.Adornee = head
+	billboard.Size = UDim2.new(5, 0, 2.2, 0)
+	billboard.StudsOffset = DISPLAY_CONFIG.offset
+	billboard.AlwaysOnTop = true
+	billboard.ResetOnSpawn = false
+	billboard.MaxDistance = DISPLAY_CONFIG.maxDistance
 
-    local head = character:FindFirstChild("Head")
-    if not head then return end
+	local mainFrame = Instance.new("Frame")
+	mainFrame.Name = "MainFrame"
+	mainFrame.BackgroundColor3 = Color3.fromRGB(40, 25, 55)
+	mainFrame.BackgroundTransparency = 0.2
+	mainFrame.BorderSizePixel = 0
+	mainFrame.Size = UDim2.new(1, 0, 1, 0)
+	mainFrame.Parent = billboard
 
-    -- Create BillboardGui
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "PlayerDisplay"
-    billboard.Adornee = head
-    billboard.Size = UDim2.new(4, 0, 1.8, 0)
-    billboard.StudsOffset = DISPLAY_CONFIG.offset
-    billboard.AlwaysOnTop = true
-    billboard.ResetOnSpawn = false
-    billboard.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    billboard.MaxDistance = DISPLAY_CONFIG.maxDistance
+	local uiCorner = Instance.new("UICorner")
+	uiCorner.CornerRadius = UDim.new(0.1, 0)
+	uiCorner.Parent = mainFrame
 
-    -- Main background frame
-    local mainFrame = Instance.new("Frame")
-    mainFrame.Name = "MainFrame"
-    mainFrame.BackgroundColor3 = Color3.fromRGB(40, 25, 55)
-    mainFrame.BackgroundTransparency = 0.2
-    mainFrame.BorderSizePixel = 0
-    mainFrame.Size = UDim2.new(1, 0, 1, 0)
-    mainFrame.Parent = billboard
+	local uiStroke = Instance.new("UIStroke")
+	uiStroke.Color = Color3.fromRGB(120, 80, 150)
+	uiStroke.Thickness = 1.5
+	uiStroke.Parent = mainFrame
 
-    local uiCorner = Instance.new("UICorner")
-    uiCorner.CornerRadius = UDim.new(0.1, 0)
-    uiCorner.Parent = mainFrame
+	local nameLabel = Instance.new("TextLabel")
+	nameLabel.Name = "NameLabel"
+	nameLabel.BackgroundTransparency = 1
+	nameLabel.Size = UDim2.new(1, 0, 0.25, 0)
+	nameLabel.Position = UDim2.new(0, 0, 0, 0)
+	nameLabel.Font = Enum.Font.GothamBold
+	nameLabel.TextSize = 16
+	nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	nameLabel.Text = player.DisplayName
+	nameLabel.TextStrokeTransparency = 0.5
+	nameLabel.Parent = mainFrame
 
-    local uiStroke = Instance.new("UIStroke")
-    uiStroke.Color = Color3.fromRGB(120, 80, 150)
-    uiStroke.Thickness = 1.5
-    uiStroke.Parent = mainFrame
+	local teamLabel = Instance.new("TextLabel")
+	teamLabel.Name = "TeamLabel"
+	teamLabel.BackgroundTransparency = 1
+	teamLabel.Size = UDim2.new(1, 0, 0.2, 0)
+	teamLabel.Position = UDim2.new(0, 0, 0.25, 0)
+	teamLabel.Font = Enum.Font.Gotham
+	teamLabel.TextSize = 13
+	teamLabel.TextColor3 = Color3.fromRGB(180, 140, 220)
+	teamLabel.Text = "Commoners"
+	teamLabel.TextStrokeTransparency = 0.5
+	teamLabel.Parent = mainFrame
 
-    -- Player name label (top)
-    local nameLabel = Instance.new("TextLabel")
-    nameLabel.Name = "NameLabel"
-    nameLabel.BackgroundTransparency = 1
-    nameLabel.Size = UDim2.new(1, 0, 0.28, 0)
-    nameLabel.Position = UDim2.new(0, 0, 0, 0.05)
-    nameLabel.Font = Enum.Font.GothamBold
-    nameLabel.TextSize = 16
-    nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    nameLabel.Text = player.DisplayName
-    nameLabel.TextStrokeTransparency = 0.5
-    nameLabel.Parent = mainFrame
+	local raceLabel = Instance.new("TextLabel")
+	raceLabel.Name = "RaceLabel"
+	raceLabel.BackgroundTransparency = 1
+	raceLabel.Size = UDim2.new(1, 0, 0.2, 0)
+	raceLabel.Position = UDim2.new(0, 0, 0.45, 0)
+	raceLabel.Font = Enum.Font.Gotham
+	raceLabel.TextSize = 12
+	raceLabel.TextColor3 = Color3.fromRGB(150, 200, 150)
+	raceLabel.Text = "Human"
+	raceLabel.TextStrokeTransparency = 0.5
+	raceLabel.Parent = mainFrame
 
-    -- Faction label (second line)
-    local factionLabel = Instance.new("TextLabel")
-    factionLabel.Name = "FactionLabel"
-    factionLabel.BackgroundTransparency = 1
-    factionLabel.Size = UDim2.new(1, 0, 0.22, 0)
-    factionLabel.Position = UDim2.new(0, 0, 0.33, 0)
-    factionLabel.Font = Enum.Font.Gotham
-    factionLabel.TextSize = 13
-    factionLabel.TextColor3 = Color3.fromRGB(180, 140, 220)
-    factionLabel.Text = "Roturiers"
-    factionLabel.TextStrokeTransparency = 0.5
-    factionLabel.Parent = mainFrame
+	local classLabel = Instance.new("TextLabel")
+	classLabel.Name = "ClassLabel"
+	classLabel.BackgroundTransparency = 1
+	classLabel.Size = UDim2.new(1, 0, 0.2, 0)
+	classLabel.Position = UDim2.new(0, 0, 0.65, 0)
+	classLabel.Font = Enum.Font.Gotham
+	classLabel.TextSize = 12
+	classLabel.TextColor3 = Color3.fromRGB(200, 180, 100)
+	classLabel.Text = "Classless"
+	classLabel.TextStrokeTransparency = 0.5
+	classLabel.Parent = mainFrame
 
-    -- Class label with emoji (third line)
-    local classLabel = Instance.new("TextLabel")
-    classLabel.Name = "ClassLabel"
-    classLabel.BackgroundTransparency = 1
-    classLabel.Size = UDim2.new(1, 0, 0.22, 0)
-    classLabel.Position = UDim2.new(0, 0, 0.55, 0)
-    classLabel.Font = Enum.Font.Gotham
-    classLabel.TextSize = 12
-    classLabel.TextColor3 = Color3.fromRGB(150, 200, 150)
-    classLabel.Text = "❓ Sans Classe"
-    classLabel.TextStrokeTransparency = 0.5
-    classLabel.Parent = mainFrame
+	local levelBadge = Instance.new("Frame")
+	levelBadge.Name = "LevelBadge"
+	levelBadge.BackgroundColor3 = Color3.fromRGB(100, 60, 120)
+	levelBadge.Size = UDim2.new(0, 35, 0, 22)
+	levelBadge.Position = UDim2.new(1, -40, 0, 4)
+	levelBadge.BorderSizePixel = 0
+	levelBadge.ZIndex = 10
+	levelBadge.Parent = mainFrame
 
-    -- Guild rank label (fourth line)
-    local guildLabel = Instance.new("TextLabel")
-    guildLabel.Name = "GuildLabel"
-    guildLabel.BackgroundTransparency = 1
-    guildLabel.Size = UDim2.new(1, 0, 0.18, 0)
-    guildLabel.Position = UDim2.new(0, 0, 0.77, 0)
-    guildLabel.Font = Enum.Font.Gotham
-    guildLabel.TextSize = 10
-    guildLabel.TextColor3 = Color3.fromRGB(200, 180, 100)
-    guildLabel.Text = "Recrue"
-    guildLabel.TextStrokeTransparency = 0.5
-    guildLabel.Parent = mainFrame
+	local badgeCorner = Instance.new("UICorner")
+	badgeCorner.CornerRadius = UDim.new(0, 6)
+	badgeCorner.Parent = levelBadge
 
-    -- Progression indicator (level badge in top-right corner)
-    local progressBadge = Instance.new("Frame")
-    progressBadge.Name = "ProgressBadge"
-    progressBadge.BackgroundColor3 = Color3.fromRGB(100, 60, 120)
-    progressBadge.Size = UDim2.new(0, 28, 0, 20)
-    progressBadge.Position = UDim2.new(1, -32, 0, 4)
-    progressBadge.AnchorPoint = Vector2.new(0, 0)
-    progressBadge.BorderSizePixel = 0
-    progressBadge.ZIndex = 10
-    progressBadge.Parent = mainFrame
-   
-    local badgeCorner = Instance.new("UICorner")
-    badgeCorner.CornerRadius = UDim.new(0, 6)
-    badgeCorner.Parent = progressBadge
-   
-    local badgeStroke = Instance.new("UIStroke")
-    badgeStroke.Color = Color3.fromRGB(180, 140, 220)
-    badgeStroke.Thickness = 1.5
-    badgeStroke.Parent = progressBadge
-   
-    local badgeLabel = Instance.new("TextLabel")
-    badgeLabel.Name = "BadgeLabel"
-    badgeLabel.BackgroundTransparency = 1
-    badgeLabel.Size = UDim2.new(1, 0, 1, 0)
-    badgeLabel.Font = Enum.Font.GothamBold
-    badgeLabel.TextSize = 11
-    badgeLabel.TextColor3 = Color3.fromRGB(255, 230, 255)
-    badgeLabel.Text = "1"
-    badgeLabel.TextStrokeTransparency = 0.3
-    badgeLabel.ZIndex = 11
-    badgeLabel.Parent = progressBadge
+	local badgeStroke = Instance.new("UIStroke")
+	badgeStroke.Color = Color3.fromRGB(180, 140, 220)
+	badgeStroke.Thickness = 1.5
+	badgeStroke.Parent = levelBadge
 
-    billboard.Parent = character
+	local levelLabel = Instance.new("TextLabel")
+	levelLabel.Name = "LevelLabel"
+	levelLabel.BackgroundTransparency = 1
+	levelLabel.Size = UDim2.new(1, 0, 1, 0)
+	levelLabel.Font = Enum.Font.GothamBold
+	levelLabel.TextSize = 11
+	levelLabel.TextColor3 = Color3.fromRGB(255, 230, 255)
+	levelLabel.Text = "1"
+	levelLabel.TextStrokeTransparency = 0.3
+	levelLabel.ZIndex = 11
+	levelLabel.Parent = levelBadge
 
-    return billboard
+	billboard.Parent = character
+
+	return billboard
 end
 
--- Update display for a player based on progression data
-local function updatePlayerDisplay(player: Player)
-    local character = player.Character
-    if not character then return end
+local function updatePlayerDisplay(player)
+	local character = player.Character
+	if not character then return end
 
-    local display = character:FindFirstChild("PlayerDisplay")
-    if not display then
-        display = createPlayerDisplay(player)
-        if not display then return end
-    end
+	local display = character:FindFirstChild("PlayerDisplay")
+	if not display then
+		display = createPlayerDisplay(player)
+		if not display then return end
+	end
 
-    local mainFrame = display:FindFirstChild("MainFrame")
-    if not mainFrame then return end
+	local mainFrame = display:FindFirstChild("MainFrame")
+	if not mainFrame then return end
 
-    local nameLabel = mainFrame:FindFirstChild("NameLabel")
-    local factionLabel = mainFrame:FindFirstChild("FactionLabel")
-    local classLabel = mainFrame:FindFirstChild("ClassLabel")
-    local guildLabel = mainFrame:FindFirstChild("GuildLabel")
-    local progressBadge = mainFrame:FindFirstChild("ProgressBadge")
+	local nameLabel = mainFrame:FindFirstChild("NameLabel")
+	local teamLabel = mainFrame:FindFirstChild("TeamLabel")
+	local raceLabel = mainFrame:FindFirstChild("RaceLabel")
+	local classLabel = mainFrame:FindFirstChild("ClassLabel")
+	local levelBadge = mainFrame:FindFirstChild("LevelBadge")
 
-    -- Update name
-    if nameLabel then
-        nameLabel.Text = player.DisplayName
-    end
+	if nameLabel then
+		nameLabel.Text = player.DisplayName
+	end
 
-    -- Get progression data
-    local displayInfo = ActionBasedProgressionSystem.getDisplayInfo(player.UserId)
+	if teamLabel and player.Team then
+		teamLabel.Text = player.Team.Name
+		local teamData = DataHelpers.getTeamByName(player.Team.Name)
+		if teamData and teamData.color then
+			teamLabel.TextColor3 = teamData.color
+		end
+	end
 
-    -- Update team
-    if factionLabel and displayInfo then
-        local teamText = displayInfo.teamEmoji .. " " .. displayInfo.teamName
-        factionLabel.Text = teamText
+	local playerData = PlayerDataSystem.getPlayerData(player.UserId)
 
-        -- Color based on team
-        local teamColor = TEAM_COLORS[displayInfo.team] or Color3.fromRGB(180, 140, 220)
-        factionLabel.TextColor3 = teamColor
-    end
+	if raceLabel then
+		local raceData = DataHelpers.getRaceById(playerData.race)
+		raceLabel.Text = raceData and (raceData.displayName or raceData.name) or playerData.race
+	end
 
-    -- Update class
-    if classLabel and displayInfo then
-        classLabel.Text = displayInfo.classEmoji .. " " .. displayInfo.className
-    end
+	if classLabel then
+		local classData = DataHelpers.getClassById(playerData.class)
+		classLabel.Text = classData and (classData.displayName or classData.name) or playerData.class
+	end
 
-    -- Update guild rank
-    if guildLabel and displayInfo then
-        guildLabel.Text = "Guild: " .. displayInfo.guildRank
-    end
-
-    -- Update progress badge (shows total actions / 100)
-    if progressBadge and displayInfo then
-        local badgeLabel = progressBadge:FindFirstChild("BadgeLabel")
-        if badgeLabel then
-            local level = math.floor(displayInfo.totalActions / 100) + 1
-            badgeLabel.Text = tostring(level)
-        end
-    end
+	if levelBadge then
+		local levelLabel = levelBadge:FindFirstChild("LevelLabel")
+		if levelLabel then
+			levelLabel.Text = tostring(playerData.level)
+		end
+	end
 end
 
--- Handle player character added
-local function onCharacterAdded(player: Player)
-    task.wait(0.5) -- Wait for character to fully load
-    if DISPLAY_CONFIG.enabled then
-        updatePlayerDisplay(player)
-    end
+local function onCharacterAdded(player)
+	task.wait(0.5)
+	if DISPLAY_CONFIG.enabled then
+		updatePlayerDisplay(player)
+	end
 end
 
--- Initialize the system
 function PlayerDisplaySystem.init()
-    print("[PlayerDisplaySystem] Initializing...")
+	print("[PlayerDisplaySystem] Initializing...")
 
-    -- Connect events
-    Players.PlayerAdded:Connect(function(player)
-        -- Initialize progression for new player
-        ActionBasedProgressionSystem.getProgression(player.UserId)
-        
-        player.CharacterAdded:Connect(function()
-            onCharacterAdded(player)
-        end)
+	Players.PlayerAdded:Connect(function(player)
+		player.CharacterAdded:Connect(function()
+			onCharacterAdded(player)
+		end)
 
-        -- If character already exists
-        if player.Character then
-            task.spawn(function()
-                task.wait(0.5)
-                onCharacterAdded(player)
-            end)
-        end
-    end)
+		if player.Character then
+			task.spawn(function()
+				task.wait(0.5)
+				onCharacterAdded(player)
+			end)
+		end
+	end)
 
-    -- Update all players periodically
-    task.spawn(function()
-        while DISPLAY_CONFIG.enabled do
-            task.wait(DISPLAY_CONFIG.updateInterval)
-            for _, player in ipairs(Players:GetPlayers()) do
-                if player.Character and player.Character:FindFirstChild("Head") then
-                    pcall(updatePlayerDisplay, player)
-                end
-            end
-        end
-    end)
+	task.spawn(function()
+		while DISPLAY_CONFIG.enabled do
+			task.wait(DISPLAY_CONFIG.updateInterval)
+			for _, player in ipairs(Players:GetPlayers()) do
+				if player.Character and player.Character:FindFirstChild("Head") then
+					pcall(updatePlayerDisplay, player)
+				end
+			end
+		end
+	end)
 
-    print("[PlayerDisplaySystem] Initialized")
+	print("[PlayerDisplaySystem] Initialized")
 end
 
--- Force update a specific player's display
-function PlayerDisplaySystem.updatePlayer(player: Player)
-    updatePlayerDisplay(player)
+function PlayerDisplaySystem.updatePlayer(player)
+	updatePlayerDisplay(player)
 end
 
--- Set player data (called when progression changes)
-function PlayerDisplaySystem.onProgressionChanged(player: Player)
-    task.spawn(function()
-        task.wait(0.1)
-        updatePlayerDisplay(player)
-    end)
-end
-
--- Enable/disable system
-function PlayerDisplaySystem.setEnabled(enabled: boolean)
-    DISPLAY_CONFIG.enabled = enabled
-end
-
--- Get display info for a player (for client-side use)
-function PlayerDisplaySystem.getDisplayInfo(playerId: number)
-    return ActionBasedProgressionSystem.getDisplayInfo(playerId)
-end
-
+print("[PlayerDisplaySystem] Module loaded")
 return PlayerDisplaySystem

@@ -1,38 +1,15 @@
 --!nonstrict
 -- NPC Interaction System for Aethelgard
--- Simplified to use DialogueData as the single source of truth
+-- Handles dialogue with villagers
 
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local ActionBasedProgressionSystem = require(ReplicatedStorage.Shared:WaitForChild("ActionBasedProgressionSystem"))
-local QuestSystem = require(script.Parent:WaitForChild("QuestSystem"))
-local RaceData = require(ReplicatedStorage.Shared:WaitForChild("RaceData"))
-local ClassData = require(ReplicatedStorage.Shared:WaitForChild("ClassData"))
-local DialogueData = require(ReplicatedStorage.Shared:WaitForChild("DialogueData"))
-local CharacterCreationSystem = require(ReplicatedStorage.Shared:WaitForChild("CharacterCreationSystem"))
+local sharedFolder = ReplicatedStorage:WaitForChild("Shared")
+local DataHelpers = require(sharedFolder:WaitForChild("DataHelpers"))
 
-export type NPCType = 
-	"VillageElder" | 
-	"GuildMaster" | 
-	"AcademyHeadmaster" |
-	"Trainer" |
-	"Merchant" |
-	"QuestGiver"
+local NPCInteractionSystem = {}
 
-export type NPCDefinition = {
-	id: string,
-	name: string,
-	title: string,
-	npcType: NPCType,
-	description: string,
-	location: string,
-	faction: string?,
-	quests: {string}?,
-	services: {string}?,
-}
-
-local NPC_DEFINITIONS: {[string]: NPCDefinition} = {
+local NPC_DEFINITIONS = {
 	["Village_Elder"] = {
 		id = "Village_Elder",
 		name = "Village Elder",
@@ -41,108 +18,29 @@ local NPC_DEFINITIONS: {[string]: NPCDefinition} = {
 		description = "The wise elder of the village who welcomes newcomers.",
 		location = "Village_Square",
 		faction = nil,
-		quests = {"explore_forest_1", "defeat_wolves_1"},
-		services = {"guidance", "quest_giving"},
-	},
-	
-	["Guild_Master"] = {
-		id = "Guild_Master",
-		name = "Guild Master",
-		title = "Adventurers Leader",
-		npcType = "GuildMaster",
-		description = "The leader of the adventurers guild who distributes quests.",
-		location = "Guild_Hall",
-		faction = "Commoners",
-		quests = {"escort_merchant_1", "explore_forest_1", "defeat_wolves_1", "socialize_guild_1"},
-		services = {"quest_giving", "progress_check"},
-	},
-	
-	["Academy_Headmaster"] = {
-		id = "Academy_Headmaster",
-		name = "Academy Headmaster",
-		title = "Archmage",
-		npcType = "AcademyHeadmaster",
-		description = "The director of the Magic Academy who welcomes new students.",
-		location = "Academy_Entrance",
-		faction = "Academy",
-		quests = {"train_magic_1", "train_combat_1"},
-		services = {"enrollment", "training_info"},
-	},
-	
-	["Combat_Instructor"] = {
-		id = "Combat_Instructor",
-		name = "Combat Instructor",
-		title = "Weapon Master",
-		npcType = "Trainer",
-		description = "The Academy's weapons master who trains warriors.",
-		location = "Training_Arena",
-		faction = "Academy",
-		quests = {"train_combat_1"},
-		services = {"combat_training"},
-	},
-	
-	["Magic_Instructor"] = {
-		id = "Magic_Instructor",
-		name = "Magic Instructor",
-		title = "Senior Mage",
-		npcType = "Trainer",
-		description = "The senior mage who trains spellcasters.",
-		location = "Mage_Tower",
-		faction = "Academy",
-		quests = {"train_magic_1"},
-		services = {"magic_training"},
 	},
 }
 
-local NPCInteractionSystem = {}
-
-function NPCInteractionSystem.getNPC(npcId: string): NPCDefinition?
+function NPCInteractionSystem.getNPC(npcId)
 	return NPC_DEFINITIONS[npcId]
 end
 
-function NPCInteractionSystem.getAllNPCs(): {[string]: NPCDefinition}
+function NPCInteractionSystem.getAllNPCs()
 	return NPC_DEFINITIONS
 end
 
-function NPCInteractionSystem.getNPCsAtLocation(location: string): {NPCDefinition}
-	local npcs = {}
-	for _, npc in pairs(NPC_DEFINITIONS) do
-		if npc.location == location then
-			table.insert(npcs, npc)
-		end
-	end
-	return npcs
+function NPCInteractionSystem.hasDialogue(npcId)
+	return DataHelpers.hasDialogue(npcId)
 end
 
-function NPCInteractionSystem.hasDialogue(npcId: string): boolean
-	return DialogueData.hasDialogue(npcId)
-end
-
-function NPCInteractionSystem.startConversation(playerId: number, npcId: string): any
+function NPCInteractionSystem.startConversation(playerId, npcId)
 	local npc = NPC_DEFINITIONS[npcId]
-	if not npc then
-		return nil
-	end
+	if not npc then return nil end
 
-	if not DialogueData.hasDialogue(npcId) then
+	if not DataHelpers.hasDialogue(npcId) then
 		warn("[NPCInteractionSystem] No dialogue found for NPC:", npcId)
 		return nil
 	end
-
-	local progression = ActionBasedProgressionSystem.getProgression(playerId)
-	local characterData = CharacterCreationSystem.getCharacterData(playerId)
-	
-	local playerData = {
-		team = progression.primaryFaction or "Commoners",
-		class = progression.activeClass or nil,
-		race = characterData and characterData.race or nil,
-	}
-
-	ActionBasedProgressionSystem.recordAction(playerId, {
-		actionType = "TalkToNPC",
-		target = npcId,
-		value = 5,
-	})
 
 	local npcPosition = nil
 	local npcModel = workspace:FindFirstChild(npcId)
@@ -167,27 +65,17 @@ function NPCInteractionSystem.startConversation(playerId: number, npcId: string)
 		npcName = npc.name,
 		faction = npc.faction,
 		currentNode = "start",
-		playerData = playerData,
+		playerData = { team = "Commoners", class = nil, race = nil },
 		npcPosition = npcPosition,
 	}
 end
 
-function NPCInteractionSystem.getCurrentDialogue(playerId: number, npcId: string, currentNode: string): any
+function NPCInteractionSystem.getCurrentDialogue(playerId, npcId, currentNode)
 	local npc = NPC_DEFINITIONS[npcId]
-	if not npc then
-		return nil
-	end
+	if not npc then return nil end
 
-	local progression = ActionBasedProgressionSystem.getProgression(playerId)
-	local characterData = CharacterCreationSystem.getCharacterData(playerId)
-	
-	local playerData = {
-		team = progression.primaryFaction or "Commoners",
-		class = progression.activeClass or "Classless",
-		race = characterData and characterData.race or "Human",
-	}
-
-	local rule = DialogueData.getDialogueForPlayer(npcId, currentNode, playerData)
+	local playerData = { team = "Commoners", class = nil, race = nil }
+	local rule = DataHelpers.getDialogueForPlayer(npcId, currentNode, playerData)
 
 	if not rule then
 		return {
@@ -195,7 +83,7 @@ function NPCInteractionSystem.getCurrentDialogue(playerId: number, npcId: string
 			npcName = npc.name,
 			faction = npc.faction,
 			currentNode = currentNode,
-			text = "Le NPC n'a rien à dire pour cette combinaison.",
+			text = "Le NPC n'a rien a dire.",
 			options = {},
 			hasChoices = false,
 		}
@@ -215,23 +103,13 @@ function NPCInteractionSystem.getCurrentDialogue(playerId: number, npcId: string
 	}
 end
 
-function NPCInteractionSystem.advanceDialogue(playerId: number, npcId: string, currentNode: string, optionIndex: number?): any
+function NPCInteractionSystem.advanceDialogue(playerId, npcId, currentNode, optionIndex)
 	local npc = NPC_DEFINITIONS[npcId]
-	if not npc then
-		return nil
-	end
+	if not npc then return nil end
 
-	local progression = ActionBasedProgressionSystem.getProgression(playerId)
-	local characterData = CharacterCreationSystem.getCharacterData(playerId)
-	
-	local playerData = {
-		team = progression.primaryFaction or "Commoners",
-		class = progression.activeClass or "Classless",
-		race = characterData and characterData.race or "Human",
-	}
+	local playerData = { team = "Commoners", class = nil, race = nil }
+	local currentRule = DataHelpers.getDialogueForPlayer(npcId, currentNode, playerData)
 
-	local currentRule = DialogueData.getDialogueForPlayer(npcId, currentNode, playerData)
-	
 	if not currentRule or not currentRule.options or #currentRule.options == 0 then
 		return {
 			npcId = npcId,
@@ -260,15 +138,15 @@ function NPCInteractionSystem.advanceDialogue(playerId: number, npcId: string, c
 	end
 
 	local nextNode = selectedOption.nextNode
-	local nextRule = DialogueData.getDialogueForPlayer(npcId, nextNode, playerData)
-	
+	local nextRule = DataHelpers.getDialogueForPlayer(npcId, nextNode, playerData)
+
 	if not nextRule then
 		return {
 			npcId = npcId,
 			npcName = npc.name,
 			faction = npc.faction,
 			currentNode = nextNode,
-			text = "Le NPC n'a rien à dire pour cette combinaison.",
+			text = "Le NPC n'a rien a dire.",
 			options = {},
 			hasChoices = false,
 			endConversation = true,
@@ -290,51 +168,5 @@ function NPCInteractionSystem.advanceDialogue(playerId: number, npcId: string, c
 	}
 end
 
-function NPCInteractionSystem.acceptQuest(playerId: number, npcId: string, questId: string): boolean
-	local npc = NPC_DEFINITIONS[npcId]
-	if not npc then
-		return false
-	end
-
-	local hasQuest = false
-	if npc.quests then
-		for _, id in ipairs(npc.quests) do
-			if id == questId then
-				hasQuest = true
-				break
-			end
-		end
-	end
-
-	if not hasQuest then
-		return false
-	end
-
-	return QuestSystem.acceptQuest(playerId, questId)
-end
-
-function NPCInteractionSystem.getNPCQuestsForPlayer(playerId: number, npcId: string): {any}
-	local npc = NPC_DEFINITIONS[npcId]
-	if not npc or not npc.quests then
-		return {}
-	end
-
-	local availableQuests = {}
-	for _, questId in ipairs(npc.quests) do
-		local questDef = QuestSystem.getQuestDefinition(questId)
-		if questDef then
-			local isOnQuest = QuestSystem.isOnQuest(playerId, questId)
-			table.insert(availableQuests, {
-				questId = questId,
-				name = questDef.name,
-				description = questDef.description,
-				difficulty = questDef.difficulty,
-				isOnQuest = isOnQuest,
-			})
-		end
-	end
-
-	return availableQuests
-end
-
+print("[NPCInteractionSystem] Module loaded")
 return NPCInteractionSystem
