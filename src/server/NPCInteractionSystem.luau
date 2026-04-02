@@ -164,25 +164,39 @@ function NPCInteractionSystem.getCurrentDialogue(playerId: number, npcId: string
 	
 	local playerData = {
 		team = progression.primaryFaction or "Commoners",
-		class = progression.activeClass or nil,
-		race = characterData and characterData.race or nil,
+		class = progression.activeClass or "Classless",
+		race = characterData and characterData.race or "Human",
 	}
 
-	local text = DialogueData.getDialogueText(npcId, currentNode, playerData)
-	local nextLine = DialogueData.getNextLine(npcId, currentNode, playerData)
+	local rule = DialogueData.getDialogueForPlayer(npcId, currentNode, playerData)
+
+	if not rule then
+		return {
+			npcId = npcId,
+			npcName = npc.name,
+			faction = npc.faction,
+			currentNode = currentNode,
+			text = "Le NPC n'a rien à dire pour cette combinaison.",
+			options = {},
+			hasChoices = false,
+		}
+	end
+
+	local options = rule.options or {}
+	local hasChoices = #options > 0
 
 	return {
 		npcId = npcId,
 		npcName = npc.name,
 		faction = npc.faction,
 		currentNode = currentNode,
-		text = text,
-		nextLine = nextLine,
-		hasChoices = nextLine ~= nil,
+		text = rule.npcText,
+		options = options,
+		hasChoices = hasChoices,
 	}
 end
 
-function NPCInteractionSystem.advanceDialogue(playerId: number, npcId: string, currentNode: string): any
+function NPCInteractionSystem.advanceDialogue(playerId: number, npcId: string, currentNode: string, optionIndex: number?): any
 	local npc = NPC_DEFINITIONS[npcId]
 	if not npc then
 		return nil
@@ -193,37 +207,67 @@ function NPCInteractionSystem.advanceDialogue(playerId: number, npcId: string, c
 	
 	local playerData = {
 		team = progression.primaryFaction or "Commoners",
-		class = progression.activeClass or nil,
-		race = characterData and characterData.race or nil,
+		class = progression.activeClass or "Classless",
+		race = characterData and characterData.race or "Human",
 	}
 
-	local nextLine = DialogueData.getNextLine(npcId, currentNode, playerData)
-
-	if not nextLine then
+	local currentRule = DialogueData.getDialogueForPlayer(npcId, currentNode, playerData)
+	
+	if not currentRule or not currentRule.options or #currentRule.options == 0 then
 		return {
 			npcId = npcId,
 			npcName = npc.name,
 			faction = npc.faction,
 			currentNode = currentNode,
 			text = nil,
-			nextLine = nil,
+			options = {},
 			hasChoices = false,
 			endConversation = true,
 		}
 	end
 
-	local text = DialogueData.getDialogueText(npcId, nextLine, playerData)
-	local nextNextLine = DialogueData.getNextLine(npcId, nextLine, playerData)
+	local selectedOption = currentRule.options[optionIndex or 1]
+	if not selectedOption or not selectedOption.nextNode then
+		return {
+			npcId = npcId,
+			npcName = npc.name,
+			faction = npc.faction,
+			currentNode = currentNode,
+			text = nil,
+			options = {},
+			hasChoices = false,
+			endConversation = true,
+		}
+	end
+
+	local nextNode = selectedOption.nextNode
+	local nextRule = DialogueData.getDialogueForPlayer(npcId, nextNode, playerData)
+	
+	if not nextRule then
+		return {
+			npcId = npcId,
+			npcName = npc.name,
+			faction = npc.faction,
+			currentNode = nextNode,
+			text = "Le NPC n'a rien à dire pour cette combinaison.",
+			options = {},
+			hasChoices = false,
+			endConversation = true,
+		}
+	end
+
+	local nextOptions = nextRule.options or {}
+	local hasChoices = #nextOptions > 0
 
 	return {
 		npcId = npcId,
 		npcName = npc.name,
 		faction = npc.faction,
-		currentNode = nextLine,
-		text = text,
-		nextLine = nextNextLine,
-		hasChoices = nextNextLine ~= nil,
-		endConversation = nextNextLine == nil,
+		currentNode = nextNode,
+		text = nextRule.npcText,
+		options = nextOptions,
+		hasChoices = hasChoices,
+		endConversation = not hasChoices,
 	}
 end
 

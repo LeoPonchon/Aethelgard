@@ -12,6 +12,13 @@ local NPCInteractionSystem = require(script.Parent:WaitForChild("NPCInteractionS
 local QuestSystem = require(script.Parent:WaitForChild("QuestSystem"))
 local PlayerDisplaySystem = require(script.Parent:WaitForChild("PlayerDisplaySystem"))
 
+local npcDialogueEvent = ReplicatedStorage:FindFirstChild("NPCDialogue")
+if not npcDialogueEvent then
+	npcDialogueEvent = Instance.new("RemoteEvent")
+	npcDialogueEvent.Name = "NPCDialogue"
+	npcDialogueEvent.Parent = ReplicatedStorage
+end
+
 local ProximityPromptSystem = {}
 
 -- Configuration
@@ -177,8 +184,11 @@ local function onNPCPromptTriggered(player: Player, npcKey: string)
 		target = npcData.npcId,
 	})
 
-	-- Dialogue system disabled - interactions still tracked but no dialogue shown
-	-- TODO: Reimplement dialogue system
+	-- Trigger dialogue on client
+	npcDialogueEvent:FireClient(player, {
+		npcId = npcData.npcId,
+		npcName = npcData.name,
+	})
 
 	-- Update player display
 	PlayerDisplaySystem.onProgressionChanged(player)

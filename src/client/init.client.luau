@@ -34,6 +34,7 @@ local actionEvent = waitForRemote("PlayerAction", 10)
 local emoteEvent = waitForRemote("PlayEmote", 10)
 local npcInteractionRemote = waitForRemote("NPCInteraction", 10)
 local getPlayerInfoRemote = waitForRemote("GetPlayerInfo", 10)
+local npcDialogueEvent = waitForRemote("NPCDialogue", 10)
 
 -- Import NPC Dialogue Client module
 local NPCDialogueClient = script:FindFirstChild("NPCDialogueClient")
@@ -303,3 +304,15 @@ end)
 setupToolTracking()
 
 print("[Client] Aethelgard client initialized - action-based progression active")
+
+-- ============================================
+-- NPC DIALOGUE HANDLING
+-- ============================================
+
+if npcDialogueEvent then
+	npcDialogueEvent.OnClientEvent:Connect(function(data)
+		if data.npcId and NPCDialogueClient then
+			NPCDialogueClient.startConversation(data.npcId)
+		end
+	end)
+end

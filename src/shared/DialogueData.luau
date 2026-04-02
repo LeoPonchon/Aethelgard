@@ -1,20 +1,28 @@
 local DialogueData = {}
 
+export type DialogueOption = {
+	text: string,
+	nextNode: string?,
+	team: string?,
+	class: string?,
+	race: string?,
+}
+
 export type DialogueRule = {
 	team: string?,
 	class: string?,
 	race: string?,
-	text: string,
-	nextLine: string?,
+	npcText: string,
+	options: {DialogueOption}?,
 }
 
 export type DialogueNode = {
-	rules: {DialogueRule},
+	rules: {DialogueRule}
 }
 
 export type NPCDialogueData = {
 	npcName: string,
-	[string]: DialogueNode,
+	[string]: DialogueNode
 }
 
 local ALL_DIALOGUES: {[string]: NPCDialogueData} = {
@@ -23,52 +31,92 @@ local ALL_DIALOGUES: {[string]: NPCDialogueData} = {
 
 		start = {
 			rules = {
-				{ team = "Commoners", class = nil, race = "Human", 
-				  text = "Ah, a new human arrival! Welcome to our village. Let me explain how to progress here.",
-				  nextLine = "Village_Elder_Line_1" },
-				{ team = "DemonKing", class = "Rogue", race = "Demon", 
-				  text = "…A Demon King among us? I'll have to be careful.",
-				  nextLine = "Village_Elder_Line_1" },
-				{ team = "Hero", class = "Paladin", race = "Human", 
-				  text = "Ah, the holy human hero! Listen well to the village rules.",
-				  nextLine = "Village_Elder_Line_1" },
-				{ team = "King", class = "Warrior", race = "Dwarf", 
-				  text = "Your Dwarf Majesty! Welcome. Let me explain how the village works.",
-				  nextLine = "Village_Elder_Line_1" },
+				{
+					team = "Commoners", class = "Classless", race = "Human",
+					npcText = "Ah, un nouveau villageois ! Bienvenue. Que souhaitez-vous savoir ?",
+					options = {
+						{ text = "Je veux apprendre les règles du village.", nextNode = "Village_Elder_Line_1" },
+					}
+				},
+				{
+					team = "Hero", class = "Paladin", race = "Human",
+					npcText = "Ah, le héros humain ! Écoutez bien, voici les règles de notre village.",
+					options = {
+						{ text = "Je suis prêt à écouter.", nextNode = "Village_Elder_Line_1" },
+					}
+				},
+				{
+					team = "King", class = "Warrior", race = "Dwarf",
+					npcText = "Votre Majesté naine ! Voici comment fonctionne le village.",
+					options = {
+						{ text = "Merci, je souhaite apprendre.", nextNode = "Village_Elder_Line_1" },
+					}
+				},
+				{
+					team = "DemonKing", class = "Rogue", race = "Demon",
+					npcText = "…Un Roi Démon parmi nous ? Je dois faire attention.",
+					options = {
+						{ text = "Je suis ici pour observer.", nextNode = "Village_Elder_Line_1" },
+					}
+				},
 			}
 		},
 
 		Village_Elder_Line_1 = {
 			rules = {
-				{ team = "Commoners", class = nil, race = "Human", 
-				  text = "This village is a place where everyone can find their path. You can become a warrior, mage, artisan… it all depends on your actions.",
-				  nextLine = "Village_Elder_Line_2" },
-				{ team = "DemonKing", class = "Rogue", race = "Demon", 
-				  text = "Here, each player has unique skills based on their race, class and faction. Observe carefully!",
-				  nextLine = "Village_Elder_Line_2" },
-				{ team = "Hero", class = "Paladin", race = "Human", 
-				  text = "In this village, inhabitants have specific roles: warriors, mages, artisans… everyone finds their place.",
-				  nextLine = "Village_Elder_Line_2" },
-				{ team = "King", class = "Warrior", race = "Dwarf", 
-				  text = "Each character can improve stats, learn skills and interact with other factions.",
-				  nextLine = "Village_Elder_Line_2" },
+				{
+					team = "Commoners", class = "Classless", race = "Human",
+					npcText = "Ici, chacun peut trouver sa voie : guerrier, mage, artisan… cela dépend de vos actions.",
+					options = {
+						{ text = "Où commencer ?", nextNode = "Village_Elder_Line_2" },
+					}
+				},
+				{
+					team = "Hero", class = "Paladin", race = "Human",
+					npcText = "Chaque habitant a un rôle : guerrier, mage, artisan… chacun trouve sa place.",
+					options = {
+						{ text = "Quels rôles puis-je remplir ?", nextNode = "Village_Elder_Line_2" },
+					}
+				},
+				{
+					team = "King", class = "Warrior", race = "Dwarf",
+					npcText = "Chaque personnage peut améliorer ses stats, apprendre des compétences et interagir avec les autres factions.",
+					options = {
+						{ text = "Comment interagir avec les autres ?", nextNode = "Village_Elder_Line_2" },
+					}
+				},
+				{
+					team = "DemonKing", class = "Rogue", race = "Demon",
+					npcText = "Chaque joueur a des compétences uniques selon sa race, classe et faction. Observez bien !",
+					options = {
+						{ text = "Je vais observer attentivement.", nextNode = "Village_Elder_Line_2" },
+					}
+				},
 			}
 		},
 
 		Village_Elder_Line_2 = {
 			rules = {
-				{ team = "Commoners", class = nil, race = "Human", 
-				  text = "Go see the Guild Master to start your first quests. That's where everything begins!",
-				  nextLine = nil },
-				{ team = "DemonKing", class = "Rogue", race = "Demon", 
-				  text = "Be careful with your actions: they influence your reputation and how others see you.",
-				  nextLine = nil },
-				{ team = "Hero", class = "Paladin", race = "Human", 
-				  text = "The choices you make will impact the village and its inhabitants.",
-				  nextLine = nil },
-				{ team = "King", class = "Warrior", race = "Dwarf", 
-				  text = "Some quests and dialogues will only be accessible with the right combinations of race, class and role.",
-				  nextLine = nil },
+				{
+					team = "Commoners", class = "Classless", race = "Human",
+					npcText = "Allez voir le Maître de Guilde pour commencer vos premières quêtes !",
+					options = {}
+				},
+				{
+					team = "Hero", class = "Paladin", race = "Human",
+					npcText = "Vos choix auront un impact sur le village et ses habitants.",
+					options = {}
+				},
+				{
+					team = "King", class = "Warrior", race = "Dwarf",
+					npcText = "Certaines quêtes et dialogues ne sont accessibles qu’avec la bonne combinaison de race, classe et rôle.",
+					options = {}
+				},
+				{
+					team = "DemonKing", class = "Rogue", race = "Demon",
+					npcText = "Faites attention à vos actions : elles influencent votre réputation et la manière dont les autres vous voient.",
+					options = {}
+				},
 			}
 		},
 	},
@@ -80,44 +128,24 @@ end
 
 function DialogueData.getDialogueNode(npcName: string, nodeName: string): DialogueNode?
 	local npcDialogue = ALL_DIALOGUES[npcName]
-	if not npcDialogue then
-		return nil
-	end
+	if not npcDialogue then return nil end
 	return npcDialogue[nodeName]
 end
 
-function DialogueData.getDialogueText(npcName: string, nodeName: string, player: {team: string?, class: string?, race: string?}): string?
+function DialogueData.getDialogueForPlayer(npcName: string, nodeName: string, player: {team: string?, class: string?, race: string?}): DialogueRule?
 	local node = DialogueData.getDialogueNode(npcName, nodeName)
-	if not node or not node.rules then
-		return nil
-	end
+	if not node then return nil end
+
+	local playerClass = player.class or "Classless"
+	local playerRace = player.race or "Human"
 
 	for _, rule in ipairs(node.rules) do
 		local teamMatch = not rule.team or rule.team == player.team
-		local classMatch = not rule.class or rule.class == player.class
-		local raceMatch = not rule.race or rule.race == player.race
+		local classMatch = not rule.class or rule.class == playerClass or playerClass == "Classless"
+		local raceMatch = not rule.race or rule.race == playerRace
 
 		if teamMatch and classMatch and raceMatch then
-			return rule.text
-		end
-	end
-
-	return "The villager doesn't know what to say for this combination."
-end
-
-function DialogueData.getNextLine(npcName: string, nodeName: string, player: {team: string?, class: string?, race: string?}): string?
-	local node = DialogueData.getDialogueNode(npcName, nodeName)
-	if not node or not node.rules then
-		return nil
-	end
-
-	for _, rule in ipairs(node.rules) do
-		local teamMatch = not rule.team or rule.team == player.team
-		local classMatch = not rule.class or rule.class == player.class
-		local raceMatch = not rule.race or rule.race == player.race
-
-		if teamMatch and classMatch and raceMatch then
-			return rule.nextLine
+			return rule
 		end
 	end
 

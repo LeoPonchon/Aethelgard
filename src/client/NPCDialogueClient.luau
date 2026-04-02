@@ -36,7 +36,6 @@ local BUTTON_DEFAULT_BORDER = Color3.fromRGB(100, 100, 150)
 local BUTTON_HOVER_FILL = Color3.fromRGB(60, 60, 100)
 local BUTTON_HOVER_BORDER = Color3.fromRGB(120, 80, 150)
 local BUTTON_HOVER_TEXT = Color3.fromRGB(200, 200, 255)
-local ACTION_INDICATOR_COLOR = Color3.fromRGB(200, 200, 255)
 
 local currentNpcId = nil
 local currentNode = "start"
@@ -44,11 +43,10 @@ local currentText = ""
 local currentNpcName = ""
 local currentFaction = ""
 local hasChoices = false
+local currentOptions = {}
 local dialogueTextGui = nil
 local dialogueScreenGui = nil
 local keyboardConnection = nil
-local actionIndicator = nil
-local actionIndicatorTween = nil
 
 local dialogueHistory = {}
 
@@ -68,6 +66,53 @@ local function createStrokeTextLabel(parent: Instance, props: {[string]: any}): 
 	stroke.Parent = label
 	
 	return label
+end
+
+local function createButton(parent: Instance, text: string, yPos: number, callback: () -> ()): TextButton
+	local button = Instance.new("TextButton")
+	button.Name = "ChoiceButton"
+	button.Size = UDim2.new(0.9, 0, 0, 35)
+	button.Position = UDim2.new(0.05, 0, 0, yPos)
+	button.BackgroundColor3 = BUTTON_DEFAULT_FILL
+	button.BackgroundTransparency = 0
+	button.BorderSizePixel = 0
+	button.TextColor3 = BODY_TEXT_COLOR
+	button.TextSize = 15
+	button.Font = Enum.Font.Gotham
+	button.Text = text
+	button.Parent = parent
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 8)
+	corner.Parent = button
+
+	local borderStroke = Instance.new("UIStroke")
+	borderStroke.Color = BUTTON_DEFAULT_BORDER
+	borderStroke.Thickness = 2
+	borderStroke.Transparency = 0
+	borderStroke.Parent = button
+
+	local textStroke = Instance.new("UIStroke")
+	textStroke.Color = TEXT_STROKE_COLOR
+	textStroke.Thickness = 1
+	textStroke.Transparency = 0
+	textStroke.Parent = button
+
+	button.MouseEnter:Connect(function()
+		button.BackgroundColor3 = BUTTON_HOVER_FILL
+		borderStroke.Color = BUTTON_HOVER_BORDER
+		button.TextColor3 = BUTTON_HOVER_TEXT
+	end)
+
+	button.MouseLeave:Connect(function()
+		button.BackgroundColor3 = BUTTON_DEFAULT_FILL
+		borderStroke.Color = BUTTON_DEFAULT_BORDER
+		button.TextColor3 = BODY_TEXT_COLOR
+	end)
+
+	button.MouseButton1Click:Connect(callback)
+
+	return button
 end
 
 local function updateDialogueText(message: string)
@@ -103,121 +148,90 @@ local function updateDialogueText(message: string)
 		child:Destroy()
 	end
 	
-	local nameLabel = createStrokeTextLabel(container, {
-		Size = UDim2.new(0, 300, 0, 30),
-		Position = UDim2.new(0.5, -150, 0, 0),
+	local dialogueBox = Instance.new("Frame")
+	dialogueBox.Name = "DialogueBox"
+	dialogueBox.Size = UDim2.new(0.6, 0, 1, 0)
+	dialogueBox.Position = UDim2.new(0, 0, 0, 0)
+	dialogueBox.BackgroundTransparency = 1
+	dialogueBox.Parent = container
+	
+	local choicesBox = Instance.new("Frame")
+	choicesBox.Name = "ChoicesBox"
+	choicesBox.Size = UDim2.new(0.35, 0, 1, 0)
+	choicesBox.Position = UDim2.new(0.65, 0, 0, 0)
+	choicesBox.BackgroundTransparency = 1
+	choicesBox.Parent = container
+	
+	local dialogueTitle = createStrokeTextLabel(dialogueBox, {
+		Size = UDim2.new(1, 0, 0, 25),
+		Position = UDim2.new(0, 0, 0, 0),
 		BackgroundTransparency = 1,
 		Text = currentNpcName,
 		TextColor3 = SPEAKER_NAME_COLOR,
-		TextSize = 24,
+		TextSize = 18,
 		Font = Enum.Font.GothamBold,
 		TextXAlignment = Enum.TextXAlignment.Center,
 	})
 	
 	if currentFaction and currentFaction ~= "" then
-		local factionLabel = createStrokeTextLabel(container, {
+		local factionLabel = createStrokeTextLabel(dialogueBox, {
 			Size = UDim2.new(0, 200, 0, 20),
-			Position = UDim2.new(0.5, -100, 0, 28),
+			Position = UDim2.new(0.5, 0, 0, 28),
 			BackgroundTransparency = 1,
 			Text = currentFaction,
 			TextColor3 = FACTION_LABEL_COLOR,
-			TextSize = 16,
+			TextSize = 14,
 			Font = Enum.Font.Gotham,
 			TextXAlignment = Enum.TextXAlignment.Center,
 		})
 	end
 	
-	local messageLabel = createStrokeTextLabel(container, {
-		Size = UDim2.new(0.9, 0, 0, 60),
-		Position = UDim2.new(0.05, 0, 0, currentFaction and currentFaction ~= "" and 55 or 35),
+	local messageLabel = createStrokeTextLabel(dialogueBox, {
+		Size = UDim2.new(0.9, 0, 0, 70),
+		Position = UDim2.new(0.05, 0, 0, currentFaction and currentFaction ~= "" and 55 or 40),
 		BackgroundTransparency = 1,
 		Text = message,
 		TextColor3 = BODY_TEXT_COLOR,
-		TextSize = 20,
+		TextSize = 18,
 		Font = Enum.Font.Gotham,
 		TextXAlignment = Enum.TextXAlignment.Center,
 		TextYAlignment = Enum.TextYAlignment.Top,
 		TextWrapped = true,
 	})
 	
-	print(string.format("[NPC] %s: %s", currentNpcName, message))
-end
-
-local function createActionIndicator()
-	if actionIndicator then
-		actionIndicator:Destroy()
-		actionIndicator = nil
-	end
-	if actionIndicatorTween then
-		actionIndicatorTween:Cancel()
-		actionIndicatorTween = nil
-	end
+	local choicesTitle = createStrokeTextLabel(choicesBox, {
+		Size = UDim2.new(1, 0, 0, 25),
+		Position = UDim2.new(0, 0, 0, 0),
+		BackgroundTransparency = 1,
+		Text = "Choix:",
+		TextColor3 = SPEAKER_NAME_COLOR,
+		TextSize = 18,
+		Font = Enum.Font.GothamBold,
+		TextXAlignment = Enum.TextXAlignment.Center,
+	})
 	
-	if not dialogueTextGui or not dialogueTextGui.Parent then
-		return
-	end
+	local choicesStartY = 35
 	
-	local container = dialogueTextGui:FindFirstChild("DialogueContainer")
-	if not container then
-		return
-	end
-	
-	local indicator = Instance.new("TextLabel")
-	indicator.Name = "ActionIndicator"
-	indicator.Size = UDim2.new(0, 30, 0, 30)
-	indicator.Position = UDim2.new(0.5, -15, 1, 5)
-	indicator.BackgroundTransparency = 1
-	indicator.Text = "▼"
-	indicator.TextColor3 = ACTION_INDICATOR_COLOR
-	indicator.TextSize = 24
-	indicator.Font = Enum.Font.GothamBold
-	indicator.Parent = container
-	
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = TEXT_STROKE_COLOR
-	stroke.Thickness = 2
-	stroke.Transparency = 0
-	stroke.Parent = indicator
-	
-	actionIndicator = indicator
-	
-	local function blink()
-		if not actionIndicator or not actionIndicator.Parent then return end
-		
-		actionIndicatorTween = TweenService:Create(actionIndicator, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {
-			TextTransparency = 0.7
-		})
-		actionIndicatorTween:Play()
-		actionIndicatorTween.Completed:Connect(function()
-			if not actionIndicator or not actionIndicator.Parent then return end
-			
-			actionIndicatorTween = TweenService:Create(actionIndicator, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {
-				TextTransparency = 0
-			})
-			actionIndicatorTween:Play()
-			actionIndicatorTween.Completed:Connect(function()
-				task.wait(0.1)
-				blink()
+	if hasChoices and currentOptions then
+		for i, option in ipairs(currentOptions) do
+			createButton(choicesBox, option.text, choicesStartY, function()
+				advanceDialogue(i)
 			end)
-		end)
+			choicesStartY = choicesStartY + 45
+		end
 	end
 	
-	blink()
+	createButton(choicesBox, "Quitter", choicesStartY, function()
+		closeDialogue()
+	end)
+	
+	print(string.format("[NPC] %s: %s", currentNpcName, message))
 end
 
 local function cleanupUI()
 	if dialogueScreenGui then
 		dialogueScreenGui:Destroy()
 		dialogueScreenGui = nil
-	end
-	
-	if actionIndicator then
-		actionIndicator:Destroy()
-		actionIndicator = nil
-	end
-	if actionIndicatorTween then
-		actionIndicatorTween:Cancel()
-		actionIndicatorTween = nil
 	end
 
 	if keyboardConnection then
@@ -251,10 +265,11 @@ local function closeDialogue()
 
 	currentNpcId = nil
 	currentNode = "start"
+	currentOptions = {}
 	print("[NPCDialogueClient] Dialogue closed")
 end
 
-local function advanceDialogue()
+local function advanceDialogue(optionIndex: number?)
 	if not currentNpcId then
 		return
 	end
@@ -266,6 +281,7 @@ local function advanceDialogue()
 		npcName = currentNpcName,
 		faction = currentFaction,
 		hasChoices = hasChoices,
+		options = currentOptions,
 	})
 
 	cleanupUI()
@@ -274,6 +290,7 @@ local function advanceDialogue()
 		local result = npcInteractionRemote:InvokeServer("advanceDialogue", {
 			npcId = currentNpcId,
 			currentNode = currentNode,
+			optionIndex = optionIndex,
 		})
 
 		if result then
@@ -282,6 +299,7 @@ local function advanceDialogue()
 			currentNpcName = result.npcName or currentNpcName
 			currentFaction = result.faction or ""
 			hasChoices = result.hasChoices or false
+			currentOptions = result.options or {}
 
 			updateDialogueText(currentText)
 
@@ -290,7 +308,7 @@ local function advanceDialogue()
 					closeDialogue()
 				end)
 			else
-				createActionIndicator()
+				-- Buttons are now in the dialogue box
 			end
 		end
 	end
@@ -417,7 +435,7 @@ local function createChoiceButtons()
 
 				cleanupUI()
 				updateDialogueText(currentText)
-				createActionIndicator()
+				-- Buttons are now in the dialogue box
 			end
 		end)
 
@@ -449,7 +467,7 @@ local function createChoiceButtons()
 
 			cleanupUI()
 			updateDialogueText(currentText)
-			createActionIndicator()
+			-- Buttons are now in the dialogue box
 		end
 
 		if input.KeyCode == Enum.KeyCode.Escape then
@@ -484,6 +502,9 @@ function NPCDialogueClient.startConversation(npcId: string): boolean
 		if dialogueResult then
 			currentText = dialogueResult.text or ""
 			hasChoices = dialogueResult.hasChoices or false
+			currentOptions = dialogueResult.options or {}
+			
+			print("[NPCDialogueClient] dialogueResult - hasChoices:", hasChoices, "options:", #currentOptions)
 
 			updateDialogueText(currentText)
 
@@ -492,7 +513,7 @@ function NPCDialogueClient.startConversation(npcId: string): boolean
 					closeDialogue()
 				end)
 			else
-				createActionIndicator()
+				-- Buttons are now in the dialogue box
 			end
 
 			return true

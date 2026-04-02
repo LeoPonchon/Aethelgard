@@ -54,6 +54,7 @@ local NPCInteractionSystem = requireModule("NPCInteractionSystem")
 local EmoteSystem = requireModule("EmoteSystem")
 local PlayerDisplaySystem = requireModule("PlayerDisplaySystem")
 local ProximityPromptSystem = requireModule("ProximityPromptSystem")
+local CharacterCreationSystem = requireModule("CharacterCreationSystem")
 
 -- Initialize systems (check if they exist first)
 if PlayerDisplaySystem then
@@ -207,9 +208,10 @@ npcInteractionRemote.OnServerInvoke = function(player: Player, action: string, d
     elseif action == "advanceDialogue" then
         local npcId = data.npcId
         local currentNode = data.currentNode
+        local optionIndex = data.optionIndex
         if not npcId or not currentNode then return nil end
         
-        local result = NPCInteractionSystem.advanceDialogue(player.UserId, npcId, currentNode)
+        local result = NPCInteractionSystem.advanceDialogue(player.UserId, npcId, currentNode, optionIndex)
         return result
         
     elseif action == "getNPCInfo" then
@@ -347,6 +349,9 @@ Players.PlayerAdded:Connect(function(player: Player)
     -- Initialize progression for new player
     local progression = ActionBasedProgressionSystem.getProgression(player.UserId)
 
+    -- Set default class to Classless
+    progression.activeClass = "Classless"
+    
     -- Join default team (Commoners)
     local success = ActionBasedProgressionSystem.joinTeam(player.UserId, "Commoners")
     
@@ -355,8 +360,19 @@ Players.PlayerAdded:Connect(function(player: Player)
     if commonersTeam then
         player.Team = commonersTeam
     end
+    
+    -- Initialize character data with default race
+    local characterData = CharacterCreationSystem.getCharacterData(player.UserId)
+    if not characterData then
+        CharacterCreationSystem.createCharacter(player.UserId, {
+            playerId = player.UserId,
+            race = "Human",
+            appearance = nil,
+            traits = {},
+        })
+    end
 
-    print(string.format("[Server] %s joined the game (team set: %s)", player.Name, success and "Commoners" or "failed"))
+    print(string.format("[Server] %s joined the game (team: Commoners, class: Classless, race: Human)", player.Name))
 end)
 
 -- Handle players leaving
