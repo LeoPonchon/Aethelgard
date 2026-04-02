@@ -189,7 +189,8 @@ updateDialogueText = function(message)
 	dialogueBox = Instance.new("Frame")
 	dialogueBox.Name = "DialogueBox"
 	dialogueBox.Size = UDim2.new(0, availableWidth + 40, 0, dialogueBoxHeight)
-	dialogueBox.Position = UDim2.new(0.5, -(availableWidth + 40) / 2, 1, -dialogueBoxHeight - 30)
+	dialogueBox.Position = UDim2.new(0.5, -(availableWidth + 40) / 2, 1, -30)
+	dialogueBox.AnchorPoint = Vector2.new(0, 1)
 	dialogueBox.BackgroundTransparency = 1
 	dialogueBox.Parent = screenGui
 
@@ -241,7 +242,8 @@ updateDialogueText = function(message)
 	choicesBox = Instance.new("Frame")
 	choicesBox.Name = "ChoicesBox"
 	choicesBox.Size = UDim2.new(0, choicesBoxWidth, 0, choicesBoxHeight)
-	choicesBox.Position = UDim2.new(1, -choicesBoxWidth - 20, 1, -choicesBoxHeight - dialogueBoxHeight - 50)
+	choicesBox.Position = UDim2.new(1, -choicesBoxWidth - 20, 1, -50)
+	choicesBox.AnchorPoint = Vector2.new(0, 1)
 	choicesBox.BackgroundTransparency = 1
 	choicesBox.Parent = screenGui
 
