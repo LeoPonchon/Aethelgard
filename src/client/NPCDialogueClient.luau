@@ -50,6 +50,54 @@ local keyboardConnection = nil
 
 local dialogueHistory = {}
 
+local currentNpcPosition = nil
+local proximityCheckConnection = nil
+
+local updateDialogueText = nil
+local advanceDialogue = nil
+
+local function closeDialogue()
+	if dialogueScreenGui then
+		dialogueScreenGui:Destroy()
+		dialogueScreenGui = nil
+	end
+
+	if keyboardConnection then
+		keyboardConnection:Disconnect()
+		keyboardConnection = nil
+	end
+
+	if proximityCheckConnection then
+		proximityCheckConnection:Disconnect()
+		proximityCheckConnection = nil
+	end
+
+	if dialogueTextGui then
+		local container = dialogueTextGui:FindFirstChild("DialogueContainer")
+		if container then
+			local tweenOut = TweenService:Create(container, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+				Position = UDim2.new(0.1, 0, 1, -150)
+			})
+			tweenOut:Play()
+			tweenOut.Completed:Connect(function()
+				if dialogueTextGui then
+					dialogueTextGui:Destroy()
+					dialogueTextGui = nil
+				end
+			end)
+		else
+			dialogueTextGui:Destroy()
+			dialogueTextGui = nil
+		end
+	end
+
+	currentNpcId = nil
+	currentNode = "start"
+	currentNpcPosition = nil
+	currentOptions = {}
+	print("[NPCDialogueClient] Dialogue closed")
+end
+
 local function createStrokeTextLabel(parent: Instance, props: {[string]: any}): TextLabel
 	local label = Instance.new("TextLabel")
 	
@@ -115,7 +163,7 @@ local function createButton(parent: Instance, text: string, yPos: number, callba
 	return button
 end
 
-local function updateDialogueText(message: string)
+updateDialogueText = function(message: string)
 	local screenGui = dialogueTextGui
 	
 	if not screenGui or not screenGui.Parent then
@@ -228,48 +276,7 @@ local function updateDialogueText(message: string)
 	print(string.format("[NPC] %s: %s", currentNpcName, message))
 end
 
-local function cleanupUI()
-	if dialogueScreenGui then
-		dialogueScreenGui:Destroy()
-		dialogueScreenGui = nil
-	end
-
-	if keyboardConnection then
-		keyboardConnection:Disconnect()
-		keyboardConnection = nil
-	end
-end
-
-local function closeDialogue()
-	cleanupUI()
-	dialogueHistory = {}
-
-	if dialogueTextGui then
-		local container = dialogueTextGui:FindFirstChild("DialogueContainer")
-		if container then
-			local tweenOut = TweenService:Create(container, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-				Position = UDim2.new(0.1, 0, 1, -150)
-			})
-			tweenOut:Play()
-			tweenOut.Completed:Connect(function()
-				if dialogueTextGui then
-					dialogueTextGui:Destroy()
-					dialogueTextGui = nil
-				end
-			end)
-		else
-			dialogueTextGui:Destroy()
-			dialogueTextGui = nil
-		end
-	end
-
-	currentNpcId = nil
-	currentNode = "start"
-	currentOptions = {}
-	print("[NPCDialogueClient] Dialogue closed")
-end
-
-local function advanceDialogue(optionIndex: number?)
+advanceDialogue = function(optionIndex: number?)
 	if not currentNpcId then
 		return
 	end
@@ -284,7 +291,15 @@ local function advanceDialogue(optionIndex: number?)
 		options = currentOptions,
 	})
 
-	cleanupUI()
+	if dialogueScreenGui then
+		dialogueScreenGui:Destroy()
+		dialogueScreenGui = nil
+	end
+
+	if keyboardConnection then
+		keyboardConnection:Disconnect()
+		keyboardConnection = nil
+	end
 
 	if npcInteractionRemote then
 		local result = npcInteractionRemote:InvokeServer("advanceDialogue", {
@@ -307,11 +322,40 @@ local function advanceDialogue(optionIndex: number?)
 				task.delay(2, function()
 					closeDialogue()
 				end)
-			else
-				-- Buttons are now in the dialogue box
 			end
 		end
 	end
+end
+
+local function checkProximity()
+	if not currentNpcId or not currentNpcPosition then
+		return
+	end
+
+	local character = player.Character
+	if not character then
+		return
+	end
+
+	local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+	if not humanoidRootPart then
+		return
+	end
+
+	local distance = (humanoidRootPart.Position - currentNpcPosition).Magnitude
+
+	if distance > 20 then
+		print("[NPCDialogueClient] Player too far from NPC, closing dialogue")
+		closeDialogue()
+	end
+end
+
+local function startProximityCheck()
+	if proximityCheckConnection then
+		proximityCheckConnection:Disconnect()
+	end
+
+	proximityCheckConnection = game:GetService("RunService").Heartbeat:Connect(checkProximity)
 end
 
 local function createChoiceButtons()
@@ -493,6 +537,14 @@ function NPCDialogueClient.startConversation(npcId: string): boolean
 		currentNpcName = result.npcName or "NPC"
 		currentFaction = result.faction or ""
 		currentNode = result.currentNode or "start"
+		currentNpcPosition = result.npcPosition
+
+		print("[NPCDialogueClient] NPC position received:", currentNpcPosition)
+		if not currentNpcPosition then
+			warn("[NPCDialogueClient] Warning: NPC position is nil, proximity check will not work")
+		else
+			startProximityCheck()
+		end
 
 		local dialogueResult = npcInteractionRemote:InvokeServer("getCurrentDialogue", {
 			npcId = currentNpcId,
@@ -512,8 +564,6 @@ function NPCDialogueClient.startConversation(npcId: string): boolean
 				task.delay(2, function()
 					closeDialogue()
 				end)
-			else
-				-- Buttons are now in the dialogue box
 			end
 
 			return true

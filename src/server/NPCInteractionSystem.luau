@@ -144,12 +144,31 @@ function NPCInteractionSystem.startConversation(playerId: number, npcId: string)
 		value = 5,
 	})
 
+	local npcPosition = nil
+	local npcModel = workspace:FindFirstChild(npcId)
+	if not npcModel then
+		npcModel = workspace:FindFirstChild(npcId .. "_NPC")
+	end
+	if not npcModel then
+		local npcsFolder = workspace:FindFirstChild("NPCs")
+		if npcsFolder then
+			npcModel = npcsFolder:FindFirstChild(npcId)
+		end
+	end
+	if npcModel then
+		local rootPart = npcModel:FindFirstChild("HumanoidRootPart") or npcModel:FindFirstChild("Torso") or npcModel:FindFirstChild("Head")
+		if rootPart then
+			npcPosition = rootPart.Position
+		end
+	end
+
 	return {
 		npcId = npcId,
 		npcName = npc.name,
 		faction = npc.faction,
 		currentNode = "start",
 		playerData = playerData,
+		npcPosition = npcPosition,
 	}
 end
 
