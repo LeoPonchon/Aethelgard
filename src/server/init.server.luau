@@ -190,32 +190,32 @@ end
 
 npcInteractionRemote.OnServerInvoke = function(player: Player, action: string, data: any)
     if action == "startConversation" then
-        -- Start conversation with NPC
         local npcId = data.npcId
-        return NPCInteractionSystem.startConversation(player.UserId, npcId)
+        if not npcId then return nil end
         
-    elseif action == "processResponse" then
-        -- Process dialogue response
-        local npcId = data.npcId
-        local dialogueId = data.dialogueId
-        local responseIndex = data.responseIndex
-        return NPCInteractionSystem.processResponse(player.UserId, npcId, dialogueId, responseIndex)
+        local result = NPCInteractionSystem.startConversation(player.UserId, npcId)
+        return result
         
-    elseif action == "acceptQuest" then
-        -- Accept quest from NPC
+    elseif action == "getCurrentDialogue" then
         local npcId = data.npcId
-        local questId = data.questId
-        local success = NPCInteractionSystem.acceptQuest(player.UserId, npcId, questId)
-        return { success = success }
+        local currentNode = data.currentNode or "start"
+        if not npcId then return nil end
         
-    elseif action == "getNPCQuests" then
-        -- Get quests available from NPC
+        local result = NPCInteractionSystem.getCurrentDialogue(player.UserId, npcId, currentNode)
+        return result
+        
+    elseif action == "advanceDialogue" then
         local npcId = data.npcId
-        return NPCInteractionSystem.getNPCQuestsForPlayer(player.UserId, npcId)
+        local currentNode = data.currentNode
+        if not npcId or not currentNode then return nil end
+        
+        local result = NPCInteractionSystem.advanceDialogue(player.UserId, npcId, currentNode)
+        return result
         
     elseif action == "getNPCInfo" then
-        -- Get NPC info
         local npcId = data.npcId
+        if not npcId then return nil end
+        
         return NPCInteractionSystem.getNPC(npcId)
     end
     
@@ -348,9 +348,15 @@ Players.PlayerAdded:Connect(function(player: Player)
     local progression = ActionBasedProgressionSystem.getProgression(player.UserId)
 
     -- Join default team (Commoners)
-    ActionBasedProgressionSystem.joinTeam(player.UserId, "Commoners")
+    local success = ActionBasedProgressionSystem.joinTeam(player.UserId, "Commoners")
+    
+    -- Also set the player's actual team
+    local commonersTeam = Teams:FindFirstChild("Commoners")
+    if commonersTeam then
+        player.Team = commonersTeam
+    end
 
-    print(string.format("[Server] %s joined the game", player.Name))
+    print(string.format("[Server] %s joined the game (team set: %s)", player.Name, success and "Commoners" or "failed"))
 end)
 
 -- Handle players leaving

@@ -25,91 +25,91 @@ local CONFIG = {
 local LOCATION_DEFINITIONS = {
 	-- Academy Locations
 	["Academy_Entrance"] = {
-		name = "Académie",
+		name = "Academy",
 		actionType = "VisitLocation",
 		target = "Academy",
-		description = "Visiter l'Académie",
+		description = "Visit the Academy",
 		unlockTeam = "Academy Externals",
 	},
 	["Training_Arena"] = {
-		name = "Arène d'Entraînement",
+		name = "Training Arena",
 		actionType = "TrainAtAcademy",
 		target = "Training_Arena",
-		description = "S'entraîner au combat",
+		description = "Train in combat",
 	},
 	["Mage_Tower"] = {
-		name = "Tour des Mages",
+		name = "Mage Tower",
 		actionType = "TrainAtAcademy",
 		target = "Mage_Tower",
-		description = "S'entraîner à la magie",
+		description = "Train in magic",
 	},
 
 	-- Demon Locations
 	["Demon_Portal"] = {
-		name = "Portail Démoniaque",
+		name = "Demonic Portal",
 		actionType = "VisitLocation",
 		target = "Demon Portal",
-		description = "Approcher le portail démoniaque",
+		description = "Approach the demonic portal",
 		unlockTeam = "Demon Servants",
 		meditationSpots = {
-			{name = "Méditer devant le portail", actionType = "Meditate", target = "Demon Portal"}
+			{name = "Meditate at the portal", actionType = "Meditate", target = "Demon Portal"}
 		},
 	},
 
 	-- Elven Locations
 	["Elven_Forest"] = {
-		name = "Forêt Elfique",
+		name = "Elven Forest",
 		actionType = "VisitLocation",
 		target = "Elven Forest",
-		description = "Explorer la forêt sacrée",
+		description = "Explore the sacred forest",
 		unlockTeam = "Elves Faction",
 	},
 	["Sacred_Tree"] = {
-		name = "Arbre Sacré",
+		name = "Sacred Tree",
 		actionType = "Meditate",
 		target = "Sacred Tree",
-		description = "Méditer auprès de l'Arbre Sacré",
+		description = "Meditate at the Sacred Tree",
 	},
 
 	-- Castle Locations
 	["Castle_Gates"] = {
-		name = "Portes du Château",
+		name = "Castle Gates",
 		actionType = "VisitLocation",
 		target = "Castle",
-		description = "Visiter le château",
+		description = "Visit the castle",
 	},
 	["Throne_Room"] = {
-		name = "Salle du Trône",
+		name = "Throne Room",
 		actionType = "VisitLocation",
 		target = "Throne Room",
-		description = "Entrer dans la salle du trône",
+		description = "Enter the throne room",
 		special = "Throne", -- Special interaction for becoming King/Queen
 	},
 
 	-- Other Locations
 	["Village_Square"] = {
-		name = "Place du Village",
+		name = "Village Square",
 		actionType = "VisitLocation",
 		target = "Village",
-		description = "Explorer le village",
+		description = "Explore the village",
 	},
 	["Guild_Hall"] = {
-		name = "Hall de la Guilde",
+		name = "Guild Hall",
 		actionType = "VisitLocation",
 		target = "Guild",
-		description = "Visiter la guilde",
+		description = "Visit the guild",
 	},
 	["Temple"] = {
 		name = "Temple",
 		actionType = "Pray",
 		target = "Temple",
-		description = "Prier au temple",
+		description = "Pray at the temple",
 	},
 	["Corrupted_Zone"] = {
-		name = "Zone Corrompue",
+		name = "Corrupted Zone",
 		actionType = "VisitLocation",
 		target = "Corrupted_Zone",
-		description = "Explorer la zone corrompue",
+		description = "Explore the corrupted zone",
 	},
 }
 
@@ -117,48 +117,48 @@ local LOCATION_DEFINITIONS = {
 local NPC_PROMPT_DEFINITIONS = {
 	["Village_Elder"] = {
 		npcId = "Village_Elder",
-		name = "Ancien du Village",
-		title = "Guide du Commencement",
+		name = "Village Elder",
+		title = "Guide of the Beginning",
 	},
 	["Guild_Master"] = {
 		npcId = "Guild_Master",
-		name = "Maître de Guilde",
-		title = "Chef des Aventuriers",
+		name = "Guild Master",
+		title = "Adventurers Leader",
 	},
 	["Academy_Headmaster"] = {
 		npcId = "Academy_Headmaster",
-		name = "Directeur de l'Académie",
-		title = "Archimage",
+		name = "Academy Headmaster",
+		title = "Archmage",
 	},
 	["Combat_Instructor"] = {
 		npcId = "Combat_Instructor",
-		name = "Instructeur de Combat",
-		title = "Maître d'Armes",
+		name = "Combat Instructor",
+		title = "Weapon Master",
 	},
 	["Magic_Instructor"] = {
 		npcId = "Magic_Instructor",
-		name = "Instructeur de Magie",
-		title = "Mage Senior",
+		name = "Magic Instructor",
+		title = "Senior Mage",
 	},
 	["Demon_Portal_Keeper"] = {
 		npcId = "Demon_Portal_Keeper",
-		name = "Gardien du Portail",
-		title = "Serviteur des Ténèbres",
+		name = "Portal Keeper",
+		title = "Servant of Darkness",
 	},
 	["Elven_Elder"] = {
 		npcId = "Elven_Elder",
-		name = "Ancien Elfe",
-		title = "Gardien de la Forêt",
+		name = "Elven Elder",
+		title = "Forest Guardian",
 	},
 	["Castle_Captain"] = {
 		npcId = "Castle_Captain",
-		name = "Capitaine du Château",
-		title = "Commandant de la Garde",
+		name = "Castle Captain",
+		title = "Guard Commander",
 	},
 	["High_Priest"] = {
 		npcId = "High_Priest",
-		name = "Grand Prêtre",
-		title = "Serviteur des Dieux",
+		name = "High Priest",
+		title = "Servant of the Gods",
 	},
 }
 
@@ -177,22 +177,11 @@ local function onNPCPromptTriggered(player: Player, npcKey: string)
 		target = npcData.npcId,
 	})
 
-	-- Start NPC conversation
-	local conversation = NPCInteractionSystem.startConversation(player.UserId, npcData.npcId)
+	-- Dialogue system disabled - interactions still tracked but no dialogue shown
+	-- TODO: Reimplement dialogue system
 
 	-- Update player display
 	PlayerDisplaySystem.onProgressionChanged(player)
-
-	-- Return conversation data to client
-	local remote = ReplicatedStorage:FindFirstChild("NPCInteraction")
-	if remote then
-		remote:InvokeClient(player, "showConversation", {
-			npcId = npcData.npcId,
-			npcName = npcData.name,
-			conversation = conversation,
-			events = events,
-		})
-	end
 end
 
 -- Handle location prompt triggered
@@ -249,7 +238,7 @@ local function createNPCPrompt(npcModel: Model, npcKey: string): ProximityPrompt
 	-- Create ProximityPrompt
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.Name = "InteractionPrompt"
-	prompt.ActionText = "Parler"
+	prompt.ActionText = "Talk"
 	prompt.ObjectText = npcData.name
 	prompt.KeyboardKeyCode = Enum.KeyCode.E
 	prompt.GamepadKeyCode = Enum.KeyCode.ButtonX

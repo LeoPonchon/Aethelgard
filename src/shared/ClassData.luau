@@ -19,39 +19,39 @@ export type CategoryData = {
 -- Class data organized by category with emojis
 local CLASS_DATA: { CategoryData } = {
 	{
-		category = "Combat Physique",
+		category = "Physical Combat",
 		classes = {
-			{ name = "Guerrier", emoji = "⚔️", slots = -1, description = "Combattant polyvalent, maître du corps à corps", perks = "Toutes armes, armure lourde, puissance" },
-			{ name = "Chevalier", emoji = "🛡️", slots = -1, description = "Guerrier blindé, protection des alliés", perks = "Bouclier, défense, sainteté" },
-			{ name = "Voleur", emoji = "🗡️", slots = -1, description = "Expert en combat rapide et discrétion", perks = "Backstab, furtivité, critiques" },
-			{ name = "Archer", emoji = "🏹", slots = -1, description = "Spécialiste du combat à distance", perks = "Précision, pièges, vision" },
+			{ name = "Warrior", emoji = "⚔️", slots = -1, description = "Versatile fighter, master of melee combat", perks = "All weapons, heavy armor, power" },
+			{ name = "Knight", emoji = "🛡️", slots = -1, description = "Armored warrior, ally protection", perks = "Shield, defense, sanctity" },
+			{ name = "Rogue", emoji = "🗡️", slots = -1, description = "Expert in quick combat and stealth", perks = "Backstab, stealth, crits" },
+			{ name = "Archer", emoji = "🏹", slots = -1, description = "Ranged combat specialist", perks = "Precision, traps, vision" },
 		},
 	},
 	{
-		category = "Magie",
+		category = "Magic",
 		classes = {
-			{ name = "Mage", emoji = "🔮", slots = -1, description = "Maître des arts magiques élémentaires", perks = "Sorts de feu/glace/foudre, téléport" },
-			{ name = "Nécromancien", emoji = "💀", slots = -1, description = "Maître des arts obscurs, invoque les morts", perks = "Invocation, drain de vie, magie noire" },
-			{ name = "Prêtre", emoji = "✨", slots = -1, description = "Serviteur des dieux, guérisseur", perks = "Soins, bénédiction, résurrection" },
-			{ name = "Druide", emoji = "🌿", slots = -1, description = "Harmonie avec la nature, métamorphose", perks = "Transformation, soins naturels, invocation" },
+			{ name = "Mage", emoji = "🔮", slots = -1, description = "Master of elemental magic", perks = "Fire/ice/lightning spells, teleport" },
+			{ name = "Necromancer", emoji = "💀", slots = -1, description = "Master of dark arts, summons the dead", perks = "Summoning, life drain, dark magic" },
+			{ name = "Priest", emoji = "✨", slots = -1, description = "Servant of the gods, healer", perks = "Healing, blessing, resurrection" },
+			{ name = "Druid", emoji = "🌿", slots = -1, description = "Harmony with nature, shapeshifter", perks = "Transformation, natural healing, summons" },
 		},
 	},
 	{
-		category = "Hybrides",
+		category = "Hybrids",
 		classes = {
-			{ name = "Paladin", emoji = "⚜️", slots = -1, description = "Guerrier sacré, combat et magie divine", perks = "Sainteté, bouclier divin, soins" },
-			{ name = "Barde", emoji = "🎵", slots = -1, description = "Artiste voyageur, soutien et charme", perks = "Chants, buff, charisme" },
-			{ name = "Moine", emoji = "🥋", slots = -1, description = "Maître des arts martiaux", perks = "Combat à mains nues, discipline, ki" },
-			{ name = "Invocateur", emoji = "👁️", slots = -1, description = "Maître des invocations planaires", perks = "Invoque des créatures, contrats" },
+			{ name = "Paladin", emoji = "⚜️", slots = -1, description = "Holy warrior, combat and divine magic", perks = "Sanctity, divine shield, healing" },
+			{ name = "Bard", emoji = "🎵", slots = -1, description = "Traveling artist, support and charm", perks = "Songs, buffs, charisma" },
+			{ name = "Monk", emoji = "🥋", slots = -1, description = "Martial arts master", perks = "Unarmed combat, discipline, ki" },
+			{ name = "Summoner", emoji = "👁️", slots = -1, description = "Master of planar summonings", perks = "Summons creatures, contracts" },
 		},
 	},
 }
 
 -- Class colors by category
 local CLASS_COLORS: { [string]: BrickColor } = {
-	["Combat Physique"] = BrickColor.new("Bright red"),
-	["Magie"] = BrickColor.new("Bright blue"),
-	["Hybrides"] = BrickColor.new("Bright yellow"),
+	["Physical Combat"] = BrickColor.new("Bright red"),
+	["Magic"] = BrickColor.new("Bright blue"),
+	["Hybrids"] = BrickColor.new("Bright yellow"),
 }
 
 -- Build a lookup table for quick class info access

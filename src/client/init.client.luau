@@ -221,22 +221,11 @@ end
 -- ============================================
 
 -- Handle NPC conversation from server (triggered by ProximityPrompt)
+-- Dialogue system disabled - no dialogue shown on interaction
+-- TODO: Reimplement dialogue system
 if npcInteractionRemote then
-	-- This is called by the server when player interacts with an NPC
 	npcInteractionRemote.OnClientInvoke = function(action: string, data: any)
-		if action == "showConversation" and NPCDialogueClient then
-			-- Start the dialogue UI with the conversation data
-			if data.conversation then
-				-- Pass the full conversation data directly
-				NPCDialogueClient.showConversation(data)
-			end
-			return { success = true }
-		elseif action == "showConversation" then
-			-- Fallback if NPCDialogueClient not available
-			print("[Client] NPC conversation:", data.npcId, data.npcName, data.conversation)
-			return { success = true }
-		end
-
+		-- Dialogue disabled
 		return nil
 	end
 end

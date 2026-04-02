@@ -21,30 +21,30 @@ local DISPLAY_CONFIG = {
 
 -- Team colors by category (from ActionBasedProgressionSystem)
 local TEAM_COLORS = {
-    -- Monarchie
+    -- Monarchy
     ["King"] = Color3.fromRGB(255, 215, 0),
     ["Queen"] = Color3.fromRGB(255, 182, 193),
     ["Princes"] = Color3.fromRGB(70, 130, 180),
     ["Princesses"] = Color3.fromRGB(255, 105, 180),
-    -- Noblesse
+    -- Nobility
     ["Dukes"] = Color3.fromRGB(128, 0, 128),
     ["Counts"] = Color3.fromRGB(148, 0, 211),
     ["Minor Houses"] = Color3.fromRGB(186, 85, 211),
-    -- Démons
+    -- Demons
     ["Demon King"] = Color3.fromRGB(139, 0, 0),
     ["Demon Queen"] = Color3.fromRGB(178, 34, 34),
     ["Demon Generals"] = Color3.fromRGB(220, 20, 60),
     ["Demon Servants"] = Color3.fromRGB(255, 69, 0),
-    -- Académie
+    -- Academy
     ["Academy Externals"] = Color3.fromRGB(192, 192, 192),
     ["Academy Professors"] = Color3.fromRGB(255, 255, 255),
     ["Academy Year 1"] = Color3.fromRGB(173, 216, 230),
     ["Academy Year 2"] = Color3.fromRGB(135, 206, 235),
     ["Academy Year 3"] = Color3.fromRGB(0, 191, 255),
-    -- Héros & Saints
+    -- Heroes & Saints
     ["Hero"] = Color3.fromRGB(255, 215, 0),
     ["Saint"] = Color3.fromRGB(255, 255, 224),
-    -- Autres groupes
+    -- Other Groups
     ["Elves Faction"] = Color3.fromRGB(34, 139, 34),
     ["Event Teams"] = Color3.fromRGB(75, 0, 130),
     ["Free Lineages"] = Color3.fromRGB(128, 128, 128),
@@ -53,18 +53,18 @@ local TEAM_COLORS = {
 
 -- Class emojis for display
 local CLASS_EMOJIS = {
-    ["Guerrier"] = "⚔️",
+    ["Warrior"] = "⚔️",
     ["Mage"] = "🔮",
-    ["Voleur"] = "🗡️",
+    ["Rogue"] = "🗡️",
     ["Archer"] = "🏹",
-    ["Prêtre"] = "✨",
+    ["Priest"] = "✨",
     ["Paladin"] = "⚜️",
-    ["Nécromancien"] = "💀",
-    ["Barde"] = "🎵",
-    ["Druide"] = "🌿",
-    ["Chevalier"] = "🛡️",
-    ["Invocateur"] = "👁️",
-    ["Moine"] = "🥋",
+    ["Necromancer"] = "💀",
+    ["Bard"] = "🎵",
+    ["Druid"] = "🌿",
+    ["Knight"] = "🛡️",
+    ["Summoner"] = "👁️",
+    ["Monk"] = "🥋",
 }
 
 -- Create BillboardGui for a player

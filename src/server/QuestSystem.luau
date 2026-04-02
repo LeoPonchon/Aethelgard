@@ -79,14 +79,14 @@ local QUEST_DEFINITIONS: {[string]: Quest} = {
     -- === COMMONER GUILD QUESTS ===
     ["escort_merchant_1"] = {
         questId = "escort_merchant_1",
-        name = "Escorte Marchand",
-        description = "Escortez un marchand jusqu'au village voisin.",
+        name = "Merchant Escort",
+        description = "Escort a merchant to the neighboring village.",
         questType = "Escort",
         difficulty = 1,
         factionRequired = nil, -- Anyone can take
         objectives = {
-            {objectiveId = "meet_merchant", description = "Rencontrer le marchand", type = "TalkToNPC", target = "Merchant_NPC", currentProgress = 0, requiredProgress = 1, completed = false},
-            {objectiveId = "escort_to_village", description = "Escorter jusqu'au village", type = "ReachLocation", target = "Village_Outskirts", currentProgress = 0, requiredProgress = 1, completed = false},
+            {objectiveId = "meet_merchant", description = "Meet the merchant", type = "TalkToNPC", target = "Merchant_NPC", currentProgress = 0, requiredProgress = 1, completed = false},
+            {objectiveId = "escort_to_village", description = "Escort to the village", type = "ReachLocation", target = "Village_Outskirts", currentProgress = 0, requiredProgress = 1, completed = false},
         },
         rewards = {
             experience = 50,
@@ -98,14 +98,14 @@ local QUEST_DEFINITIONS: {[string]: Quest} = {
     
     ["explore_forest_1"] = {
         questId = "explore_forest_1",
-        name = "Exploration de la Forêt",
-        description = "Explorez la forêt mystérieuse et découvrez ses secrets.",
+        name = "Forest Exploration",
+        description = "Explore the mysterious forest and discover its secrets.",
         questType = "Explore",
         difficulty = 1,
         objectives = {
-            {objectiveId = "enter_forest", description = "Entrer dans la forêt", type = "VisitLocation", target = "Mystic_Forest", currentProgress = 0, requiredProgress = 1, completed = false},
-            {objectiveId = "find_glade", description = "Trouver la clairière", type = "VisitLocation", target = "Forest_Glade", currentProgress = 0, requiredProgress = 1, completed = false},
-            {objectiveId = "return_report", description = "Retourner faire rapport", type = "TalkToNPC", target = "Guild_Master", currentProgress = 0, requiredProgress = 1, completed = false},
+            {objectiveId = "enter_forest", description = "Enter the forest", type = "VisitLocation", target = "Mystic_Forest", currentProgress = 0, requiredProgress = 1, completed = false},
+            {objectiveId = "find_glade", description = "Find the glade", type = "VisitLocation", target = "Forest_Glade", currentProgress = 0, requiredProgress = 1, completed = false},
+            {objectiveId = "return_report", description = "Return to report", type = "TalkToNPC", target = "Guild_Master", currentProgress = 0, requiredProgress = 1, completed = false},
         },
         rewards = {
             experience = 40,
@@ -115,14 +115,14 @@ local QUEST_DEFINITIONS: {[string]: Quest} = {
     
     ["defeat_wolves_1"] = {
         questId = "defeat_wolves_1",
-        name = "Loups Garous",
-        description = "Éliminez les loups qui menacent le village.",
+        name = "Wolf Hunt",
+        description = "Eliminate the wolves threatening the village.",
         questType = "Defeat",
         difficulty = 2,
         objectives = {
-            {objectiveId = "find_wolves", description = "Trouver les loups", type = "VisitLocation", target = "Wolf_Den", currentProgress = 0, requiredProgress = 1, completed = false},
-            {objectiveId = "defeat_wolves", description = "Vaincre les loups", type = "DefeatEnemy", target = "Wolf", currentProgress = 0, requiredProgress = 5, completed = false},
-            {objectiveId = "return_village", description = "Retourner au village", type = "TalkToNPC", target = "Village_Elder", currentProgress = 0, requiredProgress = 1, completed = false},
+            {objectiveId = "find_wolves", description = "Find the wolves", type = "VisitLocation", target = "Wolf_Den", currentProgress = 0, requiredProgress = 1, completed = false},
+            {objectiveId = "defeat_wolves", description = "Defeat the wolves", type = "DefeatEnemy", target = "Wolf", currentProgress = 0, requiredProgress = 5, completed = false},
+            {objectiveId = "return_village", description = "Return to village", type = "TalkToNPC", target = "Village_Elder", currentProgress = 0, requiredProgress = 1, completed = false},
         },
         rewards = {
             experience = 80,
@@ -131,163 +131,163 @@ local QUEST_DEFINITIONS: {[string]: Quest} = {
         },
     },
     
-    -- === NOBLESSE QUESTS ===
+    -- === NOBILITY QUESTS ===
     ["diplomacy_elves_1"] = {
     	questId = "diplomacy_elves_1",
-    	name = "Diplomatie Elfique",
-    	description = "Portez un message aux Elfes pour établir des relations diplomatiques.",
+    	name = "Elven Diplomacy",
+    	description = "Carry a message to the Elves to establish diplomatic relations.",
     	questType = "Diplomacy",
     	difficulty = 2,
-    	factionRequired = "Noblesse",
+    	factionRequired = "Nobility",
         objectives = {
-            {objectiveId = "get_message", description = "Recevoir le message", type = "TalkToNPC", target = "Noble_Envoy", currentProgress = 0, requiredProgress = 1, completed = false},
-            {objectiveId = "travel_elves", description = "Voyager vers les Elfes", type = "VisitLocation", target = "Elven_Forest", currentProgress = 0, requiredProgress = 1, completed = false},
-            {objectiveId = "deliver_message", description = "Livrer le message", type = "TalkToNPC", target = "Elven_Elder", currentProgress = 0, requiredProgress = 1, completed = false},
-            {objectiveId = "return_response", description = "Retourner avec la réponse", type = "TalkToNPC", target = "Noble_Envoy", currentProgress = 0, requiredProgress = 1, completed = false},
+            {objectiveId = "get_message", description = "Receive the message", type = "TalkToNPC", target = "Noble_Envoy", currentProgress = 0, requiredProgress = 1, completed = false},
+            {objectiveId = "travel_elves", description = "Travel to the Elves", type = "VisitLocation", target = "Elven_Forest", currentProgress = 0, requiredProgress = 1, completed = false},
+            {objectiveId = "deliver_message", description = "Deliver the message", type = "TalkToNPC", target = "Elven_Elder", currentProgress = 0, requiredProgress = 1, completed = false},
+            {objectiveId = "return_response", description = "Return with the response", type = "TalkToNPC", target = "Noble_Envoy", currentProgress = 0, requiredProgress = 1, completed = false},
         },
         rewards = {
         	experience = 100,
         	reputation = 20,
-        	factionReputation = {["Noblesse"] = 15, ["Elves Faction"] = 10},
+        	factionReputation = {["Nobility"] = 15, ["Elves Faction"] = 10},
         },
        },
-      
+       
        ["defend_castle_1"] = {
         questId = "defend_castle_1",
-        name = "Défense du Château",
-        description = "Défendez le château contre une attaque imminente.",
+        name = "Castle Defense",
+        description = "Defend the castle against an imminent attack.",
         questType = "Defend",
         difficulty = 3,
-        factionRequired = "Noblesse",
+        factionRequired = "Nobility",
         objectives = {
-        	{objectiveId = "report_castle", description = "Se présenter au château", type = "VisitLocation", target = "Castle_Gates", currentProgress = 0, requiredProgress = 1, completed = false},
-        	{objectiveId = "defend_duration", description = "Défendre pendant 5 minutes", type = "DefendLocation", target = "Castle", currentProgress = 0, requiredProgress = 300, completed = false},
-        	{objectiveId = "report_success", description = "Rapporter le succès", type = "TalkToNPC", target = "Castle_Captain", currentProgress = 0, requiredProgress = 1, completed = false},
+        	{objectiveId = "report_castle", description = "Report to the castle", type = "VisitLocation", target = "Castle_Gates", currentProgress = 0, requiredProgress = 1, completed = false},
+        	{objectiveId = "defend_duration", description = "Defend for 5 minutes", type = "DefendLocation", target = "Castle", currentProgress = 0, requiredProgress = 300, completed = false},
+        	{objectiveId = "report_success", description = "Report success", type = "TalkToNPC", target = "Castle_Captain", currentProgress = 0, requiredProgress = 1, completed = false},
         },
         rewards = {
         	experience = 150,
         	reputation = 30,
-        	factionReputation = {["Noblesse"] = 25},
+        	factionReputation = {["Nobility"] = 25},
         },
         timeLimit = 900, -- 15 minutes
        },
-      
-       -- === DÉMONS QUESTS ===
+       
+       -- === DEMON QUESTS ===
        ["corrupt_shrine_1"] = {
         questId = "corrupt_shrine_1",
-        name = "Corruption du Sanctuaire",
-        description = "Corrompez un sanctuaire sacré pour affaiblir les forces du bien.",
+        name = "Shrine Corruption",
+        description = "Corrupt a sacred shrine to weaken the forces of good.",
         questType = "Corrupt",
         difficulty = 3,
-        factionRequired = "Démons",
+        factionRequired = "Demons",
         objectives = {
-        	{objectiveId = "find_shrine", description = "Trouver le sanctuaire", type = "VisitLocation", target = "Sacred_Shrine", currentProgress = 0, requiredProgress = 1, completed = false},
-        	{objectiveId = "defenders", description = "Éliminer les défenseurs", type = "DefeatEnemy", target = "Temple_Guard", currentProgress = 0, requiredProgress = 3, completed = false},
-        	{objectiveId = "corrupt_ritual", description = "Effectuer le rituel", type = "Meditate", target = "Sacred_Shrine", currentProgress = 0, requiredProgress = 1, completed = false},
-        	{objectiveId = "return_portal", description = "Retourner au portail", type = "VisitLocation", target = "Demon_Portal", currentProgress = 0, requiredProgress = 1, completed = false},
+        	{objectiveId = "find_shrine", description = "Find the shrine", type = "VisitLocation", target = "Sacred_Shrine", currentProgress = 0, requiredProgress = 1, completed = false},
+        	{objectiveId = "defenders", description = "Eliminate the defenders", type = "DefeatEnemy", target = "Temple_Guard", currentProgress = 0, requiredProgress = 3, completed = false},
+        	{objectiveId = "corrupt_ritual", description = "Perform the ritual", type = "Meditate", target = "Sacred_Shrine", currentProgress = 0, requiredProgress = 1, completed = false},
+        	{objectiveId = "return_portal", description = "Return to the portal", type = "VisitLocation", target = "Demon_Portal", currentProgress = 0, requiredProgress = 1, completed = false},
         },
         rewards = {
         	experience = 200,
         	reputation = 40,
-        	factionReputation = {["Démons"] = 30},
+        	factionReputation = {["Demons"] = 30},
         },
        },
-      
+       
        ["assassinate_noble_1"] = {
         questId = "assassinate_noble_1",
-        name = "Assassinat Noble",
-        description = "Éliminez un noble cible pour semer le chaos.",
+        name = "Noble Assassination",
+        description = "Eliminate a target noble to sow chaos.",
         questType = "Assassinate",
         difficulty = 4,
-        factionRequired = "Démons",
+        factionRequired = "Demons",
         factionReputation = 50,
         objectives = {
-        	{objectiveId = "infiltrate", description = "Infiltrer le château", type = "VisitLocation", target = "Castle_Interior", currentProgress = 0, requiredProgress = 1, completed = false},
-        	{objectiveId = "locate_target", description = "Localiser la cible", type = "TalkToNPC", target = "Target_Noble", currentProgress = 0, requiredProgress = 1, completed = false},
-        	{objectiveId = "eliminate", description = "Éliminer la cible", type = "DefeatEnemy", target = "Target_Noble", currentProgress = 0, requiredProgress = 1, completed = false},
-        	{objectiveId = "escape", description = "S'échapper", type = "VisitLocation", target = "Demon_Portal", currentProgress = 0, requiredProgress = 1, completed = false},
+        	{objectiveId = "infiltrate", description = "Infiltrate the castle", type = "VisitLocation", target = "Castle_Interior", currentProgress = 0, requiredProgress = 1, completed = false},
+        	{objectiveId = "locate_target", description = "Locate the target", type = "TalkToNPC", target = "Target_Noble", currentProgress = 0, requiredProgress = 1, completed = false},
+        	{objectiveId = "eliminate", description = "Eliminate the target", type = "DefeatEnemy", target = "Target_Noble", currentProgress = 0, requiredProgress = 1, completed = false},
+        	{objectiveId = "escape", description = "Escape", type = "VisitLocation", target = "Demon_Portal", currentProgress = 0, requiredProgress = 1, completed = false},
         },
         rewards = {
         	experience = 300,
         	reputation = 60,
-        	factionReputation = {["Démons"] = 50},
+        	factionReputation = {["Demons"] = 50},
         },
         timeLimit = 600,
        },
-      
-       -- === ACADÉMIE QUESTS ===
+       
+       -- === ACADEMY QUESTS ===
        ["train_magic_1"] = {
         questId = "train_magic_1",
-        name = "Entraînement Magique",
-        description = "Complétez votre entraînement magique de base à l'académie.",
+        name = "Magic Training",
+        description = "Complete your basic magical training at the academy.",
         questType = "Train",
         difficulty = 1,
-        factionRequired = "Académie",
+        factionRequired = "Academy",
         objectives = {
-        	{objectiveId = "enter_academy", description = "Entrer à l'académie", type = "VisitLocation", target = "Academy", currentProgress = 0, requiredProgress = 1, completed = false},
-        	{objectiveId = "practice_spells", description = "Pratiquer les sorts", type = "CastSpell", target = "Training_Dummy", currentProgress = 0, requiredProgress = 10, completed = false},
-        	{objectiveId = "pass_test", description = "Réussir le test", type = "TalkToNPC", target = "Academy_Professor", currentProgress = 0, requiredProgress = 1, completed = false},
+        	{objectiveId = "enter_academy", description = "Enter the academy", type = "VisitLocation", target = "Academy", currentProgress = 0, requiredProgress = 1, completed = false},
+        	{objectiveId = "practice_spells", description = "Practice spells", type = "CastSpell", target = "Training_Dummy", currentProgress = 0, requiredProgress = 10, completed = false},
+        	{objectiveId = "pass_test", description = "Pass the test", type = "TalkToNPC", target = "Academy_Professor", currentProgress = 0, requiredProgress = 1, completed = false},
         },
         rewards = {
         	experience = 60,
         	reputation = 12,
-        	factionReputation = {["Académie"] = 20},
+        	factionReputation = {["Academy"] = 20},
         	unlocks = {"Mage"},
         },
        },
-      
+       
        ["train_combat_1"] = {
         questId = "train_combat_1",
-        name = "Entraînement au Combat",
-        description = "Complétez votre entraînement au combat de base.",
+        name = "Combat Training",
+        description = "Complete your basic combat training.",
         questType = "Train",
         difficulty = 1,
-        factionRequired = "Académie",
+        factionRequired = "Academy",
         objectives = {
-        	{objectiveId = "enter_arena", description = "Entrer dans l'arène", type = "VisitLocation", target = "Training_Arena", currentProgress = 0, requiredProgress = 1, completed = false},
-        	{objectiveId = "practice_melee", description = "Pratiquer le combat", type = "MeleeAttack", target = "Training_Dummy", currentProgress = 0, requiredProgress = 20, completed = false},
-        	{objectiveId = "pass_test", description = "Réussir le test", type = "TalkToNPC", target = "Combat_Instructor", currentProgress = 0, requiredProgress = 1, completed = false},
+        	{objectiveId = "enter_arena", description = "Enter the arena", type = "VisitLocation", target = "Training_Arena", currentProgress = 0, requiredProgress = 1, completed = false},
+        	{objectiveId = "practice_melee", description = "Practice combat", type = "MeleeAttack", target = "Training_Dummy", currentProgress = 0, requiredProgress = 20, completed = false},
+        	{objectiveId = "pass_test", description = "Pass the test", type = "TalkToNPC", target = "Combat_Instructor", currentProgress = 0, requiredProgress = 1, completed = false},
         },
         rewards = {
         	experience = 60,
         	reputation = 12,
-        	factionReputation = {["Académie"] = 20},
-        	unlocks = {"Guerrier"},
+        	factionReputation = {["Academy"] = 20},
+        	unlocks = {"Warrior"},
         },
        },
-      
+       
        -- === SPECIAL QUESTS ===
        ["purify_corruption_1"] = {
         questId = "purify_corruption_1",
         name = "Purification",
-        description = "Purifiez une zone corrompue par les démons.",
+        description = "Purify a zone corrupted by demons.",
         questType = "Purify",
         difficulty = 4,
-        factionRequired = "Monarchie",
+        factionRequired = "Monarchy",
         objectives = {
-        	{objectiveId = "find_corruption", description = "Trouver la zone corrompue", type = "VisitLocation", target = "Corrupted_Zone", currentProgress = 0, requiredProgress = 1, completed = false},
-        	{objectiveId = "defeat_demons", description = "Vaincre les démons", type = "DefeatEnemy", target = "Demon", currentProgress = 0, requiredProgress = 5, completed = false},
-        	{objectiveId = "purify_ritual", description = "Effectuer le rituel de purification", type = "Pray", target = "Corrupted_Zone", currentProgress = 0, requiredProgress = 1, completed = false},
-        	{objectiveId = "report_temple", description = "Rapporter au temple", type = "TalkToNPC", target = "High_Priest", currentProgress = 0, requiredProgress = 1, completed = false},
+        	{objectiveId = "find_corruption", description = "Find the corrupted zone", type = "VisitLocation", target = "Corrupted_Zone", currentProgress = 0, requiredProgress = 1, completed = false},
+        	{objectiveId = "defeat_demons", description = "Defeat the demons", type = "DefeatEnemy", target = "Demon", currentProgress = 0, requiredProgress = 5, completed = false},
+        	{objectiveId = "purify_ritual", description = "Perform the purification ritual", type = "Pray", target = "Corrupted_Zone", currentProgress = 0, requiredProgress = 1, completed = false},
+        	{objectiveId = "report_temple", description = "Report to the temple", type = "TalkToNPC", target = "High_Priest", currentProgress = 0, requiredProgress = 1, completed = false},
         },
         rewards = {
         	experience = 250,
         	reputation = 50,
-        	factionReputation = {["Monarchie"] = 40},
+        	factionReputation = {["Monarchy"] = 40},
         },
-       },
+        },
     
     ["rescue_prisoner_1"] = {
         questId = "rescue_prisoner_1",
         name = "Rescue Prisoner",
-        description = "Sauvez un prisonnier retenu dans les donjons.",
+        description = "Save a prisoner held in the dungeons.",
         questType = "Rescue",
         difficulty = 3,
         objectives = {
-            {objectiveId = "find_dungeon", description = "Trouver le donjon", type = "VisitLocation", target = "Dungeon_Entrance", currentProgress = 0, requiredProgress = 1, completed = false},
-            {objectiveId = "defeat_guards", description = "Vaincre les gardes", type = "DefeatEnemy", target = "Dungeon_Guard", currentProgress = 0, requiredProgress = 3, completed = false},
-            {objectiveId = "find_prisoner", description = "Trouver le prisonnier", type = "TalkToNPC", target = "Prisoner_NPC", currentProgress = 0, requiredProgress = 1, completed = false},
-            {objectiveId = "escort_out", description = "Escorter dehors", type = "ReachLocation", target = "Dungeon_Exit", currentProgress = 0, requiredProgress = 1, completed = false},
+            {objectiveId = "find_dungeon", description = "Find the dungeon", type = "VisitLocation", target = "Dungeon_Entrance", currentProgress = 0, requiredProgress = 1, completed = false},
+            {objectiveId = "defeat_guards", description = "Defeat the guards", type = "DefeatEnemy", target = "Dungeon_Guard", currentProgress = 0, requiredProgress = 3, completed = false},
+            {objectiveId = "find_prisoner", description = "Find the prisoner", type = "TalkToNPC", target = "Prisoner_NPC", currentProgress = 0, requiredProgress = 1, completed = false},
+            {objectiveId = "escort_out", description = "Escort out", type = "ReachLocation", target = "Dungeon_Exit", currentProgress = 0, requiredProgress = 1, completed = false},
         },
         rewards = {
             experience = 150,
@@ -299,12 +299,12 @@ local QUEST_DEFINITIONS: {[string]: Quest} = {
     ["socialize_guild_1"] = {
         questId = "socialize_guild_1",
         name = "Networking",
-        description = "Interagissez avec d'autres membres de la guilde.",
+        description = "Interact with other guild members.",
         questType = "Socialize",
         difficulty = 1,
         objectives = {
-            {objectiveId = "talk_members", description = "Parler à 5 membres", type = "Socialize", target = "Guild_Member", currentProgress = 0, requiredProgress = 5, completed = false},
-            {objectiveId = "join_activity", description = "Participer à une activité", type = "JoinEvent", target = "Guild_Activity", currentProgress = 0, requiredProgress = 1, completed = false},
+            {objectiveId = "talk_members", description = "Talk to 5 members", type = "Socialize", target = "Guild_Member", currentProgress = 0, requiredProgress = 5, completed = false},
+            {objectiveId = "join_activity", description = "Join an activity", type = "JoinEvent", target = "Guild_Activity", currentProgress = 0, requiredProgress = 1, completed = false},
         },
         rewards = {
             experience = 30,
@@ -328,49 +328,110 @@ local function getPlayerActiveQuests(playerId: number): {[string]: ActiveQuest}
     return activeQuests[playerId]
 end
 
-local function getCompletedQuests(playerId: number): {string}
+local function getPlayerCompletedQuests(playerId: number): {string}
     if not completedQuests[playerId] then
         completedQuests[playerId] = {}
     end
     return completedQuests[playerId]
 end
 
-local function hasCompletedQuest(playerId: number, questId: string): boolean
-    for _, completedId in ipairs(getCompletedQuests(playerId)) do
-        if completedId == questId then
-            return true
+local function canTakeQuest(playerId: number, quest: Quest): boolean
+    local playerQuests = getPlayerCompletedQuests(playerId)
+    
+    -- Check prerequisites
+    if quest.prerequisites then
+        for _, prereqId in ipairs(quest.prerequisites) do
+            local hasPrereq = false
+            for _, completedId in ipairs(playerQuests) do
+                if completedId == prereqId then
+                    hasPrereq = true
+                    break
+                end
+            end
+            if not hasPrereq then
+                return false
+            end
         end
     end
-    return false
-end
-
-local function hasPrerequisiteQuests(playerId: number, prerequisites: {string}?): boolean
-    if not prerequisites then
-        return true
-    end
     
-    for _, prereqId in ipairs(prerequisites) do
-        if not hasCompletedQuest(playerId, prereqId) then
+    -- Check player level
+    if quest.playerLevel then
+        local progression = ActionBasedProgressionSystem.getProgression(playerId)
+        if (progression.totalActions or 0) < quest.playerLevel then
             return false
         end
     end
+    
+    -- Check faction requirements
+    if quest.factionRequired then
+        local progression = ActionBasedProgressionSystem.getProgression(playerId)
+        local hasFaction = false
+        for _, faction in ipairs(progression.factions) do
+            if faction.factionId == quest.factionRequired then
+                hasFaction = true
+                break
+            end
+        end
+        if not hasFaction then
+            return false
+        end
+    end
+    
     return true
 end
 
-local function cloneObjectives(objectives: {QuestObjective}): {QuestObjective}
-    local cloned = {}
-    for _, obj in ipairs(objectives) do
-        table.insert(cloned, {
-            objectiveId = obj.objectiveId,
-            description = obj.description,
-            type = obj.type,
-            target = obj.target,
-            currentProgress = 0,
-            requiredProgress = obj.requiredProgress,
-            completed = false,
-        })
+local function updateQuestProgress(playerId: number, actionType: string, target: string?, value: number)
+    local playerQuests = getPlayerActiveQuests(playerId)
+    local updated = false
+    
+    for questId, activeQuest in pairs(playerQuests) do
+        if activeQuest.status == "InProgress" then
+            for _, objective in ipairs(activeQuest.objectives) do
+                if not objective.completed then
+                    local matches = false
+                    
+                    -- Check if this action matches the objective
+                    if objective.type == actionType then
+                        if objective.target then
+                            if target and string.find(target, objective.target) then
+                                matches = true
+                            end
+                        else
+                            matches = true
+                        end
+                    end
+                    
+                    if matches then
+                        objective.currentProgress = objective.currentProgress + (value or 1)
+                        if objective.currentProgress >= objective.requiredProgress then
+                            objective.currentProgress = objective.requiredProgress
+                            objective.completed = true
+                        end
+                        updated = true
+                    end
+                end
+            end
+        end
     end
-    return cloned
+    
+    return updated
+end
+
+local function checkQuestCompletion(playerId: number, questId: string): boolean
+    local playerQuests = getPlayerActiveQuests(playerId)
+    local activeQuest = playerQuests[questId]
+    
+    if not activeQuest then
+        return false
+    end
+    
+    for _, objective in ipairs(activeQuest.objectives) do
+        if not objective.completed then
+            return false
+        end
+    end
+    
+    return true
 end
 
 -- ============================================
@@ -379,55 +440,50 @@ end
 
 local QuestSystem = {}
 
--- Get available quests for a player
+-- Get quest definition
+function QuestSystem.getQuestDefinition(questId: string): Quest?
+    return QUEST_DEFINITIONS[questId]
+end
+
+-- Get all quest definitions
+function QuestSystem.getAllQuestDefinitions(): {[string]: Quest}
+    return QUEST_DEFINITIONS
+end
+
+-- Get available quests for player
 function QuestSystem.getAvailableQuests(playerId: number, faction: string?): {Quest}
-	local available = {}
-	local progression = ActionBasedProgressionSystem.getProgression(playerId)
-	local teamData = ActionBasedProgressionSystem.getTeamData()
-
-	for questId, quest in pairs(QUEST_DEFINITIONS) do
-		-- Skip if already completed (unless repeatable)
-		if not hasCompletedQuest(playerId, questId) then
-			-- Check faction requirement (now checks team category)
-			local meetsFactionReq = true
-			if quest.factionRequired then
-				meetsFactionReq = false
-				-- Check if player has any team in the required category
-				for _, factionProgress in ipairs(progression.factions) do
-					local teamInfo = teamData[factionProgress.factionId]
-					if teamInfo and teamInfo.category == quest.factionRequired then
-						meetsFactionReq = true
-						break
-					end
-				end
-			end
-
-			if meetsFactionReq then
-				-- Check prerequisite quests
-				if hasPrerequisiteQuests(playerId, quest.prerequisites) then
-					-- Check faction reputation if required
-					if quest.factionReputation then
-						local hasReputation = false
-						for _, factionProgress in ipairs(progression.factions) do
-							local teamInfo = teamData[factionProgress.factionId]
-							if teamInfo and teamInfo.category == quest.factionRequired then
-								if factionProgress.reputation >= quest.factionReputation then
-									hasReputation = true
-								end
-								break
-							end
-						end
-						if not hasReputation then
-							continue
-						end
-					end
-					table.insert(available, quest)
-				end
-			end
-		end
-	end
-
-	return available
+    local available = {}
+    
+    for questId, quest in pairs(QUEST_DEFINITIONS) do
+        -- Check if already completed
+        local playerCompleted = getPlayerCompletedQuests(playerId)
+        local alreadyCompleted = false
+        for _, completedId in ipairs(playerCompleted) do
+            if completedId == questId then
+                alreadyCompleted = true
+                break
+            end
+        end
+        if alreadyCompleted then continue end
+        
+        -- Check if already active
+        local playerQuests = getPlayerActiveQuests(playerId)
+        if playerQuests[questId] then continue end
+        
+        -- Check requirements
+        if not canTakeQuest(playerId, quest) then continue end
+        
+        -- Check faction filter
+        if faction and quest.factionRequired then
+            if quest.factionRequired ~= faction then
+                continue
+            end
+        end
+        
+        table.insert(available, quest)
+    end
+    
+    return available
 end
 
 -- Accept a quest
@@ -437,11 +493,13 @@ function QuestSystem.acceptQuest(playerId: number, questId: string): boolean
         return false
     end
     
-    local playerQuests = getPlayerActiveQuests(playerId)
-    
-    -- Check if already on this quest
-    if playerQuests[questId] then
+    if not canTakeQuest(playerId, quest) then
         return false
+    end
+    
+    local playerQuests = getPlayerActiveQuests(playerId)
+    if playerQuests[questId] then
+        return false -- Already active
     end
     
     -- Create active quest
@@ -450,79 +508,64 @@ function QuestSystem.acceptQuest(playerId: number, questId: string): boolean
         playerId = playerId,
         status = "InProgress",
         startTime = os.time(),
-        endTime = quest.timeLimit and (os.time() + quest.timeLimit) or nil,
-        objectives = cloneObjectives(quest.objectives),
-        escortTarget = nil,
-        escortStart = nil,
-        escortEnd = nil,
-        involvedPlayers = nil,
+        objectives = {},
     }
     
-    playerQuests[questId] = activeQuest
+    -- Copy objectives
+    for _, obj in ipairs(quest.objectives) do
+        table.insert(activeQuest.objectives, {
+            objectiveId = obj.objectiveId,
+            description = obj.description,
+            type = obj.type,
+            target = obj.target,
+            currentProgress = 0,
+            requiredProgress = obj.requiredProgress,
+            completed = false,
+        })
+    end
     
-    -- Record action for progression
-    ActionBasedProgressionSystem.recordAction(playerId, {
-        actionType = "JoinEvent",
-        target = questId,
-        value = quest.difficulty * 10,
-    })
+    playerQuests[questId] = activeQuest
     
     return true
 end
 
--- Update quest objective progress
-function QuestSystem.updateObjective(playerId: number, objectiveType: string, target: string, amount: number): boolean
+-- Check if player is on a quest
+function QuestSystem.isOnQuest(playerId: number, questId: string): boolean
     local playerQuests = getPlayerActiveQuests(playerId)
-    local questCompleted = false
-    local completedQuestId = nil
+    return playerQuests[questId] ~= nil
+end
+
+-- Get player's active quests
+function QuestSystem.getPlayerQuests(playerId: number): {ActiveQuest}
+    local playerQuests = getPlayerActiveQuests(playerId)
+    local quests = {}
     
+    for _, quest in pairs(playerQuests) do
+        table.insert(quests, quest)
+    end
+    
+    return quests
+end
+
+-- Get quest progress for a specific quest
+function QuestSystem.getQuestProgress(playerId: number, questId: string): ActiveQuest?
+    local playerQuests = getPlayerActiveQuests(playerId)
+    return playerQuests[questId]
+end
+
+-- Update quest objective (called from action system)
+function QuestSystem.updateObjective(playerId: number, actionType: string, target: string?, value: number)
+    updateQuestProgress(playerId, actionType, target, value)
+    
+    -- Check for quest completion
+    local playerQuests = getPlayerActiveQuests(playerId)
     for questId, activeQuest in pairs(playerQuests) do
         if activeQuest.status == "InProgress" then
-            -- Check time limit
-            if activeQuest.endTime and os.time() > activeQuest.endTime then
-                activeQuest.status = "Failed"
-            else
-                -- Update matching objectives
-                for _, objective in ipairs(activeQuest.objectives) do
-                    if not objective.completed and objective.type == objectiveType then
-                        -- Check if target matches (or no target specified)
-                        if not objective.target or objective.target == target then
-                            objective.currentProgress = math.min(
-                                objective.currentProgress + amount,
-                                objective.requiredProgress
-                            )
-                            
-                            if objective.currentProgress >= objective.requiredProgress then
-                                objective.completed = true
-                            end
-                        end
-                    end
-                end
-                
-                -- Check if all objectives completed
-                local allCompleted = true
-                for _, objective in ipairs(activeQuest.objectives) do
-                    if not objective.completed then
-                        allCompleted = false
-                        break
-                    end
-                end
-                
-                if allCompleted then
-                    activeQuest.status = "Completed"
-                    questCompleted = true
-                    completedQuestId = questId
-                end
+            if checkQuestCompletion(playerId, questId) then
+                QuestSystem.completeQuest(playerId, questId)
             end
         end
     end
-    
-    -- Handle quest completion
-    if questCompleted and completedQuestId then
-        QuestSystem.completeQuest(playerId, completedQuestId)
-    end
-    
-    return questCompleted
 end
 
 -- Complete a quest
@@ -530,7 +573,7 @@ function QuestSystem.completeQuest(playerId: number, questId: string): boolean
     local playerQuests = getPlayerActiveQuests(playerId)
     local activeQuest = playerQuests[questId]
     
-    if not activeQuest or activeQuest.status ~= "Completed" then
+    if not activeQuest then
         return false
     end
     
@@ -539,21 +582,60 @@ function QuestSystem.completeQuest(playerId: number, questId: string): boolean
         return false
     end
     
-    -- Add to completed quests
-    table.insert(getCompletedQuests(playerId), questId)
+    -- Mark as completed
+    activeQuest.status = "Completed"
+    activeQuest.endTime = os.time()
     
-    -- Grant rewards through progression system
-    ActionBasedProgressionSystem.completeQuest(playerId, quest.difficulty)
+    -- Give rewards
+    local progression = ActionBasedProgressionSystem.getProgression(playerId)
     
-    -- Record specific action
-    ActionBasedProgressionSystem.recordAction(playerId, {
-        actionType = "CompleteQuest",
-        target = questId,
-        value = quest.rewards.experience,
-    })
+    -- Add experience
+    progression.guildRank.experience = progression.guildRank.experience + quest.rewards.experience
     
-    -- Remove from active quests
-    playerQuests[questId] = nil
+    -- Add reputation
+    progression.reputation = (progression.reputation or 0) + quest.rewards.reputation
+    
+    -- Add faction reputation
+    if quest.rewards.factionReputation then
+        for factionId, rep in pairs(quest.rewards.factionReputation) do
+            for _, faction in ipairs(progression.factions) do
+                if faction.factionId == factionId then
+                    faction.reputation = faction.reputation + rep
+                    break
+                end
+            end
+        end
+    end
+    
+    -- Track completed quest
+    local playerCompleted = getPlayerCompletedQuests(playerId)
+    table.insert(playerCompleted, questId)
+    
+    -- Check for unlocks
+    if quest.rewards.unlocks then
+        for _, classId in ipairs(quest.rewards.unlocks) do
+            local classData = quest.rewards.unlocks[classId]
+            if classData then
+                local hasClass = false
+                for _, c in ipairs(progression.classes) do
+                    if c.classId == classId then
+                        hasClass = true
+                        break
+                    end
+                end
+                if not hasClass then
+                    table.insert(progression.classes, {
+                        classId = classId,
+                        unlocked = true,
+                        experience = 0,
+                    })
+                end
+            end
+        end
+    end
+    
+    -- Increment quests completed
+    progression.guildRank.questsCompleted = progression.guildRank.questsCompleted + 1
     
     return true
 end
@@ -561,90 +643,29 @@ end
 -- Abandon a quest
 function QuestSystem.abandonQuest(playerId: number, questId: string): boolean
     local playerQuests = getPlayerActiveQuests(playerId)
+    local activeQuest = playerQuests[questId]
     
-    if not playerQuests[questId] then
+    if not activeQuest then
         return false
     end
     
-    playerQuests[questId].status = "Abandoned"
-    playerQuests[questId] = nil
+    activeQuest.status = "Abandoned"
+    activeQuest.endTime = os.time()
     
     return true
 end
 
--- Get player's active quests
-function QuestSystem.getPlayerQuests(playerId: number): {ActiveQuest}
+-- Get quests by faction
+function QuestSystem.getQuestsByFaction(faction: string): {Quest}
     local quests = {}
-    for _, activeQuest in pairs(getPlayerActiveQuests(playerId)) do
-        table.insert(quests, activeQuest)
-    end
-    return quests
-end
-
--- Get quest definition
-function QuestSystem.getQuestDefinition(questId: string): Quest?
-    return QUEST_DEFINITIONS[questId]
-end
-
--- Check if player is on a specific quest
-function QuestSystem.isOnQuest(playerId: number, questId: string): boolean
-    local playerQuests = getPlayerActiveQuests(playerId)
-    return playerQuests[questId] ~= nil and playerQuests[questId].status == "InProgress"
-end
-
--- Get quest progress for display
-function QuestSystem.getQuestProgress(playerId: number, questId: string): any?
-    local playerQuests = getPlayerActiveQuests(playerId)
-    local activeQuest = playerQuests[questId]
     
-    if not activeQuest then
-        return nil
-    end
-    
-    local quest = QUEST_DEFINITIONS[questId]
-    local objectives = {}
-    local completedCount = 0
-    
-    for _, obj in ipairs(activeQuest.objectives) do
-        table.insert(objectives, {
-            description = obj.description,
-            progress = obj.currentProgress,
-            required = obj.requiredProgress,
-            completed = obj.completed,
-        })
-        if obj.completed then
-            completedCount = completedCount + 1
+    for questId, quest in pairs(QUEST_DEFINITIONS) do
+        if quest.factionRequired == faction then
+            table.insert(quests, quest)
         end
     end
     
-    return {
-        name = quest.name,
-        description = quest.description,
-        objectives = objectives,
-        progress = completedCount / #activeQuest.objectives,
-        timeRemaining = activeQuest.endTime and math.max(0, activeQuest.endTime - os.time()) or nil,
-    }
-end
-
--- Setup escort quest (for when a player accepts being escorted)
-function QuestSystem.setupEscortQuest(playerId: number, questId: string, targetPlayerId: number, startPos: Vector3, endPos: Vector3): boolean
-    local playerQuests = getPlayerActiveQuests(playerId)
-    local activeQuest = playerQuests[questId]
-    
-    if not activeQuest then
-        return false
-    end
-    
-    activeQuest.escortTarget = Players:GetNameFromUserIdAsync(targetPlayerId)
-    activeQuest.escortStart = startPos
-    activeQuest.escortEnd = endPos
-    
-    return true
-end
-
--- Get all quest definitions (for admin/debug)
-function QuestSystem.getAllQuestDefinitions(): {[string]: Quest}
-    return QUEST_DEFINITIONS
+    return quests
 end
 
 return QuestSystem

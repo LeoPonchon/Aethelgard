@@ -19,40 +19,40 @@ export type CategoryData = {
 -- Race data organized by category with emojis
 local RACE_DATA: { CategoryData } = {
 	{
-		category = "Peuples Libres",
+		category = "Free Peoples",
 		races = {
-			{ name = "Humain", emoji = "👤", slots = -1, description = "Race adaptable et nombreuse, originaire des royaumes de Khiz et Jamluan", perks = "+1 toutes stats, +10% XP, +5% réputation" },
-			{ name = "Elfe", emoji = "🧝", slots = -1, description = "Race ancienne et mystique, gardiens des forêts sacrées", perks = "+2 INT/SAG, vision elfique, +10% esquive" },
-			{ name = "Nain", emoji = "⛏️", slots = -1, description = "Artisans et guerriers légendaires, maîtres de la forge", perks = "+2 VIT, +20% craft, vision nocturne" },
-			{ name = "Halfelin", emoji = "🧒", slots = -1, description = "Petits êtres discrets, experts en discrétion et chance", perks = "+2 AGI/CHC, furtivité, chance naturelle" },
+			{ name = "Human", emoji = "👤", slots = -1, description = "Adaptable and numerous race, from the kingdoms of Khiz and Jamluan", perks = "+1 all stats, +10% XP, +5% reputation" },
+			{ name = "Elf", emoji = "🧝", slots = -1, description = "Ancient and mystical race, guardians of sacred forests", perks = "+2 INT/WIS, elven vision, +10% dodge" },
+			{ name = "Dwarf", emoji = "⛏️", slots = -1, description = "Legendary artisans and warriors, masters of the forge", perks = "+2 VIT, +20% craft, darkvision" },
+			{ name = "Halfling", emoji = "🧒", slots = -1, description = "Small discreet beings, experts in stealth and luck", perks = "+2 AGI/LCK, stealth, natural luck" },
 		},
 	},
 	{
-		category = "Peuples Guerriers",
+		category = "Warrior Peoples",
 		races = {
-			{ name = "Orc", emoji = "👹", slots = -1, description = "Guerriers féroces des terres sauvages", perks = "+3 FOR, rage de combat, résistance physique" },
+			{ name = "Orc", emoji = "👹", slots = -1, description = "Fierce warriors from the wild lands", perks = "+3 STR, combat rage, physical resistance" },
 		},
 	},
 	{
-		category = "Peuples Magiques",
+		category = "Magical Peoples",
 		races = {
-			{ name = "Tiefling", emoji = "😈", slots = -1, description = "Descendants des démons, marqués par leur héritage infernal", perks = "+2 INT, résistance magique, vision dans le noir" },
+			{ name = "Tiefling", emoji = "😈", slots = -1, description = "Descendants of demons, marked by their infernal heritage", perks = "+2 INT, magical resistance, darkvision" },
 		},
 	},
 	{
-		category = "Faction Démoniaque",
+		category = "Demonic Faction",
 		races = {
-			{ name = "Démon", emoji = "👿", slots = -1, description = "Créatures des abysses, puissants mais craints", perks = "Abilités démoniaques, force surhumaine, immunité feu" },
+			{ name = "Demon", emoji = "👿", slots = -1, description = "Creatures of the abyss, powerful but feared", perks = "Demonic abilities, superhuman strength, fire immunity" },
 		},
 	},
 }
 
 -- Race colors by category
 local RACE_COLORS: { [string]: BrickColor } = {
-	["Peuples Libres"] = BrickColor.new("Bright green"),
-	["Peuples Guerriers"] = BrickColor.new("Bright red"),
-	["Peuples Magiques"] = BrickColor.new("Bright violet"),
-	["Faction Démoniaque"] = BrickColor.new("Dark red"),
+	["Free Peoples"] = BrickColor.new("Bright green"),
+	["Warrior Peoples"] = BrickColor.new("Bright red"),
+	["Magical Peoples"] = BrickColor.new("Bright violet"),
+	["Demonic Faction"] = BrickColor.new("Dark red"),
 }
 
 -- Build a lookup table for quick race info access
