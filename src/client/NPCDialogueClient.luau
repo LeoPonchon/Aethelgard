@@ -249,7 +249,7 @@ updateDialogueText = function(message)
 		Size = UDim2.new(1, 0, 0, choicesTitleHeight),
 		Position = UDim2.new(0, 0, 0, 0),
 		BackgroundTransparency = 1,
-		Text = "Choix:",
+		Text = "Choices:",
 		TextColor3 = SPEAKER_NAME_COLOR,
 		TextSize = 16,
 		Font = Enum.Font.GothamBold,
@@ -267,7 +267,7 @@ updateDialogueText = function(message)
 		end
 	end
 
-	createButton(choicesBox, "Quitter", choicesStartY, function()
+	createButton(choicesBox, "Quit", choicesStartY, function()
 		closeDialogue()
 	end)
 

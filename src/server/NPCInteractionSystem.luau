@@ -140,13 +140,13 @@ function NPCInteractionSystem.advanceDialogue(playerId, npcId, currentNode, opti
 	local nextNode = selectedOption.nextNode
 	local nextRule = DataHelpers.getDialogueForPlayer(npcId, nextNode, playerData)
 
-	if not nextRule then
+if not nextRule then
 		return {
 			npcId = npcId,
 			npcName = npc.name,
 			faction = npc.faction,
 			currentNode = nextNode,
-			text = "Le NPC n'a rien a dire.",
+			text = "The NPC has nothing to say.",
 			options = {},
 			hasChoices = false,
 			endConversation = true,
