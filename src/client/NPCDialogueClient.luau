@@ -6,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local TextService = game:GetService("TextService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -117,24 +118,24 @@ end
 local function createButton(parent, text, yPos, callback)
 	local button = Instance.new("TextButton")
 	button.Name = "ChoiceButton"
-	button.Size = UDim2.new(0.9, 0, 0, 35)
-	button.Position = UDim2.new(0.05, 0, 0, yPos)
+	button.Size = UDim2.new(0.95, 0, 0, 28)
+	button.Position = UDim2.new(0.025, 0, 0, yPos)
 	button.BackgroundColor3 = BUTTON_DEFAULT_FILL
 	button.BackgroundTransparency = 0
 	button.BorderSizePixel = 0
 	button.TextColor3 = BODY_TEXT_COLOR
-	button.TextSize = 15
+	button.TextSize = 14
 	button.Font = Enum.Font.Gotham
 	button.Text = text
 	button.Parent = parent
 
 	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 8)
+	corner.CornerRadius = UDim.new(0, 6)
 	corner.Parent = button
 
 	local borderStroke = Instance.new("UIStroke")
 	borderStroke.Color = BUTTON_DEFAULT_BORDER
-	borderStroke.Thickness = 2
+	borderStroke.Thickness = 1
 	borderStroke.Transparency = 0
 	borderStroke.Parent = button
 
@@ -167,43 +168,33 @@ updateDialogueText = function(message)
 		dialogueTextGui = screenGui
 	end
 
-	local container = screenGui:FindFirstChild("DialogueContainer")
+	local dialogueBox = screenGui:FindFirstChild("DialogueBox")
+	local choicesBox = screenGui:FindFirstChild("ChoicesBox")
 
-	if not container then
-		container = Instance.new("Frame")
-		container.Name = "DialogueContainer"
-		container.Size = UDim2.new(0.8, 0, 0, 150)
-		container.Position = UDim2.new(0.1, 0, 1, -200)
-		container.BackgroundTransparency = 1
-		container.Parent = screenGui
+	if dialogueBox then dialogueBox:Destroy() end
+	if choicesBox then choicesBox:Destroy() end
 
-		container.Position = UDim2.new(0.1, 0, 1, -150)
-		local tweenIn = TweenService:Create(container, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-			Position = UDim2.new(0.1, 0, 1, -200)
-		})
-		tweenIn:Play()
-	end
+	local titleHeight = 25
+	local factionHeight = currentFaction and currentFaction ~= "" and 20 or 0
+	local titleSpacing = currentFaction and currentFaction ~= "" and 8 or 0
+	local baseHeight = titleHeight + factionHeight + titleSpacing + 10
 
-	for _, child in ipairs(container:GetChildren()) do
-		child:Destroy()
-	end
+	local availableWidth = 400
+	local textSize, textBounds = TextService:GetTextSize(message, 18, Enum.Font.Gotham, Vector2.new(availableWidth, 1000))
+	local messageHeight = textSize.Y + 10
 
-	local dialogueBox = Instance.new("Frame")
+	local padding = 20
+	local dialogueBoxHeight = baseHeight + messageHeight + padding
+
+	dialogueBox = Instance.new("Frame")
 	dialogueBox.Name = "DialogueBox"
-	dialogueBox.Size = UDim2.new(0.6, 0, 1, 0)
-	dialogueBox.Position = UDim2.new(0, 0, 0, 0)
+	dialogueBox.Size = UDim2.new(0, availableWidth + 40, 0, dialogueBoxHeight)
+	dialogueBox.Position = UDim2.new(0.5, -(availableWidth + 40) / 2, 1, -dialogueBoxHeight - 30)
 	dialogueBox.BackgroundTransparency = 1
-	dialogueBox.Parent = container
-
-	local choicesBox = Instance.new("Frame")
-	choicesBox.Name = "ChoicesBox"
-	choicesBox.Size = UDim2.new(0.35, 0, 1, 0)
-	choicesBox.Position = UDim2.new(0.65, 0, 0, 0)
-	choicesBox.BackgroundTransparency = 1
-	choicesBox.Parent = container
+	dialogueBox.Parent = screenGui
 
 	local dialogueTitle = createStrokeTextLabel(dialogueBox, {
-		Size = UDim2.new(1, 0, 0, 25),
+		Size = UDim2.new(1, 0, 0, titleHeight),
 		Position = UDim2.new(0, 0, 0, 0),
 		BackgroundTransparency = 1,
 		Text = currentNpcName,
@@ -215,8 +206,8 @@ updateDialogueText = function(message)
 
 	if currentFaction and currentFaction ~= "" then
 		local factionLabel = createStrokeTextLabel(dialogueBox, {
-			Size = UDim2.new(0, 200, 0, 20),
-			Position = UDim2.new(0.5, 0, 0, 28),
+			Size = UDim2.new(1, 0, 0, factionHeight),
+			Position = UDim2.new(0, 0, 0, titleHeight + titleSpacing),
 			BackgroundTransparency = 1,
 			Text = currentFaction,
 			TextColor3 = FACTION_LABEL_COLOR,
@@ -227,37 +218,52 @@ updateDialogueText = function(message)
 	end
 
 	local messageLabel = createStrokeTextLabel(dialogueBox, {
-		Size = UDim2.new(0.9, 0, 0, 70),
-		Position = UDim2.new(0.05, 0, 0, currentFaction and currentFaction ~= "" and 55 or 40),
+		Size = UDim2.new(0.95, 0, 0, messageHeight),
+		Position = UDim2.new(0.025, 0, 0, baseHeight),
 		BackgroundTransparency = 1,
 		Text = message,
 		TextColor3 = BODY_TEXT_COLOR,
 		TextSize = 18,
 		Font = Enum.Font.Gotham,
-		TextXAlignment = Enum.TextXAlignment.Center,
+		TextXAlignment = Enum.TextXAlignment.Left,
 		TextYAlignment = Enum.TextYAlignment.Top,
 		TextWrapped = true,
 	})
 
+	local maxChoices = 7
+	local buttonHeight = 28
+	local buttonSpacing = 5
+	local choicesTitleHeight = 22
+	local quitButtonSpace = buttonHeight + buttonSpacing
+	local choicesBoxWidth = 200
+	local choicesBoxHeight = choicesTitleHeight + (maxChoices + 1) * (buttonHeight + buttonSpacing)
+
+	choicesBox = Instance.new("Frame")
+	choicesBox.Name = "ChoicesBox"
+	choicesBox.Size = UDim2.new(0, choicesBoxWidth, 0, choicesBoxHeight)
+	choicesBox.Position = UDim2.new(1, -choicesBoxWidth - 20, 1, -choicesBoxHeight - dialogueBoxHeight - 50)
+	choicesBox.BackgroundTransparency = 1
+	choicesBox.Parent = screenGui
+
 	local choicesTitle = createStrokeTextLabel(choicesBox, {
-		Size = UDim2.new(1, 0, 0, 25),
+		Size = UDim2.new(1, 0, 0, choicesTitleHeight),
 		Position = UDim2.new(0, 0, 0, 0),
 		BackgroundTransparency = 1,
 		Text = "Choix:",
 		TextColor3 = SPEAKER_NAME_COLOR,
-		TextSize = 18,
+		TextSize = 16,
 		Font = Enum.Font.GothamBold,
 		TextXAlignment = Enum.TextXAlignment.Center,
 	})
 
-	local choicesStartY = 35
+	local choicesStartY = choicesTitleHeight + 5
 
 	if hasChoices and currentOptions then
 		for i, option in ipairs(currentOptions) do
 			createButton(choicesBox, option.text, choicesStartY, function()
 				advanceDialogue(i)
 			end)
-			choicesStartY = choicesStartY + 45
+			choicesStartY = choicesStartY + buttonHeight + buttonSpacing
 		end
 	end
 
