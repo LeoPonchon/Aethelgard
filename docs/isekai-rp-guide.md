@@ -1,231 +1,254 @@
-# Guide pour un RP Immersif Isekai Fantasy
-
-## Qu'est-ce qu'un Isekai ?
-L'isekai est un genre de fantasy japonaise où un personnage est transporté, réincarné ou piégé dans un monde parallèle. Ce monde est souvent régi par des règles de RPG (niveaux, statistiques, compétences, quêtes).
+# 🛡️ AETHELGARD – BROOKHAVEN RP FANTASY
 
 ---
 
-## Étapes pour Réaliser un RP Immersif Isekai Fantasy
+## 🎮 Core Philosophy: Action-Based Progression
 
-### Phase 1 : Préparation du Monde (Worldbuilding)
-
-#### 1. Créer le concept du monde parallèle
-- [ ] Définir le nom et l'histoire du monde
-- [ ] Établir les règles fondamentales (magie, technologie, créatures)
-- [ ] Créer une carte géographique avec royaumes/zones
-- [ ] Définir les factions et organisations majeures
-- [ ] Établir un système politique et social
-
-#### 2. Développer le système de RPG
-- [ ] Créer les classes de personnages disponibles
-- [ ] Définir le système de niveaux et progression
-- [ ] Établir les statistiques (Force, Agilité, Intelligence, etc.)
-- [ ] Créer les arbres de compétences/skills
-- [ ] Définir le système d'équipement et objets
-- [ ] Établir les règles de combat
-
-#### 3. Créer les races et espèces
-- [ ] Définir les races jouables (Humains, Elfes, Nains, Démons, etc.)
-- [ ] Créer les bonus/malus de chaque race
-- [ ] Développer la culture et histoire de chaque race
-- [ ] Établir les relations inter-raciales
+**NO UI SELECTION** - All progression happens through in-game actions:
+- **Teams/Factions** → Join by visiting locations and completing actions
+- **Classes** → Unlock by practicing skills at the Academy
+- **Guild Ranks** → Increase by completing quests
+- **The ONLY UI** → Billboard above each player showing their info
 
 ---
 
-### Phase 2 : Création des Personnages
+## Phase 1 – Spawn et immersion initiale (0–5 min)
 
-#### 4. Concept du personnage "isekaïé"
-- [ ] Définir l'origine du personnage (monde moderne, époque, profession)
-- [ ] Choisir le mode d'arrivée (invocation, réincarnation, portail, accident)
-- [ ] Établir les souvenirs conservés ou perdus
-- [ ] Créer un "cheat" ou capacité unique (optionnel mais typique)
-- [ ] Définir la motivation du personnage dans ce nouveau monde
+**Objectifs :**
+* Immersion immédiate et intuitive
+* Découverte libre du royaume
+* Introduction subtile aux mécaniques de base
 
-#### 5. Fiche de personnage complète
-- [ ] Nom, âge, apparence physique
-- [ ] Personnalité et traits de caractère
-- [ ] Histoire avant l'isekai
-- [ ] Classe et compétences choisies
-- [ ] Équipement de départ
-- [ ] Objectifs et motivations
-- [ ] Forces et faiblesses
+**Actions joueurs :**
+1. **Spawn neutre** : Roturier / Humain par défaut (faction Commoners)
+2. **PNJ Guide (Village Elder)** :
+   * Dialogues optionnels pour explications
+   * Pas de forçage - exploration libre
+   * Information sur factions, château, académie, portail démoniaque
+3. **Exploration initiale** : village, objets interactifs, autres joueurs
+4. **Emotes RP** : `/wave`, `/bow`, `/dance`, etc. pour interactions sociales
+5. **Actions enregistrées** : Chaque action compte pour la progression
 
----
-
-### Phase 3 : Systèmes de Jeu
-
-#### 6. Système de quêtes
-- [ ] Créer des quêtes principales (scénario)
-- [ ] Développer des quêtes secondaires
-- [ ] Établir un système de récompenses
-- [ ] Créer des quêtes quotidiennes/hebdomadaires
-- [ ] Définir les conséquences des échecs
-
-#### 7. Économie et commerce
-- [ ] Créer la monnaie du monde
-- [ ] Établir les prix des objets courants
-- [ ] Développer un système de boutique/marché
-- [ ] Créer des métiers et artisanat
-- [ ] Définir le système de loot/butins
-
-#### 8. Système de réputation
-- [ ] Créer les factions avec barres de réputation
-- [ ] Définir les avantages par niveau de réputation
-- [ ] Établir les conséquences des actions sur la réputation
-- [ ] Créer des titres et récompenses spéciales
+💡 **Principe** : immersion totale, pas de menus, tout se fait en jeu.
 
 ---
 
-### Phase 4 : Éléments Narratifs
+## Phase 2 – Découverte des factions et rôles (5–15 min)
 
-#### 9. Scénario principal
-- [ ] Créer l'accroche narrative (comment commence l'histoire)
-- [ ] Développer l'arc narratif principal
-- [ ] Créer des rebondissements et cliffhangers
-- [ ] Préparer plusieurs fins possibles
-- [ ] Intégrer des choix avec conséquences
+**Objectifs :**
+* Découvrir les factions par l'exploration
+* Comprendre comment rejoindre chaque faction
 
-#### 10. PNJ et personnages secondaires
-- [ ] Créer les PNJ majeurs (mentors, antagonistes, alliés)
-- [ ] Développer des marchands et services
-- [ ] Créer des personnages récurrents
-- [ ] Établir les dialogues et personnalités
-- [ ] Préparer des interactions variées
+**Actions joueurs :**
+1. **Visite des lieux clés** :
+   * Château → Nobility/Royalty
+   * Académie → Academy
+   * Portail Démoniaque → Demon Faction
+   * Forêt Elfique → Elves
+2. **Dialogue avec PNJ** :
+   * Chaque PNJ explique comment rejoindre sa faction
+   * Conditions claires affichées dans le dialogue
+3. **Feedback visuel** :
+   * Le billboard montre la progression
+   * Les actions sont comptées automatiquement
 
-#### 11. Événements et dynamisme
-- [ ] Planifier des événements spéciaux
-- [ ] Créer un calendrier in-game
-- [ ] Préparer des festivals et célébrations
-- [ ] Intégrer des menaces mondiales (boss, catastrophes)
-- [ ] Créer des événements aléatoires
+💡 **Principe** : exploration guidée par le monde, pas par des menus.
 
 ---
 
-### Phase 5 : Immersion et Atmosphère
+## Phase 3 – Découverte des classes, races et pouvoirs (15–30 min)
 
-#### 12. Ambiance visuelle et sonore
-- [ ] Choisir une esthétique visuelle cohérente
-- [ ] Créer/sélectionner une playlist musicale thématique
-- [ ] Développer des descriptions atmosphériques
-- [ ] Utiliser des effets visuels appropriés
-- [ ] Créer des ambiances sonores (bruitages)
+**Objectifs :**
+* Débloquer des classes par l'action
+* Sentir la progression naturelle
 
-#### 13. Communication et roleplay
-- [ ] Établir les canaux de communication IC (In Character)
-- [ ] Créer un système de chat RP
-- [ ] Définir les règles de narration
-- [ ] Établir le ton et le style d'écriture
-- [ ] Créer des commandes d'action (/me, /do, etc.)
+**Actions joueurs :**
+1. **Visiter l'Académie** :
+   * Parler au Directeur pour s'inscrire
+   * Choisir un instructeur (Combat, Magie, etc.)
+2. **Pratiquer les compétences** :
+   * Guerrier → 50 attaques melee + 5 entraînements
+   * Mage → 30 sorts + 10 entraînements + 5 méditations
+   * Voleur → 20 explorations + 5 entraînements
+   * Prêtre → 20 prières + 10 entraînements
+3. **Quêtes tutoriels** :
+   * `train_combat_1` → Débloque Guerrier
+   * `train_magic_1` → Débloque Mage
+4. **Feedback immédiat** :
+   * Progression visible sur le billboard
+   * Notification quand une classe est débloquée
 
-#### 14. Règles et modération
-- [ ] Rédiger les règles du serveur/RP
-- [ ] Établir le powergaming et metagaming interdits
-- [ ] Créer un système de sanction
-- [ ] Former une équipe de modération
-- [ ] Définir les limites du RP (contenu, thèmes)
-
----
-
-### Phase 6 : Technique et Infrastructure
-
-#### 15. Plateforme et outils
-- [ ] Choisir la plateforme (Discord, Roblox, Forum, Tabletop, etc.)
-- [ ] Configurer les bots et systèmes automatisés
-- [ ] Créer les channels/salles appropriés
-- [ ] Développer les systèmes de dés/rolls
-- [ ] Mettre en place les fiches de personnage
-
-#### 16. Systèmes de jeu (si applicable)
-- [ ] Programmer les systèmes de combat
-- [ ] Créer le système d'inventaire
-- [ ] Développer le système de progression
-- [ ] Implémenter les quêtes
-- [ ] Créer l'interface utilisateur
+💡 **Principe** : On devient ce qu'on fait, pas ce qu'on clique.
 
 ---
 
-### Phase 7 : Lancement et Gestion
+## Phase 4 – Immersion RP et premières intrigues (30–60 min)
 
-#### 17. Pré-lancement
-- [ ] Tester tous les systèmes
-- [ ] Réaliser une beta fermée
-- [ ] Collecter les retours et ajuster
-- [ ] Préparer la documentation
-- [ ] Créer le matériel promotionnel
+**Objectifs :**
+* Rejoindre une faction
+* Participer aux quêtes de guilde
+* Premiers rôles RP
 
-#### 18. Lancement
-- [ ] Annoncer la date de lancement
-- [ ] Accueillir les premiers joueurs
-- [ ] Faciliter l'intégration des nouveaux
-- [ ] Surveiller les premiers jours
-- [ ] Être réactif aux problèmes
+**Actions joueurs :**
+1. **Rejoindre une faction** :
+   * Accomplir les actions requises
+   * Retourner voir le PNJ de la faction
+   * Intégration officielle
+2. **Quêtes de guilde** :
+   * Escorter des joueurs
+   * Défendre des lieux
+   * Explorer des zones
+   * Diplomatie inter-factions
+3. **Monter en rang de guilde** :
+   * Recrue → Novice → Apprenti → Compagnon → Expert → Maître → Grand Maître
+   * Basé sur quêtes complétées et expérience
+4. **Rôles sociaux** :
+   * Le trône est accessible si vide
+   * Roi/Reine = rôle RP purement social
+   * Pas de pouvoir mécanique
 
-#### 19. Gestion continue
-- [ ] Organiser des événements réguliers
-- [ ] Développer de nouveaux contenus
-- [ ] Équilibrer les systèmes
-- [ ] Maintenir l'activité de la communauté
-- [ ] Recueillir et implémenter les suggestions
-
----
-
-## Conseils pour l'Immersion
-
-### Pour les Joueurs
-1. **Rester in-character** : Évitez les discussions Hors-RP dans les zones IC
-2. **Accepter les conséquences** : Vos actions ont des répercussions
-3. **Collaborer** : Le RP est une création collective
-4. **Être patient** : Laissez le temps aux autres de répondre
-5. **Développer** : Faites évoluer votre personnage naturellement
-
-### Pour les Organisateurs
-1. **Cohérence** : Maintenez une logique interne au monde
-2. **Réactivité** : Répondez rapidement aux actions des joueurs
-3. **Flexibilité** : Adaptez l'histoire aux choix des joueurs
-4. **Équilibre** : Assurez un jeu équitable pour tous
-5. **Communication** : Soyez transparent sur les règles et changements
+💡 **Principe** : RP = moteur principal, gameplay = soutien.
 
 ---
 
-## Exemples d'Éléments Isekai Typiques
+## Phase 5 – Progression avancée (1–3 h)
 
-### Origines possibles
-- Étudiant japonais contemporain
-- Employé de bureau surmené (salaryman)
-- Gamer expérimenté
-- Scientifique ou ingénieur
-- Personne ayant une vie difficile
+**Objectifs :**
+* Débloquer toutes les classes
+* Monter dans les rangs de faction
+* Expérimenter la liberté totale
 
-### "Cheats" courants
-- Appréciation divine (bénédiction d'une divinité)
-- Système de game UI intégré
-- Connaissance moderne (science, cuisine, médecine)
-- Compétence unique surpuissante
-- Objet légendaire dès le début
+**Actions joueurs :**
+1. **Classes avancées** :
+   * Paladin → Guerrier + Prêtre + 15 entraînements
+   * Nécromancien → 50 sorts + Portail Démoniaque
+   * Druide → Méditations nature + Forêt Elfique
+2. **Changer de faction** :
+   * Trahir pour rejoindre les Démons
+   * Diplomatie pour rejoindre la Noblesse
+   * Quêtes spécifiques pour chaque transition
+3. **Rôles de leadership** :
+   * Général Démon → Haut rang + quêtes de corruption
+   * Duc/Duchesse → Haut rang + quêtes de défense
+   * Professeur → Haut rang Academy + quêtes d'enseignement
 
-### Thèmes narratifs
-- Sauver le monde d'une menace
-- Créer une vie meilleure que l'ancienne
-- Devenir riche et puissant
-- Explorer un monde fascinant
-- Trouver l'amour et former des liens
-
----
-
-## Ressources Utiles
-
-### Inspirations
-- Light novels : *Re:Zero*, *Overlord*, *Mushoku Tensei*, *That Time I Got Reincarnated as a Slime*
-- Mangas/Animes : *Sword Art Online*, *Log Horizon*, *Konosuba*
-- Jeux vidéo : RPGs japonais, *Final Fantasy*, *Dragon Quest*
-
-### Outils
-- World Anvil (worldbuilding)
-- Notion (organisation)
-- Roll20 (tabletop virtuel)
-- Discord (communication)
-- Google Docs (fiches collaboratives)
+💡 **Principe** : progression organique et découverte continue.
 
 ---
 
-*Ce guide est une base à adapter selon vos besoins et votre vision créative.*
+## Phase 6 – Boucle sociale et replay (3 h +)
+
+**Objectifs :**
+* Créer des histoires uniques
+* Maintenir l'engagement long terme
+
+**Actions joueurs :**
+1. **Création de drames** :
+   * Trahisons, mariages, rébellions
+   * Tout se passe en RP
+2. **Zones secrètes** :
+   * Territoire démoniaque (faction Démon)
+   * Donjons (quêtes spéciales)
+   * Académie avancée (haut rang)
+3. **Événements mondiaux** :
+   * Retour du Demon King
+   * Missions héroïques
+   * Festivals
+4. **Évolution naturelle** :
+   * Chaque session = nouvelle histoire
+   * Le monde vit avec les joueurs
+
+💡 **Principe** : monde vivant, piloté par les joueurs.
+
+---
+
+## Phase 7 – Systèmes secondaires
+
+**Objectifs :**
+* Ajouter profondeur et longévité
+
+**Systèmes :**
+1. **Crafting léger** : potions, armes, familiers, montures
+2. **Réputation publique** : influence visible sur le billboard
+3. **Événements dynamiques** : influencés par les actions des joueurs
+4. **Emotes/animations** : interactions sociales expressives
+
+---
+
+## 📊 Factions et Comment les Rejoindre
+
+| Faction | Conditions d'Entrée | Rangs |
+|---------|---------------------|-------|
+| **Commoners** | Par défaut au spawn | Citizen → Merchant → Guild Member → Guild Leader |
+| **Academy** | Visiter + Parler au Directeur | External → Year 1 → Year 2 → Year 3+ → Professor |
+| **Nobility** | 5 Diplomacy + 3 Quêtes | Squire → Knight → Baron → Count → Duke |
+| **Elves** | Forêt Elfique + 5 Méditations Arbre Sacré | Guest → Friend → Ally → Elder |
+| **Demon Faction** | Portail + 3 Méditations Portail | Servant → Cultist → Demon → General → Demon King/Queen |
+| **Free Lineages** | 5 Quêtes complétées | Recruit → Mercenary → Veteran → Commander |
+| **Royalty** | Spécial (admin/événement) | Servant → Courtier → Noble → Prince/Princess → King/Queen |
+
+---
+
+## ⚔️ Classes et Comment les Débloquer
+
+| Classe | Prérequis |
+|--------|-----------|
+| **Guerrier** ⚔️ | 50 attaques melee + 5 entraînements |
+| **Mage** 🔮 | 30 sorts + 10 entraînements + 5 méditations |
+| **Voleur** 🗡️ | 20 explorations + 5 entraînements |
+| **Archer** 🏹 | 30 défaites (arc) + 5 entraînements |
+| **Prêtre** ✨ | 20 prières + 10 entraînements |
+| **Chevalier** 🛡️ | 10 défenses + 40 melee + 10 entraînements |
+| **Paladin** ⚜️ | Guerrier + Prêtre + 15 entraînements |
+| **Barde** 🎵 | 50 socialisations + 5 entraînements |
+| **Druide** 🌿 | 20 méditations nature + Forêt Elfique + 10 entraînements |
+| **Nécromancien** 💀 | 50 sorts + Portail Démoniaque + 10 méditations |
+| **Invocateur** 👁️ | 60 sorts + 15 méditations + 20 entraînements |
+| **Moine** 🥋 | 100 melee + 30 méditations |
+
+---
+
+## 🎭 Emotes Disponibles
+
+### Salutations
+`/wave` `/bow` `/curtsy` `/salute`
+
+### Combat
+`/draw` `/threaten` `/victory` `/defeat`
+
+### Magie (selon classe)
+`/castfire` `/castice` (Mage) `/heal` (Prêtre) `/pray` `/meditate`
+
+### Social
+`/cheer` `/clap` `/laugh` `/cry` `/hug`
+
+### Danse
+`/dance` `/dance2`
+
+### Gestes
+`/point` `/nod` `/no` `/shrug` `/think`
+
+### Roleplay
+`/kneel` `/sit` `/sleep` `/inspect` `/write` `/read` `/drink` `/eat`
+
+---
+
+## 🏆 Rangs de Guilde
+
+| Rang | Quêtes Requises | Expérience |
+|------|-----------------|------------|
+| Recrue | 0 | 0 |
+| Novice | 5 | 100 |
+| Apprenti | 15 | 300 |
+| Compagnon | 30 | 700 |
+| Expert | 50 | 1500 |
+| Maître | 80 | 3000 |
+| Grand Maître | 120 | 6000 |
+
+---
+
+## 💡 Principe central
+
+> **Commencer simple** → **Explorer le monde** → **Agir pour progresser** → **Rejoindre des factions** → **Débloquer des classes** → **Participer au RP** → **Créer des histoires**
+
+**Pas de menus. Pas de sélection. Juste l'action.**
