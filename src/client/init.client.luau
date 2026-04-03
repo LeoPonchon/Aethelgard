@@ -41,6 +41,19 @@ else
 	end
 end
 
+local DebugUI = script:FindFirstChild("DebugUI")
+if DebugUI then
+	DebugUI = require(DebugUI)
+else
+	local parent = script.Parent
+	if parent then
+		DebugUI = parent:FindFirstChild("DebugUI")
+		if DebugUI then
+			DebugUI = require(DebugUI)
+		end
+	end
+end
+
 -- Emote Animation Handling
 local currentAnimationTrack = nil
 local currentEmoteId = nil
@@ -144,14 +157,18 @@ player.CharacterAdded:Connect(function(newCharacter)
 	currentEmoteId = nil
 end)
 
-print("[Client] Aethelgard client initialized - minimal version")
+	print("[Client] Aethelgard client initialized - minimal version")
 
--- NPC Dialogue handling
-local npcDialogueEvent = waitForRemote("NPCDialogue", 10)
-if npcDialogueEvent then
-	npcDialogueEvent.OnClientEvent:Connect(function(data)
-		if data.npcId and NPCDialogueClient then
-			NPCDialogueClient.startConversation(data.npcId)
-		end
-	end)
-end
+	if DebugUI then
+		DebugUI.mount()
+	end
+
+	-- NPC Dialogue handling
+	local npcDialogueEvent = waitForRemote("NPCDialogue", 10)
+	if npcDialogueEvent then
+		npcDialogueEvent.OnClientEvent:Connect(function(data)
+			if data.npcId and NPCDialogueClient then
+				NPCDialogueClient.startConversation(data.npcId)
+			end
+		end)
+	end

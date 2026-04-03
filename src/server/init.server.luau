@@ -95,6 +95,15 @@ playerDataRemote.OnServerInvoke = function(player, action, data)
 		PlayerDataSystem.setClass(player.UserId, data.class)
 		PlayerDisplaySystem.updatePlayer(player)
 		return true
+	elseif action == "setTeam" then
+		local teamName = data.team
+		local team = Teams:FindFirstChild(teamName)
+		if team then
+			player.Team = team
+			PlayerDisplaySystem.updatePlayer(player)
+			return true
+		end
+		return false
 	elseif action == "setLevel" then
 		PlayerDataSystem.setLevel(player.UserId, data.level)
 		PlayerDisplaySystem.updatePlayer(player)
