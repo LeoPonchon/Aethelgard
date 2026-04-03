@@ -254,6 +254,8 @@ local function useDialogueController()
 	})
 
 	local proximityConnectionRef = React.useRef(nil)
+	local dialogueStateRef = React.useRef(dialogueState)
+	dialogueStateRef.current = dialogueState
 
 	local closeDialogue = React.useCallback(function()
 		if proximityConnectionRef.current then
@@ -275,8 +277,9 @@ local function useDialogueController()
 	end, {})
 
 	local checkProximity = React.useCallback(function()
-		if not dialogueState.isActive then return end
-		if not dialogueState.npcId or not dialogueState.npcPosition then return end
+		local currentState = dialogueStateRef.current
+		if not currentState.isActive then return end
+		if not currentState.npcId or not currentState.npcPosition then return end
 
 		local character = player.Character
 		if not character then return end
@@ -284,7 +287,7 @@ local function useDialogueController()
 		local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
 		if not humanoidRootPart then return end
 
-		local distance = (humanoidRootPart.Position - dialogueState.npcPosition).Magnitude
+		local distance = (humanoidRootPart.Position - currentState.npcPosition).Magnitude
 
 		if distance > 20 then
 			print("[NPCDialogueClient] Player too far from NPC, closing dialogue")
