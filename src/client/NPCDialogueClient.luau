@@ -301,27 +301,15 @@ local function useDialogueController()
 	end, {checkProximity})
 
 	local advanceDialogue = React.useCallback(function(optionIndex)
-		print("[NPCDialogueClient] advanceDialogue called with optionIndex:", optionIndex)
-		
 		local currentState = dialogueState
-		if not currentState.npcId then 
-			print("[NPCDialogueClient] No npcId in state")
-			return 
-		end
-		if not npcInteractionRemote then 
-			print("[NPCDialogueClient] No remote")
-			return 
-		end
+		if not currentState.npcId then return end
+		if not npcInteractionRemote then return end
 
-		print("[NPCDialogueClient] Calling server with:", currentState.npcId, currentState.currentNode, optionIndex)
-		
 		local result = npcInteractionRemote:InvokeServer("advanceDialogue", {
 			npcId = currentState.npcId,
 			currentNode = currentState.currentNode,
 			optionIndex = optionIndex,
 		})
-
-		print("[NPCDialogueClient] Server result:", result)
 
 		if result then
 			setDialogueState({
