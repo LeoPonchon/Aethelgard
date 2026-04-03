@@ -108,10 +108,17 @@ GACHA_DATA.ACCESSORIES = {
 }
 
 GACHA_DATA.DUPLICATE_VALUES = {
-    common = 10,
-    rare = 30,
-    epic = 100,
-    legendary = 500,
+	common = 10,
+	rare = 30,
+	epic = 100,
+	legendary = 500,
+}
+
+GACHA_DATA.SHARD_PRICES = {
+	common = 50,
+	rare = 150,
+	epic = 500,
+	legendary = 2500,
 }
 
 function GACHA_DATA.getItemsByBannerType(bannerType)

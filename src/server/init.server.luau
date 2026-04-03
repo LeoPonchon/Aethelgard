@@ -175,10 +175,12 @@ gachaRemote.OnServerInvoke = function(player, action, data)
         return GachaSystem.getBannerInfo(data.bannerId)
     elseif action == "equipItem" then
         return GachaSystem.equipItem(player.UserId, data.itemId)
-    elseif action == "unequipItem" then
-        return GachaSystem.unequipItem(player.UserId, data.itemId)
-    end
-    return nil
+	elseif action == "unequipItem" then
+			return GachaSystem.unequipItem(player.UserId, data.itemId)
+		elseif action == "purchaseWithShards" then
+			return GachaSystem.purchaseWithShards(player.UserId, data.itemId)
+		end
+		return nil
 end
 
 -- Shop handler

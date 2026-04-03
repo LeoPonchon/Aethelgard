@@ -56,15 +56,28 @@ end
 
 local GachaClient = script:FindFirstChild("GachaClient")
 if GachaClient then
-    GachaClient = require(GachaClient)
+	GachaClient = require(GachaClient)
 else
-    local parent = script.Parent
-    if parent then
-        GachaClient = parent:FindFirstChild("GachaClient")
-        if GachaClient then
-            GachaClient = require(GachaClient)
-        end
-    end
+	local parent = script.Parent
+	if parent then
+		GachaClient = parent:FindFirstChild("GachaClient")
+		if GachaClient then
+			GachaClient = require(GachaClient)
+		end
+	end
+end
+
+local ShopClient = script:FindFirstChild("ShopClient")
+if ShopClient then
+	ShopClient = require(ShopClient)
+else
+	local parent = script.Parent
+	if parent then
+		ShopClient = parent:FindFirstChild("ShopClient")
+		if ShopClient then
+			ShopClient = require(ShopClient)
+		end
+	end
 end
 
 -- Emote Animation Handling
@@ -177,29 +190,59 @@ if DebugUI then
 end
 
 if GachaClient then
-    GachaClient.init()
+	GachaClient.init()
 
-    if DebugUI and DebugUI.setGachaToggle then
-        DebugUI.setGachaToggle(function(show)
-            if show then
-                GachaClient.show()
-            else
-                GachaClient.hide()
-            end
-        end)
-    end
+	if DebugUI and DebugUI.setGachaToggle then
+		DebugUI.setGachaToggle(function(show)
+			if show then
+				GachaClient.show()
+			else
+				GachaClient.hide()
+			end
+		end)
+	end
 
-    if DebugUI and DebugUI.setGachaIsVisible then
-        DebugUI.setGachaIsVisible(function()
-            return GachaClient.isVisible()
-        end)
-    end
+	if DebugUI and DebugUI.setGachaIsVisible then
+		DebugUI.setGachaIsVisible(function()
+			return GachaClient.isVisible()
+		end)
+	end
 
-    GachaClient.setOnVisibilityChanged(function(visible)
-        if DebugUI and DebugUI.forceUpdateGachaButton then
-            DebugUI.forceUpdateGachaButton()
-        end
-    end)
+	GachaClient.setOnVisibilityChanged(function(visible)
+		if DebugUI and DebugUI.forceUpdateGachaButton then
+			DebugUI.forceUpdateGachaButton()
+		end
+	end)
+
+	_G.GachaClient = GachaClient
+end
+
+if ShopClient then
+	ShopClient.init()
+
+	if DebugUI and DebugUI.setShopToggle then
+		DebugUI.setShopToggle(function(show)
+			if show then
+				ShopClient.show()
+			else
+				ShopClient.hide()
+			end
+		end)
+	end
+
+	if DebugUI and DebugUI.setShopIsVisible then
+		DebugUI.setShopIsVisible(function()
+			return ShopClient.isVisible()
+		end)
+	end
+
+	ShopClient.setOnVisibilityChanged(function(visible)
+		if DebugUI and DebugUI.forceUpdateShopButton then
+			DebugUI.forceUpdateShopButton()
+		end
+	end)
+
+	_G.ShopClient = ShopClient
 end
 
 -- Notification handling

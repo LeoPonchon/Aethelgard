@@ -4,6 +4,13 @@
 
 local SHOP_DATA = {}
 
+SHOP_DATA.GEM_PACKS = {
+	{ id = "pack_100", name = "100 Gems", robux = 59, amount = 100, productId = 0 },
+	{ id = "pack_550", name = "550 Gems", robux = 249, amount = 550, productId = 0 },
+	{ id = "pack_1200", name = "1200 Gems", robux = 449, amount = 1200, productId = 0 },
+	{ id = "pack_2500", name = "2500 Gems", robux = 899, amount = 2500, productId = 0 },
+}
+
 SHOP_DATA.ALERT_PACKAGES = {
     {
         id = "throne_alert",
@@ -170,30 +177,36 @@ SHOP_DATA.RP_TOOLS = {
 }
 
 SHOP_DATA.CATEGORIES = {
-    {
-        id = "alerts",
-        name = "Alert Notifications",
-        description = "Get notified when important events happen",
-        items = SHOP_DATA.ALERT_PACKAGES,
-    },
-    {
-        id = "identity",
-        name = "Identity Packs",
-        description = "Customize your appearance with exclusive tags and colors",
-        items = SHOP_DATA.IDENTITY_PACKS,
-    },
-    {
-        id = "emotes",
-        name = "Gestures & Emotes",
-        description = "Express yourself with unique animations",
-        items = SHOP_DATA.EMOTES,
-    },
-    {
-        id = "tools",
-        name = "RP Tools",
-        description = "Interactive items for roleplay",
-        items = SHOP_DATA.RP_TOOLS,
-    },
+	{
+		id = "gems",
+		name = "Gems",
+		description = "Premium currency for gacha rolls",
+		items = SHOP_DATA.GEM_PACKS,
+	},
+	{
+		id = "alerts",
+		name = "Alert Notifications",
+		description = "Get notified when important events happen",
+		items = SHOP_DATA.ALERT_PACKAGES,
+	},
+	{
+		id = "identity",
+		name = "Identity Packs",
+		description = "Customize your appearance with exclusive tags and colors",
+		items = SHOP_DATA.IDENTITY_PACKS,
+	},
+	{
+		id = "emotes",
+		name = "Gestures & Emotes",
+		description = "Express yourself with unique animations",
+		items = SHOP_DATA.EMOTES,
+	},
+	{
+		id = "tools",
+		name = "RP Tools",
+		description = "Interactive items for roleplay",
+		items = SHOP_DATA.RP_TOOLS,
+	},
 }
 
 function SHOP_DATA.getItemById(itemId)

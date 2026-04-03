@@ -285,13 +285,46 @@ function GachaSystem.getBannerInfo(bannerId: string)
 end
 
 function GachaSystem.getActiveBanners()
-    local active = {}
-    for _, banner in ipairs(GachaData.BANNERS) do
-        if banner.active then
-            table.insert(active, banner)
-        end
-    end
-    return active
+	local active = {}
+	for _, banner in ipairs(GachaData.BANNERS) do
+		if banner.active then
+			table.insert(active, banner)
+		end
+	end
+	return active
+end
+
+function GachaSystem.purchaseWithShards(playerId: number, itemId: string)
+	local item = GachaData.getItemById(itemId)
+	if not item then
+		return nil, "Item not found"
+	end
+
+	if GachaSystem.hasItem(playerId, itemId) then
+		return nil, "Already owned"
+	end
+
+	local price = GachaData.SHARD_PRICES[item.rarity]
+	if not price then
+		return nil, "Invalid rarity"
+	end
+
+	if not CurrencySystem.canAffordSecondary(playerId, price) then
+		return nil, "Insufficient " .. CurrencySystem.SECONDARY_CURRENCY_NAME
+	end
+
+	CurrencySystem.spendSecondaryCurrency(playerId, price)
+
+	local success = addItemToInventory(playerId, item)
+	if not success then
+		CurrencySystem.addSecondaryCurrency(playerId, price)
+		return nil, "Failed to add item"
+	end
+
+	return {
+		item = item,
+		currency = CurrencySystem.getPlayerCurrencyData(playerId),
+	}, nil
 end
 
 function GachaSystem.init()

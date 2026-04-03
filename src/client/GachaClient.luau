@@ -1,658 +1,761 @@
 --!nonstrict
 -- Gacha Client for Aethelgard
--- UI for gacha rolls and inventory
+-- React-based UI for gacha rolls and inventory
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+
+local React = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("React"))
+local ReactRoblox = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("ReactRoblox"))
+
+local e = React.createElement
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
+local sharedFolder = ReplicatedStorage:WaitForChild("Shared")
+local GachaData = require(sharedFolder:WaitForChild("GachaData"))
+
+local gachaRemote = ReplicatedStorage:FindFirstChild("GachaRemote")
+
+local COLORS = {
+	BACKGROUND = Color3.fromRGB(30, 30, 40),
+	HEADER = Color3.fromRGB(50, 50, 70),
+	TAB_INACTIVE = Color3.fromRGB(40, 40, 55),
+	TAB_ACTIVE = Color3.fromRGB(255, 170, 0),
+	BUTTON_DEFAULT = Color3.fromRGB(60, 60, 80),
+	BUTTON_HOVER = Color3.fromRGB(80, 80, 120),
+	BUTTON_ROLL_SINGLE = Color3.fromRGB(70, 130, 200),
+	BUTTON_ROLL_TEN = Color3.fromRGB(200, 100, 50),
+	BUTTON_EQUIP = Color3.fromRGB(80, 140, 80),
+	TEXT = Color3.fromRGB(255, 255, 255),
+	TEXT_DIM = Color3.fromRGB(180, 180, 180),
+	GEMS = Color3.fromRGB(100, 200, 255),
+	SHARDS = Color3.fromRGB(200, 150, 255),
+	GOLD = Color3.fromRGB(255, 215, 0),
+}
+
+local RARITY_COLORS = {
+	common = Color3.fromRGB(150, 150, 150),
+	rare = Color3.fromRGB(0, 100, 255),
+	epic = Color3.fromRGB(163, 53, 238),
+	legendary = Color3.fromRGB(255, 170, 0),
+}
+
+local function RollResultCard(props)
+	local result = props.result
+	local rarityColor = RARITY_COLORS[result.item.rarity] or Color3.new(1, 1, 1)
+
+	return e("Frame", {
+		Size = UDim2.new(0, 100, 0, 120),
+		BackgroundColor3 = Color3.fromRGB(40, 40, 50),
+		BorderSizePixel = 0,
+	}, {
+		Corner = e("UICorner", {
+			CornerRadius = UDim.new(0, 8),
+		}),
+		Stroke = e("UIStroke", {
+			Color = rarityColor,
+			Thickness = 3,
+		}),
+
+		StatusLabel = e("TextLabel", {
+			Size = UDim2.new(1, 0, 0.15, 0),
+			Position = UDim2.new(0, 0, 0.45, 0),
+			BackgroundTransparency = 1,
+			Text = result.isNew and "NEW!" or ("+" .. tostring(result.duplicateValue) .. "🔷"),
+			TextColor3 = result.isNew and Color3.fromRGB(100, 255, 100) or COLORS.SHARDS,
+			TextSize = 10,
+			Font = Enum.Font.GothamBold,
+		}),
+
+		ItemName = e("TextLabel", {
+			Size = UDim2.new(1, 0, 0.3, 0),
+			Position = UDim2.new(0, 0, 0.6, 0),
+			BackgroundTransparency = 1,
+			Text = result.item.name,
+			TextColor3 = COLORS.TEXT,
+			TextSize = 12,
+			Font = Enum.Font.Gotham,
+			TextWrapped = true,
+		}),
+
+		RarityLabel = e("TextLabel", {
+			Size = UDim2.new(1, 0, 0.2, 0),
+			Position = UDim2.new(0, 0, 0.85, 0),
+			BackgroundTransparency = 1,
+			Text = string.upper(result.item.rarity),
+			TextColor3 = rarityColor,
+			TextSize = 10,
+			Font = Enum.Font.GothamBold,
+		}),
+	})
+end
+
+local function InventoryItemCard(props)
+	local item = props.item
+	local onEquip = props.onEquip
+	local isHovered, setIsHovered = React.useState(false)
+
+	local rarityColor = RARITY_COLORS[item.rarity] or Color3.new(1, 1, 1)
+
+	return e("TextButton", {
+		Size = UDim2.new(0, 80, 0, 100),
+		BackgroundColor3 = item.equipped and Color3.fromRGB(60, 80, 60) or (isHovered and Color3.fromRGB(50, 50, 60) or Color3.fromRGB(40, 40, 50)),
+		BorderSizePixel = 0,
+		Text = "",
+		[React.Event.MouseEnter] = function()
+			setIsHovered(true)
+		end,
+		[React.Event.MouseLeave] = function()
+			setIsHovered(false)
+		end,
+		[React.Event.Activated] = function()
+			onEquip(item)
+		end,
+	}, {
+		Corner = e("UICorner", {
+			CornerRadius = UDim.new(0, 6),
+		}),
+		Stroke = e("UIStroke", {
+			Color = rarityColor,
+			Thickness = item.equipped and 4 or 2,
+		}),
+
+		ItemName = e("TextLabel", {
+			Size = UDim2.new(1, 0, 0.5, 0),
+			Position = UDim2.new(0, 0, 0.4, 0),
+			BackgroundTransparency = 1,
+			Text = item.name,
+			TextColor3 = COLORS.TEXT,
+			TextSize = 11,
+			Font = Enum.Font.Gotham,
+			TextWrapped = true,
+		}),
+
+		EquippedLabel = item.equipped and e("TextLabel", {
+			Size = UDim2.new(1, 0, 0.2, 0),
+			Position = UDim2.new(0, 0, 0.85, 0),
+			BackgroundTransparency = 1,
+			Text = "EQUIPPED",
+			TextColor3 = Color3.fromRGB(100, 255, 100),
+			TextSize = 9,
+			Font = Enum.Font.GothamBold,
+		}),
+	})
+end
+
+local function RollResultsModal(props)
+	local results = props.results
+	local onClose = props.onClose
+
+	local children = {
+		Layout = e("UIGridLayout", {
+			CellSize = UDim2.new(0, 110, 0, 130),
+			CellPadding = UDim2.new(0, 10, 0, 10),
+			HorizontalAlignment = Enum.HorizontalAlignment.Center,
+		}),
+	}
+
+	for i, result in ipairs(results) do
+		children["Result_" .. i] = e(RollResultCard, {
+			result = result,
+		})
+	end
+
+	return e("ScreenGui", {
+		Name = "RollResultsUI",
+		ResetOnSpawn = false,
+		IgnoreGuiInset = true,
+		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+	}, {
+		Overlay = e("Frame", {
+			Size = UDim2.new(1, 0, 1, 0),
+			BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+			BackgroundTransparency = 0.5,
+			BorderSizePixel = 0,
+		}),
+
+		ModalFrame = e("Frame", {
+			Size = UDim2.new(0.8, 0, 0.8, 0),
+			Position = UDim2.new(0.1, 0, 0.1, 0),
+			BackgroundColor3 = Color3.fromRGB(20, 20, 30),
+			BorderSizePixel = 0,
+		}, {
+			Corner = e("UICorner", {
+				CornerRadius = UDim.new(0, 12),
+			}),
+
+			Title = e("TextLabel", {
+				Size = UDim2.new(1, 0, 0.1, 0),
+				Position = UDim2.new(0, 0, 0, 0),
+				BackgroundTransparency = 1,
+				Text = "ROLL RESULTS",
+				TextColor3 = COLORS.GOLD,
+				TextSize = 28,
+				Font = Enum.Font.GothamBold,
+			}),
+
+			ResultsContainer = e("ScrollingFrame", {
+				Size = UDim2.new(1, -20, 0.8, 0),
+				Position = UDim2.new(0, 10, 0.1, 10),
+				BackgroundTransparency = 1,
+				ScrollBarThickness = 6,
+				CanvasSize = UDim2.new(0, 0, 0, math.ceil(#results / 5) * 140),
+			}, children),
+
+			CloseButton = e("TextButton", {
+				Size = UDim2.new(0.3, 0, 0, 40),
+				Position = UDim2.new(0.35, 0, 0.92, 0),
+				BackgroundColor3 = COLORS.BUTTON_ROLL_SINGLE,
+				BackgroundTransparency = 0,
+				BorderSizePixel = 0,
+				TextColor3 = COLORS.TEXT,
+				TextSize = 16,
+				Font = Enum.Font.GothamBold,
+				Text = "Close",
+				[React.Event.Activated] = onClose,
+			}, {
+				Corner = e("UICorner", {
+					CornerRadius = UDim.new(0, 8),
+				}),
+			}),
+		}),
+	})
+end
+
+local function InventoryModal(props)
+	local inventory = props.inventory
+	local onClose = props.onClose
+	local onEquipItem = props.onEquipItem
+
+	local children = {
+		Layout = e("UIGridLayout", {
+			CellSize = UDim2.new(0, 90, 0, 110),
+			CellPadding = UDim2.new(0, 10, 0, 10),
+			HorizontalAlignment = Enum.HorizontalAlignment.Center,
+		}),
+	}
+
+	local allItems = {}
+	for _, item in ipairs(inventory.auras or {}) do
+		table.insert(allItems, item)
+	end
+	for _, item in ipairs(inventory.accessories or {}) do
+		table.insert(allItems, item)
+	end
+
+	for i, item in ipairs(allItems) do
+		children["Item_" .. i] = e(InventoryItemCard, {
+			item = item,
+			onEquip = onEquipItem,
+		})
+	end
+
+	return e("ScreenGui", {
+		Name = "InventoryUI",
+		ResetOnSpawn = false,
+		IgnoreGuiInset = true,
+		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+	}, {
+		Overlay = e("Frame", {
+			Size = UDim2.new(1, 0, 1, 0),
+			BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+			BackgroundTransparency = 0.5,
+			BorderSizePixel = 0,
+		}),
+
+		ModalFrame = e("Frame", {
+			Size = UDim2.new(0.6, 0, 0.7, 0),
+			Position = UDim2.new(0.2, 0, 0.15, 0),
+			BackgroundColor3 = Color3.fromRGB(25, 25, 35),
+			BorderSizePixel = 0,
+		}, {
+			Corner = e("UICorner", {
+				CornerRadius = UDim.new(0, 12),
+			}),
+
+			Title = e("TextLabel", {
+				Size = UDim2.new(1, 0, 0.1, 0),
+				Position = UDim2.new(0, 0, 0, 0),
+				BackgroundTransparency = 1,
+				Text = "INVENTORY",
+				TextColor3 = COLORS.SHARDS,
+				TextSize = 24,
+				Font = Enum.Font.GothamBold,
+			}),
+
+			CloseButton = e("TextButton", {
+				Size = UDim2.new(0, 30, 0, 30),
+				Position = UDim2.new(1, -35, 0, 5),
+				BackgroundColor3 = Color3.fromRGB(200, 50, 50),
+				BackgroundTransparency = 0,
+				BorderSizePixel = 0,
+				TextColor3 = COLORS.TEXT,
+				TextSize = 18,
+				Font = Enum.Font.GothamBold,
+				Text = "X",
+				[React.Event.Activated] = onClose,
+			}, {
+				Corner = e("UICorner", {
+					CornerRadius = UDim.new(0, 6),
+				}),
+			}),
+
+			ItemsContainer = e("ScrollingFrame", {
+				Size = UDim2.new(1, -20, 0.85, 0),
+				Position = UDim2.new(0, 10, 0.1, 10),
+				BackgroundTransparency = 1,
+				ScrollBarThickness = 6,
+				CanvasSize = UDim2.new(0, 0, 0, math.ceil(#allItems / 4) * 120),
+			}, children),
+		}),
+	})
+end
+
+local function GachaApp(props)
+	local isVisible = props.isVisible
+	local currentBanner, setCurrentBanner = React.useState("standard_aura")
+	local currency, setCurrency = React.useState({ gems = 0, shards = 0 })
+	local pityRolls, setPityRolls = React.useState(0)
+	local inventory, setInventory = React.useState({ auras = {}, accessories = {} })
+	local showResults, setShowResults = React.useState(false)
+	local rollResults, setRollResults = React.useState({})
+	local showInventory, setShowInventory = React.useState(false)
+	local updateTrigger, setUpdateTrigger = React.useState(0)
+
+	React.useEffect(function()
+		if gachaRemote then
+			local currencyData = gachaRemote:InvokeServer("getCurrency")
+			if currencyData then
+				setCurrency(currencyData)
+			end
+
+			local pityData = gachaRemote:InvokeServer("getPity")
+			if pityData then
+				setPityRolls(pityData)
+			end
+
+			local invData = gachaRemote:InvokeServer("getInventory")
+			if invData then
+				setInventory(invData)
+			end
+		end
+	end, {isVisible, updateTrigger})
+
+	local doRoll = function(count)
+		if not gachaRemote then return end
+
+		local result, err = gachaRemote:InvokeServer("roll", {
+			bannerId = currentBanner,
+			count = count,
+		})
+
+		if err then
+			warn("[GachaClient] Roll failed:", err)
+			return
+		end
+
+		if result then
+			setRollResults(result.results)
+			setPityRolls(result.pityRolls)
+			if result.currency then
+				setCurrency(result.currency)
+			end
+			setShowResults(true)
+		end
+	end
+
+	local onEquipItem = function(item)
+		if not gachaRemote then return end
+		gachaRemote:InvokeServer("equipItem", { itemId = item.id })
+		setUpdateTrigger(function(x)
+			return x + 1
+		end)
+	end
+
+	if not isVisible then
+		return nil
+	end
+
+	local pityPercent = math.clamp(pityRolls / 80, 0, 1)
+
+	local mainUI = e("ScreenGui", {
+		Name = "GachaUI",
+		ResetOnSpawn = false,
+		IgnoreGuiInset = true,
+		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+	}, {
+		MainFrame = e("Frame", {
+			Size = UDim2.new(0.4, 0, 0.6, 0),
+			Position = UDim2.new(0.3, 0, 0.2, 0),
+			BackgroundColor3 = COLORS.BACKGROUND,
+			BackgroundTransparency = 0,
+			BorderSizePixel = 0,
+		}, {
+			Corner = e("UICorner", {
+				CornerRadius = UDim.new(0, 12),
+			}),
+
+			Title = e("TextLabel", {
+				Size = UDim2.new(1, 0, 0.1, 0),
+				Position = UDim2.new(0, 0, 0, 0),
+				BackgroundTransparency = 1,
+				Text = "GACHA",
+				TextColor3 = COLORS.GOLD,
+				TextSize = 28,
+				Font = Enum.Font.GothamBold,
+			}),
+
+			CloseButton = e("TextButton", {
+				Size = UDim2.new(0, 30, 0, 30),
+				Position = UDim2.new(1, -35, 0, 5),
+				BackgroundColor3 = Color3.fromRGB(200, 50, 50),
+				BackgroundTransparency = 0,
+				BorderSizePixel = 0,
+				TextColor3 = COLORS.TEXT,
+				TextSize = 18,
+				Font = Enum.Font.GothamBold,
+				Text = "X",
+				[React.Event.Activated] = props.onClose,
+			}, {
+				Corner = e("UICorner", {
+					CornerRadius = UDim.new(0, 6),
+				}),
+			}),
+
+			CurrencyBar = e("Frame", {
+				Size = UDim2.new(1, -20, 0.08, 0),
+				Position = UDim2.new(0, 10, 0.1, 5),
+				BackgroundColor3 = Color3.fromRGB(40, 40, 50),
+				BackgroundTransparency = 0,
+				BorderSizePixel = 0,
+			}, {
+				Corner = e("UICorner", {
+					CornerRadius = UDim.new(0, 6),
+				}),
+				GemsLabel = e("TextLabel", {
+					Size = UDim2.new(0.5, 0, 1, 0),
+					Position = UDim2.new(0, 0, 0, 0),
+					BackgroundTransparency = 1,
+					Text = "💎 " .. tostring(currency.gems),
+					TextColor3 = COLORS.GEMS,
+					TextSize = 18,
+					Font = Enum.Font.GothamBold,
+				}),
+				ShardsLabel = e("TextLabel", {
+					Size = UDim2.new(0.5, 0, 1, 0),
+					Position = UDim2.new(0.5, 0, 0, 0),
+					BackgroundTransparency = 1,
+					Text = "🔷 " .. tostring(currency.shards),
+					TextColor3 = COLORS.SHARDS,
+					TextSize = 18,
+					Font = Enum.Font.GothamBold,
+				}),
+			}),
+
+			BannerTabs = e("Frame", {
+				Size = UDim2.new(1, -20, 0.08, 0),
+				Position = UDim2.new(0, 10, 0.18, 0),
+				BackgroundTransparency = 1,
+			}, {
+				Layout = e("UIListLayout", {
+					FillDirection = Enum.FillDirection.Horizontal,
+					SortOrder = Enum.SortOrder.LayoutOrder,
+					Padding = UDim.new(0, 10),
+				}),
+				AuraTab = e("TextButton", {
+					Size = UDim2.new(0.48, 0, 1, 0),
+					BackgroundColor3 = currentBanner == "standard_aura" and COLORS.TAB_ACTIVE or COLORS.TAB_INACTIVE,
+					BackgroundTransparency = 0,
+					BorderSizePixel = 0,
+					TextColor3 = COLORS.TEXT,
+					TextSize = 14,
+					Font = Enum.Font.GothamBold,
+					Text = "Auras",
+					[React.Event.Activated] = function()
+						setCurrentBanner("standard_aura")
+					end,
+				}, {
+					Corner = e("UICorner", {
+						CornerRadius = UDim.new(0, 6),
+					}),
+				}),
+				AccessoryTab = e("TextButton", {
+					Size = UDim2.new(0.48, 0, 1, 0),
+					Position = UDim2.new(0.52, 0, 0, 0),
+					BackgroundColor3 = currentBanner == "standard_accessory" and COLORS.TAB_ACTIVE or COLORS.TAB_INACTIVE,
+					BackgroundTransparency = 0,
+					BorderSizePixel = 0,
+					TextColor3 = COLORS.TEXT,
+					TextSize = 14,
+					Font = Enum.Font.GothamBold,
+					Text = "Accessories",
+					[React.Event.Activated] = function()
+						setCurrentBanner("standard_accessory")
+					end,
+				}, {
+					Corner = e("UICorner", {
+						CornerRadius = UDim.new(0, 6),
+					}),
+				}),
+			}),
+
+			BannerInfo = e("Frame", {
+				Size = UDim2.new(1, -20, 0.25, 0),
+				Position = UDim2.new(0, 10, 0.28, 5),
+				BackgroundColor3 = Color3.fromRGB(50, 50, 60),
+				BackgroundTransparency = 0,
+				BorderSizePixel = 0,
+			}, {
+				Corner = e("UICorner", {
+					CornerRadius = UDim.new(0, 6),
+				}),
+				BannerTitle = e("TextLabel", {
+					Size = UDim2.new(1, 0, 0.4, 0),
+					Position = UDim2.new(0, 0, 0, 0),
+					BackgroundTransparency = 1,
+					Text = currentBanner == "standard_aura" and "Standard Aura Banner" or "Standard Accessory Banner",
+					TextColor3 = COLORS.TEXT,
+					TextSize = 16,
+					Font = Enum.Font.GothamBold,
+				}),
+				PityLabel = e("TextLabel", {
+					Size = UDim2.new(1, 0, 0.3, 0),
+					Position = UDim2.new(0, 0, 0.4, 0),
+					BackgroundTransparency = 1,
+					Text = "Pity: " .. tostring(pityRolls) .. "/80",
+					TextColor3 = COLORS.GOLD,
+					TextSize = 14,
+					Font = Enum.Font.Gotham,
+				}),
+				PityBarBg = e("Frame", {
+					Size = UDim2.new(0.8, 0, 0.2, 0),
+					Position = UDim2.new(0.1, 0, 0.75, 0),
+					BackgroundColor3 = Color3.fromRGB(60, 60, 70),
+					BackgroundTransparency = 0,
+					BorderSizePixel = 0,
+				}, {
+					Corner = e("UICorner", {
+						CornerRadius = UDim.new(0, 4),
+					}),
+					PityFill = e("Frame", {
+						Size = UDim2.new(pityPercent, 0, 1, 0),
+						BackgroundColor3 = COLORS.TAB_ACTIVE,
+						BackgroundTransparency = 0,
+						BorderSizePixel = 0,
+					}, {
+						Corner = e("UICorner", {
+							CornerRadius = UDim.new(0, 4),
+						}),
+					}),
+				}),
+			}),
+
+			RollButtons = e("Frame", {
+				Size = UDim2.new(1, -20, 0.12, 0),
+				Position = UDim2.new(0, 10, 0.56, 0),
+				BackgroundTransparency = 1,
+			}, {
+				Layout = e("UIListLayout", {
+					FillDirection = Enum.FillDirection.Horizontal,
+					SortOrder = Enum.SortOrder.LayoutOrder,
+					Padding = UDim.new(0, 10),
+				}),
+				SingleRoll = e("TextButton", {
+					Size = UDim2.new(0.48, 0, 1, 0),
+					BackgroundColor3 = COLORS.BUTTON_ROLL_SINGLE,
+					BackgroundTransparency = 0,
+					BorderSizePixel = 0,
+					TextColor3 = COLORS.TEXT,
+					TextSize = 14,
+					Font = Enum.Font.GothamBold,
+					Text = "Roll x1 (100💎)",
+					[React.Event.Activated] = function()
+						doRoll(1)
+					end,
+				}, {
+					Corner = e("UICorner", {
+						CornerRadius = UDim.new(0, 6),
+					}),
+				}),
+				TenRoll = e("TextButton", {
+					Size = UDim2.new(0.48, 0, 1, 0),
+					Position = UDim2.new(0.52, 0, 0, 0),
+					BackgroundColor3 = COLORS.BUTTON_ROLL_TEN,
+					BackgroundTransparency = 0,
+					BorderSizePixel = 0,
+					TextColor3 = COLORS.TEXT,
+					TextSize = 14,
+					Font = Enum.Font.GothamBold,
+					Text = "Roll x10 (900💎)",
+					[React.Event.Activated] = function()
+						doRoll(10)
+					end,
+				}, {
+					Corner = e("UICorner", {
+						CornerRadius = UDim.new(0, 6),
+					}),
+				}),
+			}),
+
+			InventoryButton = e("TextButton", {
+				Size = UDim2.new(1, -20, 0.08, 0),
+				Position = UDim2.new(0, 10, 0.7, 0),
+				BackgroundColor3 = COLORS.BUTTON_DEFAULT,
+				BackgroundTransparency = 0,
+				BorderSizePixel = 0,
+				TextColor3 = COLORS.TEXT,
+				TextSize = 16,
+				Font = Enum.Font.GothamBold,
+				Text = "Inventory",
+				[React.Event.Activated] = function()
+					setShowInventory(true)
+				end,
+			}, {
+				Corner = e("UICorner", {
+					CornerRadius = UDim.new(0, 6),
+				}),
+			}),
+
+			ShopButton = e("TextButton", {
+				Size = UDim2.new(1, -20, 0.08, 0),
+				Position = UDim2.new(0, 10, 0.8, 0),
+				BackgroundColor3 = Color3.fromRGB(100, 50, 150),
+				BackgroundTransparency = 0,
+				BorderSizePixel = 0,
+				TextColor3 = COLORS.TEXT,
+				TextSize = 16,
+				Font = Enum.Font.GothamBold,
+				Text = "Buy Gems",
+				[React.Event.Activated] = props.onOpenShop,
+			}, {
+				Corner = e("UICorner", {
+					CornerRadius = UDim.new(0, 6),
+				}),
+			}),
+		}),
+	})
+
+	if showResults then
+		return e("ScreenGui", {
+			Name = "GachaResultsRoot",
+			ResetOnSpawn = false,
+			IgnoreGuiInset = true,
+		}, {
+			ResultsModal = e(RollResultsModal, {
+				results = rollResults,
+				onClose = function()
+					setShowResults(false)
+				end,
+			}),
+		})
+	elseif showInventory then
+		return e("ScreenGui", {
+			Name = "GachaInventoryRoot",
+			ResetOnSpawn = false,
+			IgnoreGuiInset = true,
+		}, {
+			InventoryModal = e(InventoryModal, {
+				inventory = inventory,
+				onClose = function()
+					setShowInventory(false)
+				end,
+				onEquipItem = onEquipItem,
+			}),
+		})
+	else
+		return mainUI
+	end
+end
+
 local GachaClient = {}
 
+local root = nil
+local isVisibleState = false
 local onVisibilityChanged = nil
 
 function GachaClient.setOnVisibilityChanged(callback)
-    onVisibilityChanged = callback
-end
-
-local gachaRemote = ReplicatedStorage:FindFirstChild("GachaRemote")
-local gachaEvent = ReplicatedStorage:FindFirstChild("GachaEvent")
-
-local screenGui = nil
-local mainFrame = nil
-local inventoryFrame = nil
-local rollResultFrame = nil
-local currentBanner = "standard_aura"
-
-local function createMainUI()
-    if screenGui then return end
-    
-    screenGui = Instance.new("ScreenGui")
-    screenGui.Name = "GachaUI"
-    screenGui.ResetOnSpawn = false
-    screenGui.Parent = playerGui
-    
-    mainFrame = Instance.new("Frame")
-    mainFrame.Name = "MainFrame"
-    mainFrame.Size = UDim2.new(0.4, 0, 0.6, 0)
-    mainFrame.Position = UDim2.new(0.3, 0, 0.2, 0)
-    mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-    mainFrame.BorderSizePixel = 0
-    mainFrame.Visible = false
-    mainFrame.Parent = screenGui
-    
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 12)
-    corner.Parent = mainFrame
-    
-    local title = Instance.new("TextLabel")
-    title.Name = "Title"
-    title.Size = UDim2.new(1, 0, 0.1, 0)
-    title.Position = UDim2.new(0, 0, 0, 0)
-    title.BackgroundTransparency = 1
-    title.Text = "GACHA"
-    title.TextColor3 = Color3.fromRGB(255, 215, 0)
-    title.TextSize = 28
-    title.Font = Enum.Font.GothamBold
-    title.Parent = mainFrame
-    
-    local closeButton = Instance.new("TextButton")
-    closeButton.Name = "CloseButton"
-    closeButton.Size = UDim2.new(0, 30, 0, 30)
-    closeButton.Position = UDim2.new(1, -35, 0, 5)
-    closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-    closeButton.Text = "X"
-    closeButton.TextColor3 = Color3.new(1, 1, 1)
-    closeButton.Parent = mainFrame
-    closeButton.MouseButton1Click:Connect(function()
-        GachaClient.hide()
-    end)
-    
-    local currencyBar = Instance.new("Frame")
-    currencyBar.Name = "CurrencyBar"
-    currencyBar.Size = UDim2.new(1, -20, 0, 40)
-    currencyBar.Position = UDim2.new(0, 10, 0.1, 5)
-    currencyBar.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-    currencyBar.Parent = mainFrame
-    
-    local gemsLabel = Instance.new("TextLabel")
-    gemsLabel.Name = "GemsLabel"
-    gemsLabel.Size = UDim2.new(0.5, 0, 1, 0)
-    gemsLabel.Position = UDim2.new(0, 0, 0, 0)
-    gemsLabel.BackgroundTransparency = 1
-    gemsLabel.Text = "💎 0"
-    gemsLabel.TextColor3 = Color3.fromRGB(100, 200, 255)
-    gemsLabel.TextSize = 18
-    gemsLabel.Parent = currencyBar
-    
-    local shardsLabel = Instance.new("TextLabel")
-    shardsLabel.Name = "ShardsLabel"
-    shardsLabel.Size = UDim2.new(0.5, 0, 1, 0)
-    shardsLabel.Position = UDim2.new(0.5, 0, 0, 0)
-    shardsLabel.BackgroundTransparency = 1
-    shardsLabel.Text = "🔷 0"
-    shardsLabel.TextColor3 = Color3.fromRGB(200, 150, 255)
-    shardsLabel.TextSize = 18
-    shardsLabel.Parent = currencyBar
-
-    local bannerTabsContainer = Instance.new("Frame")
-    bannerTabsContainer.Name = "BannerTabsContainer"
-    bannerTabsContainer.Size = UDim2.new(1, -20, 0, 32)
-    bannerTabsContainer.Position = UDim2.new(0, 10, 0.18, 0)
-    bannerTabsContainer.BackgroundTransparency = 1
-    bannerTabsContainer.Parent = mainFrame
-
-    local auraTabButton = Instance.new("TextButton")
-    auraTabButton.Name = "AuraTabButton"
-    auraTabButton.Size = UDim2.new(0.48, 0, 1, 0)
-    auraTabButton.Position = UDim2.new(0, 0, 0, 0)
-    auraTabButton.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
-    auraTabButton.Text = "Auras"
-    auraTabButton.TextColor3 = Color3.new(1, 1, 1)
-    auraTabButton.TextSize = 14
-    auraTabButton.Font = Enum.Font.GothamBold
-    auraTabButton.Parent = bannerTabsContainer
-
-    local auraCorner = Instance.new("UICorner")
-    auraCorner.CornerRadius = UDim.new(0, 6)
-    auraCorner.Parent = auraTabButton
-
-    local accessoryTabButton = Instance.new("TextButton")
-    accessoryTabButton.Name = "AccessoryTabButton"
-    accessoryTabButton.Size = UDim2.new(0.48, 0, 1, 0)
-    accessoryTabButton.Position = UDim2.new(0.52, 0, 0, 0)
-    accessoryTabButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-    accessoryTabButton.Text = "Accessories"
-    accessoryTabButton.TextColor3 = Color3.new(1, 1, 1)
-    accessoryTabButton.TextSize = 14
-    accessoryTabButton.Font = Enum.Font.GothamBold
-    accessoryTabButton.Parent = bannerTabsContainer
-
-    local accessoryCorner = Instance.new("UICorner")
-    accessoryCorner.CornerRadius = UDim.new(0, 6)
-    accessoryCorner.Parent = accessoryTabButton
-
-    local function updateBannerTabs()
-        if currentBanner == "standard_aura" then
-            auraTabButton.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
-            accessoryTabButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-        else
-            auraTabButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-            accessoryTabButton.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
-        end
-    end
-
-    auraTabButton.MouseButton1Click:Connect(function()
-        currentBanner = "standard_aura"
-        updateBannerTabs()
-        local bannerTitle = mainFrame:FindFirstChild("BannerContainer"):FindFirstChild("BannerTitle")
-        if bannerTitle then
-            bannerTitle.Text = "Standard Aura Banner"
-        end
-    end)
-
-    accessoryTabButton.MouseButton1Click:Connect(function()
-        currentBanner = "standard_accessory"
-        updateBannerTabs()
-        local bannerTitle = mainFrame:FindFirstChild("BannerContainer"):FindFirstChild("BannerTitle")
-        if bannerTitle then
-            bannerTitle.Text = "Standard Accessory Banner"
-        end
-    end)
-
-    local bannerContainer = Instance.new("Frame")
-    bannerContainer.Name = "BannerContainer"
-    bannerContainer.Size = UDim2.new(1, -20, 0.25, 0)
-    bannerContainer.Position = UDim2.new(0, 10, 0.28, 5)
-    bannerContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-    bannerContainer.Parent = mainFrame
-    
-    local bannerTitle = Instance.new("TextLabel")
-    bannerTitle.Name = "BannerTitle"
-    bannerTitle.Size = UDim2.new(1, 0, 0.3, 0)
-    bannerTitle.Position = UDim2.new(0, 0, 0, 0)
-    bannerTitle.BackgroundTransparency = 1
-    bannerTitle.Text = "Standard Aura Banner"
-    bannerTitle.TextColor3 = Color3.new(1, 1, 1)
-    bannerTitle.TextSize = 16
-    bannerTitle.Parent = bannerContainer
-    
-    local pityLabel = Instance.new("TextLabel")
-    pityLabel.Name = "PityLabel"
-    pityLabel.Size = UDim2.new(1, 0, 0.3, 0)
-    pityLabel.Position = UDim2.new(0, 0, 0.35, 0)
-    pityLabel.BackgroundTransparency = 1
-    pityLabel.Text = "Pity: 0/80"
-    pityLabel.TextColor3 = Color3.fromRGB(255, 200, 100)
-    pityLabel.TextSize = 14
-    pityLabel.Parent = bannerContainer
-    
-    local pityBar = Instance.new("Frame")
-    pityBar.Name = "PityBar"
-    pityBar.Size = UDim2.new(0.8, 0, 0.2, 0)
-    pityBar.Position = UDim2.new(0.1, 0, 0.7, 0)
-    pityBar.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-    pityBar.Parent = bannerContainer
-    
-    local pityFill = Instance.new("Frame")
-    pityFill.Name = "PityFill"
-    pityFill.Size = UDim2.new(0, 0, 1, 0)
-    pityFill.Position = UDim2.new(0, 0, 0, 0)
-    pityFill.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
-    pityFill.Parent = pityBar
-    
-    local buttonsContainer = Instance.new("Frame")
-    buttonsContainer.Name = "ButtonsContainer"
-    buttonsContainer.Size = UDim2.new(1, -20, 0.12, 0)
-    buttonsContainer.Position = UDim2.new(0, 10, 0.56, 0)
-    buttonsContainer.BackgroundTransparency = 1
-    buttonsContainer.Parent = mainFrame
-    
-    local singleRollButton = Instance.new("TextButton")
-    singleRollButton.Name = "SingleRollButton"
-    singleRollButton.Size = UDim2.new(0.48, 0, 1, 0)
-    singleRollButton.Position = UDim2.new(0, 0, 0, 0)
-    singleRollButton.BackgroundColor3 = Color3.fromRGB(70, 130, 200)
-    singleRollButton.Text = "Roll x1 (100💎)"
-    singleRollButton.TextColor3 = Color3.new(1, 1, 1)
-    singleRollButton.TextSize = 14
-    singleRollButton.Parent = buttonsContainer
-    singleRollButton.MouseButton1Click:Connect(function()
-        GachaClient.requestRoll(currentBanner, 1)
-    end)
-    
-    local tenRollButton = Instance.new("TextButton")
-    tenRollButton.Name = "TenRollButton"
-    tenRollButton.Size = UDim2.new(0.48, 0, 1, 0)
-    tenRollButton.Position = UDim2.new(0.52, 0, 0, 0)
-    tenRollButton.BackgroundColor3 = Color3.fromRGB(200, 100, 50)
-    tenRollButton.Text = "Roll x10 (900💎)"
-    tenRollButton.TextColor3 = Color3.new(1, 1, 1)
-    tenRollButton.TextSize = 14
-    tenRollButton.Parent = buttonsContainer
-    tenRollButton.MouseButton1Click:Connect(function()
-        GachaClient.requestRoll(currentBanner, 10)
-    end)
-    
-    local inventoryButton = Instance.new("TextButton")
-    inventoryButton.Name = "InventoryButton"
-    inventoryButton.Size = UDim2.new(1, -20, 0.08, 0)
-    inventoryButton.Position = UDim2.new(0, 10, 0.7, 0)
-    inventoryButton.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
-    inventoryButton.Text = "Inventory"
-    inventoryButton.TextColor3 = Color3.new(1, 1, 1)
-    inventoryButton.TextSize = 16
-    inventoryButton.Parent = mainFrame
-    inventoryButton.MouseButton1Click:Connect(function()
-        GachaClient.showInventory()
-    end)
-    
-    local shopButton = Instance.new("TextButton")
-    shopButton.Name = "ShopButton"
-    shopButton.Size = UDim2.new(1, -20, 0.08, 0)
-    shopButton.Position = UDim2.new(0, 10, 0.8, 0)
-    shopButton.BackgroundColor3 = Color3.fromRGB(100, 50, 150)
-    shopButton.Text = "Buy Gems"
-    shopButton.TextColor3 = Color3.new(1, 1, 1)
-    shopButton.TextSize = 16
-    shopButton.Parent = mainFrame
-    shopButton.MouseButton1Click:Connect(function()
-        GachaClient.showShop()
-    end)
-end
-
-local function createRollResultUI()
-    if rollResultFrame then return end
-    
-    rollResultFrame = Instance.new("Frame")
-    rollResultFrame.Name = "RollResultFrame"
-    rollResultFrame.Size = UDim2.new(0.8, 0, 0.8, 0)
-    rollResultFrame.Position = UDim2.new(0.1, 0, 0.1, 0)
-    rollResultFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
-    rollResultFrame.BorderSizePixel = 0
-    rollResultFrame.Visible = false
-    rollResultFrame.Parent = screenGui
-    
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 12)
-    corner.Parent = rollResultFrame
-    
-    local resultsContainer = Instance.new("ScrollingFrame")
-    resultsContainer.Name = "ResultsContainer"
-    resultsContainer.Size = UDim2.new(1, -20, 0.85, 0)
-    resultsContainer.Position = UDim2.new(0, 10, 0, 10)
-    resultsContainer.BackgroundTransparency = 1
-    resultsContainer.ScrollBarThickness = 6
-    resultsContainer.Parent = rollResultFrame
-    
-    local layout = Instance.new("UIGridLayout")
-    layout.CellSize = UDim2.new(0, 100, 0, 120)
-    layout.CellPadding = UDim2.new(0, 10, 0, 10)
-    layout.Parent = resultsContainer
-    
-    local closeButton = Instance.new("TextButton")
-    closeButton.Name = "CloseButton"
-    closeButton.Size = UDim2.new(0.3, 0, 0, 40)
-    closeButton.Position = UDim2.new(0.35, 0, 0.9, 0)
-    closeButton.BackgroundColor3 = Color3.fromRGB(70, 130, 200)
-    closeButton.Text = "Close"
-    closeButton.TextColor3 = Color3.new(1, 1, 1)
-    closeButton.Parent = rollResultFrame
-    closeButton.MouseButton1Click:Connect(function()
-        rollResultFrame.Visible = false
-    end)
-end
-
-local function createInventoryUI()
-    if inventoryFrame then return end
-    
-    inventoryFrame = Instance.new("Frame")
-    inventoryFrame.Name = "InventoryFrame"
-    inventoryFrame.Size = UDim2.new(0.6, 0, 0.7, 0)
-    inventoryFrame.Position = UDim2.new(0.2, 0, 0.15, 0)
-    inventoryFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-    inventoryFrame.BorderSizePixel = 0
-    inventoryFrame.Visible = false
-    inventoryFrame.Parent = screenGui
-    
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 12)
-    corner.Parent = inventoryFrame
-    
-    local title = Instance.new("TextLabel")
-    title.Name = "Title"
-    title.Size = UDim2.new(1, 0, 0.1, 0)
-    title.Position = UDim2.new(0, 0, 0, 0)
-    title.BackgroundTransparency = 1
-    title.Text = "INVENTORY"
-    title.TextColor3 = Color3.fromRGB(200, 150, 255)
-    title.TextSize = 24
-    title.Parent = inventoryFrame
-    
-    local closeButton = Instance.new("TextButton")
-    closeButton.Name = "CloseButton"
-    closeButton.Size = UDim2.new(0, 30, 0, 30)
-    closeButton.Position = UDim2.new(1, -35, 0, 5)
-    closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-    closeButton.Text = "X"
-    closeButton.TextColor3 = Color3.new(1, 1, 1)
-    closeButton.Parent = inventoryFrame
-    closeButton.MouseButton1Click:Connect(function()
-        inventoryFrame.Visible = false
-    end)
-    
-    local tabsContainer = Instance.new("Frame")
-    tabsContainer.Name = "TabsContainer"
-    tabsContainer.Size = UDim2.new(1, -20, 0.08, 0)
-    tabsContainer.Position = UDim2.new(0, 10, 0.1, 5)
-    tabsContainer.BackgroundTransparency = 1
-    tabsContainer.Parent = inventoryFrame
-    
-    local aurasTab = Instance.new("TextButton")
-    aurasTab.Name = "AurasTab"
-    aurasTab.Size = UDim2.new(0.48, 0, 1, 0)
-    aurasTab.BackgroundColor3 = Color3.fromRGB(70, 70, 90)
-    aurasTab.Text = "Auras"
-    aurasTab.TextColor3 = Color3.new(1, 1, 1)
-    aurasTab.Parent = tabsContainer
-    
-    local accessoriesTab = Instance.new("TextButton")
-    accessoriesTab.Name = "AccessoriesTab"
-    accessoriesTab.Size = UDim2.new(0.48, 0, 1, 0)
-    accessoriesTab.Position = UDim2.new(0.52, 0, 0, 0)
-    accessoriesTab.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
-    accessoriesTab.Text = "Accessories"
-    accessoriesTab.TextColor3 = Color3.new(1, 1, 1)
-    accessoriesTab.Parent = tabsContainer
-    
-    local itemsContainer = Instance.new("ScrollingFrame")
-    itemsContainer.Name = "ItemsContainer"
-    itemsContainer.Size = UDim2.new(1, -20, 0.75, 0)
-    itemsContainer.Position = UDim2.new(0, 10, 0.2, 0)
-    itemsContainer.BackgroundTransparency = 1
-    itemsContainer.ScrollBarThickness = 6
-    itemsContainer.Parent = inventoryFrame
-    
-    local layout = Instance.new("UIGridLayout")
-    layout.CellSize = UDim2.new(0, 80, 0, 100)
-    layout.CellPadding = UDim2.new(0, 10, 0, 10)
-    layout.Parent = itemsContainer
+	onVisibilityChanged = callback
 end
 
 function GachaClient.show()
-    createMainUI()
-    mainFrame.Visible = true
-    GachaClient.updateCurrencyDisplay()
-    if onVisibilityChanged then
-        onVisibilityChanged(true)
-    end
+	isVisibleState = true
+	if root then
+		root:render(React.createElement(GachaApp, {
+			isVisible = isVisibleState,
+			onClose = function()
+				GachaClient.hide()
+			end,
+			onOpenShop = function()
+				GachaClient.hide()
+				local ShopClient = _G.ShopClient
+				if ShopClient then
+					ShopClient.show()
+				end
+			end,
+		}))
+	end
+	if onVisibilityChanged then
+		onVisibilityChanged(true)
+	end
 end
 
 function GachaClient.hide()
-    if mainFrame then
-        mainFrame.Visible = false
-    end
-    if onVisibilityChanged then
-        onVisibilityChanged(false)
-    end
+	isVisibleState = false
+	if root then
+		root:render(React.createElement(GachaApp, {
+			isVisible = isVisibleState,
+			onClose = function() end,
+			onOpenShop = function() end,
+		}))
+	end
+	if onVisibilityChanged then
+		onVisibilityChanged(false)
+	end
 end
 
 function GachaClient.isVisible()
-    return mainFrame and mainFrame.Visible or false
+	return isVisibleState
 end
 
 function GachaClient.toggle()
-    if mainFrame and mainFrame.Visible then
-        GachaClient.hide()
-    else
-        GachaClient.show()
-    end
+	if isVisibleState then
+		GachaClient.hide()
+	else
+		GachaClient.show()
+	end
 end
 
 function GachaClient.updateCurrencyDisplay()
-    if not mainFrame then return end
-    
-    local currencyBar = mainFrame:FindFirstChild("CurrencyBar")
-    if not currencyBar then return end
-    
-    if gachaRemote then
-        local currencyData = gachaRemote:InvokeServer("getCurrency")
-        if currencyData then
-            local gemsLabel = currencyBar:FindFirstChild("GemsLabel")
-            local shardsLabel = currencyBar:FindFirstChild("ShardsLabel")
-            if gemsLabel then
-                gemsLabel.Text = "💎 " .. tostring(currencyData.gems)
-            end
-            if shardsLabel then
-                shardsLabel.Text = "🔷 " .. tostring(currencyData.shards)
-            end
-        end
-    end
-end
-
-function GachaClient.updatePityDisplay(pityRolls)
-    if not mainFrame then return end
-    
-    local bannerContainer = mainFrame:FindFirstChild("BannerContainer")
-    if not bannerContainer then return end
-    
-    local pityLabel = bannerContainer:FindFirstChild("PityLabel")
-    if pityLabel then
-        pityLabel.Text = "Pity: " .. tostring(pityRolls) .. "/80"
-    end
-    
-    local pityFill = bannerContainer:FindFirstChild("PityBar"):FindFirstChild("PityFill")
-    if pityFill then
-        local fillPercent = math.clamp(pityRolls / 80, 0, 1)
-        pityFill.Size = UDim2.new(fillPercent, 0, 1, 0)
-    end
-end
-
-function GachaClient.requestRoll(bannerId: string, count: number)
-    if not gachaRemote then
-        warn("[GachaClient] GachaRemote not found")
-        return
-    end
-    
-    local result, err = gachaRemote:InvokeServer("roll", { bannerId = bannerId, count = count })
-    
-    if err then
-        warn("[GachaClient] Roll failed:", err)
-        return
-    end
-    
-    if result then
-        GachaClient.showRollResults(result.results)
-        GachaClient.updatePityDisplay(result.pityRolls)
-        
-        if result.currency then
-            local currencyBar = mainFrame:FindFirstChild("CurrencyBar")
-            if currencyBar then
-                local gemsLabel = currencyBar:FindFirstChild("GemsLabel")
-                local shardsLabel = currencyBar:FindFirstChild("ShardsLabel")
-                if gemsLabel then
-                    gemsLabel.Text = "💎 " .. tostring(result.currency.gems)
-                end
-                if shardsLabel then
-                    shardsLabel.Text = "🔷 " .. tostring(result.currency.shards)
-                end
-            end
-        end
-    end
-end
-
-function GachaClient.showRollResults(results)
-    createRollResultUI()
-    
-    local container = rollResultFrame:FindFirstChild("ResultsContainer")
-    if not container then return end
-    
-    for _, child in ipairs(container:GetChildren()) do
-        if child:IsA("Frame") then
-            child:Destroy()
-        end
-    end
-    
-    for _, result in ipairs(results) do
-        local itemFrame = Instance.new("Frame")
-        itemFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-        itemFrame.Parent = container
-        
-        local itemData = result.item
-        local rarityColors = {
-            common = Color3.fromRGB(150, 150, 150),
-            rare = Color3.fromRGB(0, 100, 255),
-            epic = Color3.fromRGB(163, 53, 238),
-            legendary = Color3.fromRGB(255, 170, 0),
-        }
-        
-        local rarityBorder = Instance.new("UIStroke")
-        rarityBorder.Color = rarityColors[itemData.rarity] or Color3.new(1, 1, 1)
-        rarityBorder.Thickness = 3
-        rarityBorder.Parent = itemFrame
-        
-        local nameLabel = Instance.new("TextLabel")
-        nameLabel.Size = UDim2.new(1, 0, 0.3, 0)
-        nameLabel.Position = UDim2.new(0, 0, 0.6, 0)
-        nameLabel.BackgroundTransparency = 1
-        nameLabel.Text = itemData.name
-        nameLabel.TextColor3 = Color3.new(1, 1, 1)
-        nameLabel.TextSize = 12
-        nameLabel.TextWrapped = true
-        nameLabel.Parent = itemFrame
-        
-        local rarityLabel = Instance.new("TextLabel")
-        rarityLabel.Size = UDim2.new(1, 0, 0.2, 0)
-        rarityLabel.Position = UDim2.new(0, 0, 0.85, 0)
-        rarityLabel.BackgroundTransparency = 1
-        rarityLabel.Text = string.upper(itemData.rarity)
-        rarityLabel.TextColor3 = rarityColors[itemData.rarity]
-        rarityLabel.TextSize = 10
-        rarityLabel.Parent = itemFrame
-        
-        if not result.isNew then
-            local dupeLabel = Instance.new("TextLabel")
-            dupeLabel.Size = UDim2.new(1, 0, 0.15, 0)
-            dupeLabel.Position = UDim2.new(0, 0, 0.45, 0)
-            dupeLabel.BackgroundTransparency = 1
-            dupeLabel.Text = "+" .. tostring(result.duplicateValue) .. "🔷"
-            dupeLabel.TextColor3 = Color3.fromRGB(200, 150, 255)
-            dupeLabel.TextSize = 10
-            dupeLabel.Parent = itemFrame
-        else
-            local newLabel = Instance.new("TextLabel")
-            newLabel.Size = UDim2.new(1, 0, 0.15, 0)
-            newLabel.Position = UDim2.new(0, 0, 0.45, 0)
-            newLabel.BackgroundTransparency = 1
-            newLabel.Text = "NEW!"
-            newLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
-            newLabel.TextSize = 10
-            newLabel.Parent = itemFrame
-        end
-    end
-    
-    rollResultFrame.Visible = true
-end
-
-function GachaClient.showInventory()
-    createInventoryUI()
-    
-    if gachaRemote then
-        local inventory = gachaRemote:InvokeServer("getInventory")
-        if inventory then
-            GachaClient.populateInventory(inventory)
-        end
-    end
-    
-    inventoryFrame.Visible = true
-end
-
-function GachaClient.populateInventory(inventory)
-    local container = inventoryFrame:FindFirstChild("ItemsContainer")
-    if not container then return end
-    
-    for _, child in ipairs(container:GetChildren()) do
-        if child:IsA("Frame") then
-            child:Destroy()
-        end
-    end
-    
-    local rarityColors = {
-        common = Color3.fromRGB(150, 150, 150),
-        rare = Color3.fromRGB(0, 100, 255),
-        epic = Color3.fromRGB(163, 53, 238),
-        legendary = Color3.fromRGB(255, 170, 0),
-    }
-    
-    local allItems = {}
-    for _, item in ipairs(inventory.auras or {}) do
-        table.insert(allItems, item)
-    end
-    for _, item in ipairs(inventory.accessories or {}) do
-        table.insert(allItems, item)
-    end
-    
-    for _, item in ipairs(allItems) do
-        local itemFrame = Instance.new("Frame")
-        itemFrame.BackgroundColor3 = item.equipped and Color3.fromRGB(60, 80, 60) or Color3.fromRGB(40, 40, 50)
-        itemFrame.Parent = container
-        
-        local rarityBorder = Instance.new("UIStroke")
-        rarityBorder.Color = rarityColors[item.rarity] or Color3.new(1, 1, 1)
-        rarityBorder.Thickness = item.equipped and 4 or 2
-        rarityBorder.Parent = itemFrame
-        
-        local nameLabel = Instance.new("TextLabel")
-        nameLabel.Size = UDim2.new(1, 0, 0.5, 0)
-        nameLabel.Position = UDim2.new(0, 0, 0.4, 0)
-        nameLabel.BackgroundTransparency = 1
-        nameLabel.Text = item.name
-        nameLabel.TextColor3 = Color3.new(1, 1, 1)
-        nameLabel.TextSize = 11
-        nameLabel.TextWrapped = true
-        nameLabel.Parent = itemFrame
-        
-        if item.equipped then
-            local equippedLabel = Instance.new("TextLabel")
-            equippedLabel.Size = UDim2.new(1, 0, 0.2, 0)
-            equippedLabel.Position = UDim2.new(0, 0, 0.85, 0)
-            equippedLabel.BackgroundTransparency = 1
-            equippedLabel.Text = "EQUIPPED"
-            equippedLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
-            equippedLabel.TextSize = 9
-            equippedLabel.Parent = itemFrame
-        end
-        
-        itemFrame.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                if gachaRemote then
-                    gachaRemote:InvokeServer("equipItem", { itemId = item.id })
-                end
-            end
-        end)
-    end
-end
-
-function GachaClient.showShop()
-    print("[GachaClient] Shop not implemented yet")
+	GachaClient.show()
 end
 
 function GachaClient.init()
-    createMainUI()
-    createRollResultUI()
-    createInventoryUI()
-    
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if gameProcessed then return end
-        if input.KeyCode == Enum.KeyCode.G then
-            GachaClient.toggle()
-        end
-    end)
-    
-    print("[GachaClient] Initialized - Press G or click Gacha button")
+	local targetContainer = Instance.new("ScreenGui")
+	targetContainer.Name = "GachaUIRoot"
+	targetContainer.ResetOnSpawn = false
+	targetContainer.IgnoreGuiInset = true
+	targetContainer.Parent = playerGui
+
+	root = ReactRoblox.createRoot(targetContainer)
+	root:render(React.createElement(GachaApp, {
+		isVisible = false,
+		onClose = function() end,
+		onOpenShop = function() end,
+	}))
+
+	UserInputService.InputBegan:Connect(function(input, gameProcessed)
+		if gameProcessed then return end
+		if input.KeyCode == Enum.KeyCode.G then
+			GachaClient.toggle()
+		end
+	end)
+
+	_G.GachaClient = GachaClient
+
+	print("[GachaClient] Initialized")
 end
 
 return GachaClient
