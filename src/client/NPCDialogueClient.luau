@@ -1,17 +1,40 @@
 --!nonstrict
 -- NPC Dialogue Client System for Aethelgard
--- Handles dialogue UI for talking to villagers
+-- React-based UI for talking to villagers
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 local TextService = game:GetService("TextService")
+local Players = game:GetService("Players")
+
+local React = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("React"))
+local ReactRoblox = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("ReactRoblox"))
+
+local e = React.createElement
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
+local COLORS = {
+	SPEAKER_NAME_COLOR = Color3.fromRGB(200, 200, 255),
+	FACTION_LABEL_COLOR = Color3.fromRGB(180, 140, 220),
+	BODY_TEXT_COLOR = Color3.fromRGB(255, 255, 255),
+	TEXT_STROKE_COLOR = Color3.fromRGB(0, 0, 0),
+	BUTTON_DEFAULT_FILL = Color3.fromRGB(40, 40, 60),
+	BUTTON_DEFAULT_BORDER = Color3.fromRGB(100, 100, 150),
+	BUTTON_HOVER_FILL = Color3.fromRGB(60, 60, 100),
+	BUTTON_HOVER_BORDER = Color3.fromRGB(120, 80, 150),
+	BUTTON_HOVER_TEXT = Color3.fromRGB(200, 200, 255),
+}
+
+local DIALOGUE_WIDTH = 400
+local CHOICES_WIDTH = 200
+local BUTTON_HEIGHT = 28
+local BUTTON_SPACING = 5
+local MAX_CHOICES = 7
+
 local function waitForRemote(remoteName, timeout)
+	timeout = timeout or 10
 	local remote = ReplicatedStorage:FindFirstChild(remoteName)
 	if remote then return remote end
 
@@ -28,386 +51,467 @@ end
 
 local npcInteractionRemote = waitForRemote("NPCInteraction", 10)
 
-local SPEAKER_NAME_COLOR = Color3.fromRGB(200, 200, 255)
-local FACTION_LABEL_COLOR = Color3.fromRGB(180, 140, 220)
-local BODY_TEXT_COLOR = Color3.fromRGB(255, 255, 255)
-local TEXT_STROKE_COLOR = Color3.fromRGB(0, 0, 0)
-local BUTTON_DEFAULT_FILL = Color3.fromRGB(40, 40, 60)
-local BUTTON_DEFAULT_BORDER = Color3.fromRGB(100, 100, 150)
-local BUTTON_HOVER_FILL = Color3.fromRGB(60, 60, 100)
-local BUTTON_HOVER_BORDER = Color3.fromRGB(120, 80, 150)
-local BUTTON_HOVER_TEXT = Color3.fromRGB(200, 200, 255)
+local function ChoiceButton(props)
+	local text = props.text
+	local onClick = props.onClick
+	local layoutOrder = props.layoutOrder
 
-local currentNpcId = nil
-local currentNode = "start"
-local currentText = ""
-local currentNpcName = ""
-local currentFaction = ""
-local hasChoices = false
-local currentOptions = {}
-local dialogueTextGui = nil
-local dialogueScreenGui = nil
-local keyboardConnection = nil
-local dialogueHistory = {}
-local currentNpcPosition = nil
-local proximityCheckConnection = nil
+	local isHovered, setIsHovered = React.useState(false)
 
-local updateDialogueText = nil
-local advanceDialogue = nil
+	local backgroundColor = isHovered and COLORS.BUTTON_HOVER_FILL or COLORS.BUTTON_DEFAULT_FILL
+	local borderColor = isHovered and COLORS.BUTTON_HOVER_BORDER or COLORS.BUTTON_DEFAULT_BORDER
+	local textColor = isHovered and COLORS.BUTTON_HOVER_TEXT or COLORS.BODY_TEXT_COLOR
 
-local function closeDialogue()
-	if dialogueScreenGui then
-		dialogueScreenGui:Destroy()
-		dialogueScreenGui = nil
-	end
-
-	if keyboardConnection then
-		keyboardConnection:Disconnect()
-		keyboardConnection = nil
-	end
-
-	if proximityCheckConnection then
-		proximityCheckConnection:Disconnect()
-		proximityCheckConnection = nil
-	end
-
-	if dialogueTextGui then
-		local container = dialogueTextGui:FindFirstChild("DialogueContainer")
-		if container then
-			local tweenOut = TweenService:Create(container, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-				Position = UDim2.new(0.1, 0, 1, -150)
-			})
-			tweenOut:Play()
-			tweenOut.Completed:Connect(function()
-				if dialogueTextGui then
-					dialogueTextGui:Destroy()
-					dialogueTextGui = nil
-				end
-			end)
-		else
-			dialogueTextGui:Destroy()
-			dialogueTextGui = nil
-		end
-	end
-
-	currentNpcId = nil
-	currentNode = "start"
-	currentNpcPosition = nil
-	currentOptions = {}
-	print("[NPCDialogueClient] Dialogue closed")
+	return e("TextButton", {
+		Name = "ChoiceButton",
+		Size = UDim2.new(0.95, 0, 0, BUTTON_HEIGHT),
+		BackgroundColor3 = backgroundColor,
+		BackgroundTransparency = 0,
+		BorderSizePixel = 0,
+		TextColor3 = textColor,
+		TextSize = 14,
+		Font = Enum.Font.Gotham,
+		Text = text,
+		LayoutOrder = layoutOrder,
+		[React.Event.MouseEnter] = function()
+			setIsHovered(true)
+		end,
+		[React.Event.MouseLeave] = function()
+			setIsHovered(false)
+		end,
+		[React.Event.Activated] = onClick,
+	}, {
+		Corner = e("UICorner", {
+			CornerRadius = UDim.new(0, 6),
+		}),
+		Stroke = e("UIStroke", {
+			Color = borderColor,
+			Thickness = 1,
+			Transparency = 0,
+		}),
+	})
 end
 
-local function createStrokeTextLabel(parent, props)
-	local label = Instance.new("TextLabel")
-
-	for key, value in pairs(props) do
-		label[key] = value
-	end
-
-	label.Parent = parent
-
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = TEXT_STROKE_COLOR
-	stroke.Thickness = 3
-	stroke.Transparency = 0
-	stroke.Parent = label
-
-	return label
-end
-
-local function createButton(parent, text, yPos, callback)
-	local button = Instance.new("TextButton")
-	button.Name = "ChoiceButton"
-	button.Size = UDim2.new(0.95, 0, 0, 28)
-	button.Position = UDim2.new(0.025, 0, 0, yPos)
-	button.BackgroundColor3 = BUTTON_DEFAULT_FILL
-	button.BackgroundTransparency = 0
-	button.BorderSizePixel = 0
-	button.TextColor3 = BODY_TEXT_COLOR
-	button.TextSize = 14
-	button.Font = Enum.Font.Gotham
-	button.Text = text
-	button.Parent = parent
-
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 6)
-	corner.Parent = button
-
-	local borderStroke = Instance.new("UIStroke")
-	borderStroke.Color = BUTTON_DEFAULT_BORDER
-	borderStroke.Thickness = 1
-	borderStroke.Transparency = 0
-	borderStroke.Parent = button
-
-	button.MouseEnter:Connect(function()
-		button.BackgroundColor3 = BUTTON_HOVER_FILL
-		borderStroke.Color = BUTTON_HOVER_BORDER
-		button.TextColor3 = BUTTON_HOVER_TEXT
-	end)
-
-	button.MouseLeave:Connect(function()
-		button.BackgroundColor3 = BUTTON_DEFAULT_FILL
-		borderStroke.Color = BUTTON_DEFAULT_BORDER
-		button.TextColor3 = BODY_TEXT_COLOR
-	end)
-
-	button.MouseButton1Click:Connect(callback)
-
-	return button
-end
-
-updateDialogueText = function(message)
-	local screenGui = dialogueTextGui
-
-	if not screenGui or not screenGui.Parent then
-		screenGui = Instance.new("ScreenGui")
-		screenGui.Name = "NPCDialogueText"
-		screenGui.ResetOnSpawn = false
-		screenGui.IgnoreGuiInset = true
-		screenGui.Parent = playerGui
-		dialogueTextGui = screenGui
-	end
-
-	local dialogueBox = screenGui:FindFirstChild("DialogueBox")
-	local choicesBox = screenGui:FindFirstChild("ChoicesBox")
-
-	if dialogueBox then dialogueBox:Destroy() end
-	if choicesBox then choicesBox:Destroy() end
+local function DialogueBox(props)
+	local npcName = props.npcName or "NPC"
+	local faction = props.faction or ""
+	local message = props.message or ""
 
 	local titleHeight = 25
-	local factionHeight = currentFaction and currentFaction ~= "" and 20 or 0
-	local titleSpacing = currentFaction and currentFaction ~= "" and 8 or 0
+	local factionHeight = faction ~= "" and 20 or 0
+	local titleSpacing = faction ~= "" and 8 or 0
 	local baseHeight = titleHeight + factionHeight + titleSpacing + 10
 
-	local availableWidth = 400
-	local textSize, textBounds = TextService:GetTextSize(message, 18, Enum.Font.Gotham, Vector2.new(availableWidth, 1000))
+	local textSize = TextService:GetTextSize(message, 18, Enum.Font.Gotham, Vector2.new(DIALOGUE_WIDTH, 1000))
 	local messageHeight = textSize.Y + 10
 
 	local padding = 20
 	local dialogueBoxHeight = baseHeight + messageHeight + padding
 
-	dialogueBox = Instance.new("Frame")
-	dialogueBox.Name = "DialogueBox"
-	dialogueBox.Size = UDim2.new(0, availableWidth + 40, 0, dialogueBoxHeight)
-	dialogueBox.Position = UDim2.new(0.5, -(availableWidth + 40) / 2, 1, -30)
-	dialogueBox.AnchorPoint = Vector2.new(0, 1)
-	dialogueBox.BackgroundTransparency = 1
-	dialogueBox.Parent = screenGui
+	local children = {
+		Title = e("TextLabel", {
+			Size = UDim2.new(1, 0, 0, titleHeight),
+			Position = UDim2.new(0, 0, 0, 0),
+			BackgroundTransparency = 1,
+			Text = npcName,
+			TextColor3 = COLORS.SPEAKER_NAME_COLOR,
+			TextSize = 18,
+			Font = Enum.Font.GothamBold,
+			TextXAlignment = Enum.TextXAlignment.Center,
+		}, {
+			Stroke = e("UIStroke", {
+				Color = COLORS.TEXT_STROKE_COLOR,
+				Thickness = 3,
+				Transparency = 0,
+			}),
+		}),
 
-	local dialogueTitle = createStrokeTextLabel(dialogueBox, {
-		Size = UDim2.new(1, 0, 0, titleHeight),
-		Position = UDim2.new(0, 0, 0, 0),
-		BackgroundTransparency = 1,
-		Text = currentNpcName,
-		TextColor3 = SPEAKER_NAME_COLOR,
-		TextSize = 18,
-		Font = Enum.Font.GothamBold,
-		TextXAlignment = Enum.TextXAlignment.Center,
-	})
+		Message = e("TextLabel", {
+			Size = UDim2.new(0.95, 0, 0, messageHeight),
+			Position = UDim2.new(0.025, 0, 0, baseHeight),
+			BackgroundTransparency = 1,
+			Text = message,
+			TextColor3 = COLORS.BODY_TEXT_COLOR,
+			TextSize = 18,
+			Font = Enum.Font.Gotham,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextYAlignment = Enum.TextYAlignment.Top,
+			TextWrapped = true,
+		}, {
+			Stroke = e("UIStroke", {
+				Color = COLORS.TEXT_STROKE_COLOR,
+				Thickness = 3,
+				Transparency = 0,
+			}),
+		}),
+	}
 
-	if currentFaction and currentFaction ~= "" then
-		local factionLabel = createStrokeTextLabel(dialogueBox, {
+	if faction ~= "" then
+		children.Faction = e("TextLabel", {
 			Size = UDim2.new(1, 0, 0, factionHeight),
 			Position = UDim2.new(0, 0, 0, titleHeight + titleSpacing),
 			BackgroundTransparency = 1,
-			Text = currentFaction,
-			TextColor3 = FACTION_LABEL_COLOR,
+			Text = faction,
+			TextColor3 = COLORS.FACTION_LABEL_COLOR,
 			TextSize = 14,
 			Font = Enum.Font.Gotham,
 			TextXAlignment = Enum.TextXAlignment.Center,
+		}, {
+			Stroke = e("UIStroke", {
+				Color = COLORS.TEXT_STROKE_COLOR,
+				Thickness = 3,
+				Transparency = 0,
+			}),
 		})
 	end
 
-	local messageLabel = createStrokeTextLabel(dialogueBox, {
-		Size = UDim2.new(0.95, 0, 0, messageHeight),
-		Position = UDim2.new(0.025, 0, 0, baseHeight),
+	return e("Frame", {
+		Name = "DialogueBox",
+		Size = UDim2.new(0, DIALOGUE_WIDTH + 40, 0, dialogueBoxHeight),
+		Position = UDim2.new(0.5, -(DIALOGUE_WIDTH + 40) / 2, 1, -30),
+		AnchorPoint = Vector2.new(0, 1),
 		BackgroundTransparency = 1,
-		Text = message,
-		TextColor3 = BODY_TEXT_COLOR,
-		TextSize = 18,
-		Font = Enum.Font.Gotham,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		TextYAlignment = Enum.TextYAlignment.Top,
-		TextWrapped = true,
-	})
+	}, children)
+end
 
-	local maxChoices = 7
-	local buttonHeight = 28
-	local buttonSpacing = 5
-	local choicesTitleHeight = 22
-	local quitButtonSpace = buttonHeight + buttonSpacing
-	local choicesBoxWidth = 200
-	local choicesBoxHeight = choicesTitleHeight + (maxChoices + 1) * (buttonHeight + buttonSpacing)
+local function ChoicesPanel(props)
+	local options = props.options or {}
+	local hasChoices = props.hasChoices
+	local onChoiceSelected = props.onChoiceSelected
+	local onClose = props.onClose
 
-	choicesBox = Instance.new("Frame")
-	choicesBox.Name = "ChoicesBox"
-	choicesBox.Size = UDim2.new(0, choicesBoxWidth, 0, choicesBoxHeight)
-	choicesBox.Position = UDim2.new(1, -choicesBoxWidth - 20, 1, -50)
-	choicesBox.AnchorPoint = Vector2.new(0, 1)
-	choicesBox.BackgroundTransparency = 1
-	choicesBox.Parent = screenGui
+	local maxButtons = MAX_CHOICES + 1
+	local panelHeight = 22 + maxButtons * (BUTTON_HEIGHT + BUTTON_SPACING)
 
-	local choicesTitle = createStrokeTextLabel(choicesBox, {
-		Size = UDim2.new(1, 0, 0, choicesTitleHeight),
-		Position = UDim2.new(0, 0, 0, 0),
-		BackgroundTransparency = 1,
-		Text = "Choices:",
-		TextColor3 = SPEAKER_NAME_COLOR,
-		TextSize = 16,
-		Font = Enum.Font.GothamBold,
-		TextXAlignment = Enum.TextXAlignment.Center,
-	})
+	local buttonsChildren = {
+		Layout = e("UIListLayout", {
+			SortOrder = Enum.SortOrder.LayoutOrder,
+			Padding = UDim.new(0, BUTTON_SPACING),
+		}),
+	}
 
-	local choicesStartY = choicesTitleHeight + 5
-
-	if hasChoices and currentOptions then
-		for i, option in ipairs(currentOptions) do
-			createButton(choicesBox, option.text, choicesStartY, function()
-				advanceDialogue(i)
-			end)
-			choicesStartY = choicesStartY + buttonHeight + buttonSpacing
+	if hasChoices then
+		for i, option in ipairs(options) do
+			buttonsChildren["Choice_" .. i] = e(ChoiceButton, {
+				text = option.text,
+				onClick = function()
+					onChoiceSelected(i)
+				end,
+				layoutOrder = i,
+			})
 		end
 	end
 
-	createButton(choicesBox, "Quit", choicesStartY, function()
-		closeDialogue()
-	end)
-
-	print(string.format("[NPC] %s: %s", currentNpcName, message))
-end
-
-advanceDialogue = function(optionIndex)
-	if not currentNpcId then return end
-
-	table.insert(dialogueHistory, {
-		npcId = currentNpcId,
-		node = currentNode,
-		text = currentText,
-		npcName = currentNpcName,
-		faction = currentFaction,
-		hasChoices = hasChoices,
-		options = currentOptions,
+	buttonsChildren.QuitButton = e(ChoiceButton, {
+		text = "Quit",
+		onClick = onClose,
+		layoutOrder = 100,
 	})
 
-	if dialogueScreenGui then
-		dialogueScreenGui:Destroy()
-		dialogueScreenGui = nil
-	end
+	return e("Frame", {
+		Name = "ChoicesBox",
+		Size = UDim2.new(0, CHOICES_WIDTH, 0, panelHeight),
+		Position = UDim2.new(1, -CHOICES_WIDTH - 20, 1, -50),
+		AnchorPoint = Vector2.new(0, 1),
+		BackgroundTransparency = 1,
+	}, {
+		Title = e("TextLabel", {
+			Size = UDim2.new(1, 0, 0, 22),
+			Position = UDim2.new(0, 0, 0, 0),
+			BackgroundTransparency = 1,
+			Text = "Choices:",
+			TextColor3 = COLORS.SPEAKER_NAME_COLOR,
+			TextSize = 16,
+			Font = Enum.Font.GothamBold,
+			TextXAlignment = Enum.TextXAlignment.Center,
+		}, {
+			Stroke = e("UIStroke", {
+				Color = COLORS.TEXT_STROKE_COLOR,
+				Thickness = 3,
+				Transparency = 0,
+			}),
+		}),
 
-	if keyboardConnection then
-		keyboardConnection:Disconnect()
-		keyboardConnection = nil
-	end
+		ButtonsContainer = e("Frame", {
+			Size = UDim2.new(1, 0, 1, -27),
+			Position = UDim2.new(0, 0, 0, 27),
+			BackgroundTransparency = 1,
+		}, buttonsChildren),
+	})
+end
 
-	if npcInteractionRemote then
+local function useDialogueController()
+	local dialogueState, setDialogueState = React.useState({
+		isActive = false,
+		npcId = nil,
+		npcName = "",
+		faction = "",
+		currentNode = "start",
+		text = "",
+		options = {},
+		hasChoices = false,
+		npcPosition = nil,
+	})
+
+	local proximityConnectionRef = React.useRef(nil)
+
+	local closeDialogue = React.useCallback(function()
+		if proximityConnectionRef.current then
+			proximityConnectionRef.current:Disconnect()
+			proximityConnectionRef.current = nil
+		end
+
+		setDialogueState({
+			isActive = false,
+			npcId = nil,
+			npcName = "",
+			faction = "",
+			currentNode = "start",
+			text = "",
+			options = {},
+			hasChoices = false,
+			npcPosition = nil,
+		})
+	end, {})
+
+	local checkProximity = React.useCallback(function()
+		if not dialogueState.isActive then return end
+		if not dialogueState.npcId or not dialogueState.npcPosition then return end
+
+		local character = player.Character
+		if not character then return end
+
+		local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+		if not humanoidRootPart then return end
+
+		local distance = (humanoidRootPart.Position - dialogueState.npcPosition).Magnitude
+
+		if distance > 20 then
+			print("[NPCDialogueClient] Player too far from NPC, closing dialogue")
+			closeDialogue()
+		end
+	end, {closeDialogue})
+
+	local startProximityCheck = React.useCallback(function(npcPosition)
+		if proximityConnectionRef.current then
+			proximityConnectionRef.current:Disconnect()
+		end
+
+		proximityConnectionRef.current = RunService.Heartbeat:Connect(checkProximity)
+	end, {checkProximity})
+
+	local advanceDialogue = React.useCallback(function(optionIndex)
+		print("[NPCDialogueClient] advanceDialogue called with optionIndex:", optionIndex)
+		
+		local currentState = dialogueState
+		if not currentState.npcId then 
+			print("[NPCDialogueClient] No npcId in state")
+			return 
+		end
+		if not npcInteractionRemote then 
+			print("[NPCDialogueClient] No remote")
+			return 
+		end
+
+		print("[NPCDialogueClient] Calling server with:", currentState.npcId, currentState.currentNode, optionIndex)
+		
 		local result = npcInteractionRemote:InvokeServer("advanceDialogue", {
-			npcId = currentNpcId,
-			currentNode = currentNode,
+			npcId = currentState.npcId,
+			currentNode = currentState.currentNode,
 			optionIndex = optionIndex,
 		})
 
-		if result then
-			currentNode = result.currentNode
-			currentText = result.text or ""
-			currentNpcName = result.npcName or currentNpcName
-			currentFaction = result.faction or ""
-			hasChoices = result.hasChoices or false
-			currentOptions = result.options or {}
+		print("[NPCDialogueClient] Server result:", result)
 
-			updateDialogueText(currentText)
+		if result then
+			setDialogueState({
+				isActive = true,
+				npcId = currentState.npcId,
+				npcName = result.npcName or currentState.npcName,
+				faction = result.faction or "",
+				currentNode = result.currentNode,
+				text = result.text or "",
+				options = result.options or {},
+				hasChoices = result.hasChoices or false,
+				npcPosition = currentState.npcPosition,
+			})
 
 			if result.endConversation then
-				task.delay(2, function()
-					closeDialogue()
-				end)
+				task.delay(2, closeDialogue)
 			end
 		end
-	end
-end
+	end, {closeDialogue, dialogueState})
 
-local function checkProximity()
-	if not currentNpcId or not currentNpcPosition then return end
+	local startConversation = React.useCallback(function(npcId)
+		if not npcInteractionRemote then
+			warn("[NPCDialogueClient] NPCInteraction remote not found")
+			return false
+		end
 
-	local character = player.Character
-	if not character then return end
-
-	local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-	if not humanoidRootPart then return end
-
-	local distance = (humanoidRootPart.Position - currentNpcPosition).Magnitude
-
-	if distance > 20 then
-		print("[NPCDialogueClient] Player too far from NPC, closing dialogue")
 		closeDialogue()
-	end
+
+		local result = npcInteractionRemote:InvokeServer("startConversation", { npcId = npcId })
+
+		if result then
+			local dialogueResult = npcInteractionRemote:InvokeServer("getCurrentDialogue", {
+				npcId = result.npcId,
+				currentNode = result.currentNode or "start",
+			})
+
+			if dialogueResult then
+				local npcPosition = result.npcPosition
+				if npcPosition then
+					startProximityCheck(npcPosition)
+				end
+
+				setDialogueState({
+					isActive = true,
+					npcId = result.npcId,
+					npcName = result.npcName or "NPC",
+					faction = result.faction or "",
+					currentNode = result.currentNode or "start",
+					text = dialogueResult.text or "",
+					options = dialogueResult.options or {},
+					hasChoices = dialogueResult.hasChoices or false,
+					npcPosition = npcPosition,
+				})
+
+				if dialogueResult.endConversation then
+					task.delay(2, closeDialogue)
+				end
+
+				return true
+			end
+		end
+
+		return false
+	end, {closeDialogue, startProximityCheck})
+
+	local isInDialogue = React.useCallback(function()
+		return dialogueState.isActive
+	end, {})
+
+	React.useEffect(function()
+		return function()
+			if proximityConnectionRef.current then
+				proximityConnectionRef.current:Disconnect()
+			end
+		end
+	end, {})
+
+	return {
+		dialogueState = dialogueState,
+		startConversation = startConversation,
+		advanceDialogue = advanceDialogue,
+		closeDialogue = closeDialogue,
+		isInDialogue = isInDialogue,
+	}
 end
 
-local function startProximityCheck()
-	if proximityCheckConnection then
-		proximityCheckConnection:Disconnect()
+local function NPCDialogueApp(props)
+	local controller = useDialogueController()
+
+	local dialogueState = controller.dialogueState
+
+	React.useEffect(function()
+		if props.setController then
+			props.setController(controller)
+		end
+	end, {controller})
+
+	if not dialogueState.isActive then
+		return nil
 	end
 
-	proximityCheckConnection = game:GetService("RunService").Heartbeat:Connect(checkProximity)
+	return e("ScreenGui", {
+		Name = "NPCDialogueText",
+		ResetOnSpawn = false,
+		IgnoreGuiInset = true,
+	}, {
+		DialogueBox = e(DialogueBox, {
+			npcName = dialogueState.npcName,
+			faction = dialogueState.faction,
+			message = dialogueState.text,
+		}),
+
+		ChoicesPanel = e(ChoicesPanel, {
+			options = dialogueState.options,
+			hasChoices = dialogueState.hasChoices,
+			onChoiceSelected = controller.advanceDialogue,
+			onClose = controller.closeDialogue,
+		}),
+	})
+end
+
+local root = nil
+local controllerRef = nil
+
+local function mountDialogueUI()
+	if root then
+		return
+	end
+
+	local targetContainer = Instance.new("ScreenGui")
+	targetContainer.Name = "NPCDialogueRoot"
+	targetContainer.ResetOnSpawn = false
+	targetContainer.IgnoreGuiInset = true
+	targetContainer.Parent = playerGui
+
+	root = ReactRoblox.createRoot(targetContainer)
+
+	root:render(React.createElement(NPCDialogueApp, {
+		setController = function(controller)
+			controllerRef = controller
+		end,
+	}))
+
+	print("[NPCDialogueClient] React UI mounted")
+end
+
+local function unmountDialogueUI()
+	if root then
+		root:unmount()
+		root = nil
+		controllerRef = nil
+		print("[NPCDialogueClient] React UI unmounted")
+	end
 end
 
 local NPCDialogueClient = {}
 
 function NPCDialogueClient.startConversation(npcId)
-	if not npcInteractionRemote then
-		warn("[NPCDialogueClient] NPCInteraction remote not found")
-		return false
+	if not controllerRef then
+		mountDialogueUI()
+		task.wait(0.1)
 	end
 
-	closeDialogue()
-
-	local result = npcInteractionRemote:InvokeServer("startConversation", { npcId = npcId })
-
-	if result then
-		currentNpcId = result.npcId
-		currentNpcName = result.npcName or "NPC"
-		currentFaction = result.faction or ""
-		currentNode = result.currentNode or "start"
-		currentNpcPosition = result.npcPosition
-
-		print("[NPCDialogueClient] NPC position received:", currentNpcPosition)
-		if currentNpcPosition then
-			startProximityCheck()
-		end
-
-		local dialogueResult = npcInteractionRemote:InvokeServer("getCurrentDialogue", {
-			npcId = currentNpcId,
-			currentNode = currentNode,
-		})
-
-		if dialogueResult then
-			currentText = dialogueResult.text or ""
-			hasChoices = dialogueResult.hasChoices or false
-			currentOptions = dialogueResult.options or {}
-
-			print("[NPCDialogueClient] dialogueResult - hasChoices:", hasChoices, "options:", #currentOptions)
-
-			updateDialogueText(currentText)
-
-			if dialogueResult.endConversation then
-				task.delay(2, function()
-					closeDialogue()
-				end)
-			end
-
-			return true
-		end
+	if controllerRef then
+		return controllerRef.startConversation(npcId)
 	end
 
 	return false
 end
 
 function NPCDialogueClient.isInDialogue()
-	return currentNpcId ~= nil
+	if controllerRef then
+		return controllerRef.isInDialogue()
+	end
+	return false
 end
 
 function NPCDialogueClient.close()
-	closeDialogue()
+	if controllerRef then
+		controllerRef.closeDialogue()
+	end
 end
 
-print("[NPCDialogueClient] Module loaded")
+function NPCDialogueClient.mount()
+	mountDialogueUI()
+end
+
+function NPCDialogueClient.unmount()
+	unmountDialogueUI()
+end
+
+print("[NPCDialogueClient] React-based module loaded")
 return NPCDialogueClient
