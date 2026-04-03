@@ -15,10 +15,10 @@ CurrencySystem.CURRENCY_NAME = "Gems"
 CurrencySystem.SECONDARY_CURRENCY_NAME = "Shards"
 
 CurrencySystem.ROBUX_PACKS = {
-    { id = "pack_100", name = "100 Gems", robux = 59, amount = 100, productId = 0 },
-    { id = "pack_550", name = "550 Gems", robux = 249, amount = 550, productId = 0 },
-    { id = "pack_1200", name = "1200 Gems", robux = 449, amount = 1200, productId = 0 },
-    { id = "pack_2500", name = "2500 Gems", robux = 899, amount = 2500, productId = 0 },
+	{ id = "pack_100", name = "100 Gems", robux = 59, amount = 100, productId = 3569290937 },
+	{ id = "pack_550", name = "550 Gems", robux = 249, amount = 550, productId = 3569291172 },
+	{ id = "pack_1200", name = "1200 Gems", robux = 449, amount = 1200, productId = 3569291516 },
+	{ id = "pack_2500", name = "2500 Gems", robux = 899, amount = 2500, productId = 3569291677 },
 }
 
 CurrencySystem.ROLL_COST = {

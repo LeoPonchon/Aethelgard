@@ -18,12 +18,17 @@
       }
     },
 
-    "StarterPlayer": {
-      "StarterPlayerScripts": {
-        "Client": {
-          "$path": "src/client"
+		"StarterPlayer": {
+			"StarterPlayerScripts": {
+				"Client": {
+					"$path": "src/client"
+				}
+			},
+			"StarterCharacterScripts": {
+				"StarterCharacter": {
+				  "$path": "src/startercharacter"
         }
-      }
-    }
+			}
+		}
   }
 }

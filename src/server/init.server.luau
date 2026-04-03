@@ -195,8 +195,23 @@ shopRemote.OnServerInvoke = function(player, action, data)
         return ShopSystem.equipItem(player.UserId, data.itemId)
     elseif action == "unequipItem" then
         return ShopSystem.unequipItem(player.UserId, data.itemId)
+    elseif action == "processGamepassPurchase" then
+        return ShopSystem.processGamepassPurchase(player, data.gamepassId)
     end
     return nil
+end
+
+MarketplaceService.ProcessReceipt = function(receiptInfo)
+    local player = Players:GetPlayerByUserId(receiptInfo.PlayerId)
+    if not player then
+        return Enum.ProductPurchaseDecision.NotProcessedYet
+    end
+
+    local success = ShopSystem.processGamepassPurchase(player, receiptInfo.ProductId)
+    if success then
+        return Enum.ProductPurchaseDecision.PurchaseGranted
+    end
+    return Enum.ProductPurchaseDecision.NotProcessedYet
 end
 
 -- Emote handler

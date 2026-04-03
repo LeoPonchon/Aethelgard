@@ -33,13 +33,12 @@ local COLORS = {
 	GOLD = Color3.fromRGB(255, 215, 0),
 }
 
-local CATEGORIES = {"gems", "alerts", "identity", "emotes", "tools"}
+local CATEGORIES = {"gems", "alerts", "identity", "tools"}
 
 local CATEGORY_ICONS = {
 	gems = "💎",
 	alerts = "🔔",
 	identity = "👑",
-	emotes = "🎭",
 	tools = "⚔️",
 }
 
@@ -127,11 +126,12 @@ local function GemPackCard(props)
 end
 
 local function ShopItemCard(props)
-	local item = props.item
-	local isOwned = props.isOwned
-	local onBuy = props.onBuy
-	local onEquip = props.onEquip
-	local isHovered, setIsHovered = React.useState(false)
+    local item = props.item
+    local isOwned = props.isOwned
+    local isEquipped = props.isEquipped
+    local onBuy = props.onBuy
+    local onEquip = props.onEquip
+    local isHovered, setIsHovered = React.useState(false)
 
 	return e("Frame", {
 		Size = UDim2.new(0, 150, 0, 180),
@@ -177,13 +177,13 @@ local function ShopItemCard(props)
 		ActionButton = e("TextButton", {
 			Size = UDim2.new(1, -10, 0.15, 0),
 			Position = UDim2.new(0, 5, 0.82, 0),
-			BackgroundColor3 = isOwned and COLORS.BUTTON_EQUIP or COLORS.BUTTON_PURCHASE,
+        BackgroundColor3 = isEquipped and Color3.fromRGB(180, 60, 60) or (isOwned and COLORS.BUTTON_EQUIP or COLORS.BUTTON_PURCHASE),
 			BackgroundTransparency = 0,
 			BorderSizePixel = 0,
 			TextColor3 = COLORS.TEXT,
 			TextSize = 12,
 			Font = Enum.Font.GothamBold,
-			Text = isOwned and "EQUIP" or "BUY",
+        Text = isOwned and (isEquipped and "UNEQUIP" or "EQUIP") or "BUY",
 			[React.Event.MouseEnter] = function()
 				setIsHovered(true)
 			end,
@@ -233,30 +233,33 @@ local function GemsTab(props)
 end
 
 local function CategoryTab(props)
-	local category = props.category
-	local ownedItems = props.ownedItems
-	local onBuy = props.onBuy
-	local onEquip = props.onEquip
+    local category = props.category
+    local ownedItems = props.ownedItems
+    local equippedItems = props.equippedItems
+    local onBuy = props.onBuy
+    local onEquip = props.onEquip
 
-	local items = ShopData.getItemsByCategory(category)
+    local items = ShopData.getItemsByCategory(category)
 
-	local children = {
-		Layout = e("UIGridLayout", {
-			CellSize = UDim2.new(0, 160, 0, 190),
-			CellPadding = UDim2.new(0, 10, 0, 10),
-			HorizontalAlignment = Enum.HorizontalAlignment.Center,
-		}),
-	}
+    local children = {
+        Layout = e("UIGridLayout", {
+            CellSize = UDim2.new(0, 160, 0, 190),
+            CellPadding = UDim2.new(0, 10, 0, 10),
+            HorizontalAlignment = Enum.HorizontalAlignment.Center,
+        }),
+    }
 
-	for i, item in ipairs(items) do
-		local isOwned = table.find(ownedItems, item.id) ~= nil
-		children["Item_" .. i] = e(ShopItemCard, {
-			item = item,
-			isOwned = isOwned,
-			onBuy = onBuy,
-			onEquip = onEquip,
-		})
-	end
+    for i, item in ipairs(items) do
+        local isOwned = table.find(ownedItems, item.id) ~= nil
+        local isEquipped = table.find(equippedItems, item.id) ~= nil
+        children["Item_" .. i] = e(ShopItemCard, {
+            item = item,
+            isOwned = isOwned,
+            isEquipped = isEquipped,
+            onBuy = onBuy,
+            onEquip = onEquip,
+        })
+    end
 
 	return e("ScrollingFrame", {
 		Size = UDim2.new(1, 0, 1, 0),
@@ -268,27 +271,31 @@ local function CategoryTab(props)
 end
 
 local function ShopApp(props)
-	local isVisible = props.isVisible
-	local activeTab, setActiveTab = React.useState(1)
-	local currency, setCurrency = React.useState({ gems = 0, shards = 0 })
-	local ownedItems, setOwnedItems = React.useState({})
-	local updateTrigger, setUpdateTrigger = React.useState(0)
+    local isVisible = props.isVisible
+    local activeTab, setActiveTab = React.useState(1)
+    local currency, setCurrency = React.useState({ gems = 0, shards = 0 })
+    local ownedItems, setOwnedItems = React.useState({})
+    local equippedItems, setEquippedItems = React.useState({})
+    local updateTrigger, setUpdateTrigger = React.useState(0)
 
-	React.useEffect(function()
-		if gachaRemote then
-			local currencyData = gachaRemote:InvokeServer("getCurrency")
-			if currencyData then
-				setCurrency(currencyData)
-			end
-		end
+    React.useEffect(function()
+        if gachaRemote then
+            local currencyData = gachaRemote:InvokeServer("getCurrency")
+            if currencyData then
+                setCurrency(currencyData)
+            end
+        end
 
-		if shopRemote then
-			local playerData = shopRemote:InvokeServer("getOwnedItems")
-			if playerData and playerData.owned then
-				setOwnedItems(playerData.owned)
-			end
-		end
-	end, {isVisible, updateTrigger})
+        if shopRemote then
+            local playerData = shopRemote:InvokeServer("getOwnedItems")
+            if playerData and playerData.owned then
+                setOwnedItems(playerData.owned)
+            end
+            if playerData and playerData.equipped then
+                setEquippedItems(playerData.equipped)
+            end
+        end
+    end, {isVisible, updateTrigger})
 
 	React.useEffect(function()
 		local currencyNotification = ReplicatedStorage:FindFirstChild("CurrencyNotification")
@@ -323,14 +330,19 @@ local function ShopApp(props)
 		end
 	end
 
-	local onEquipItem = function(item)
-		if shopRemote then
-			shopRemote:InvokeServer("equipItem", { itemId = item.id })
-			setUpdateTrigger(function(x)
-				return x + 1
-			end)
-		end
-	end
+    local onEquipItem = function(item)
+        if shopRemote then
+            local isEquipped = table.find(equippedItems, item.id) ~= nil
+            if isEquipped then
+                shopRemote:InvokeServer("unequipItem", { itemId = item.id })
+            else
+                shopRemote:InvokeServer("equipItem", { itemId = item.id })
+            end
+            setUpdateTrigger(function(x)
+                return x + 1
+            end)
+        end
+    end
 
 	if not isVisible then
 		return nil
@@ -441,30 +453,27 @@ local function ShopApp(props)
 				GemsTab = activeTab == 1 and e(GemsTab, {
 					onPurchasePack = onPurchasePack,
 				}),
-				AlertsTab = activeTab == 2 and e(CategoryTab, {
-					category = "alerts",
-					ownedItems = ownedItems,
-					onBuy = onBuyItem,
-					onEquip = onEquipItem,
-				}),
-				IdentityTab = activeTab == 3 and e(CategoryTab, {
-					category = "identity",
-					ownedItems = ownedItems,
-					onBuy = onBuyItem,
-					onEquip = onEquipItem,
-				}),
-				EmotesTab = activeTab == 4 and e(CategoryTab, {
-					category = "emotes",
-					ownedItems = ownedItems,
-					onBuy = onBuyItem,
-					onEquip = onEquipItem,
-				}),
-				ToolsTab = activeTab == 5 and e(CategoryTab, {
-					category = "tools",
-					ownedItems = ownedItems,
-					onBuy = onBuyItem,
-					onEquip = onEquipItem,
-				}),
+        AlertsTab = activeTab == 2 and e(CategoryTab, {
+            category = "alerts",
+            ownedItems = ownedItems,
+            equippedItems = equippedItems,
+            onBuy = onBuyItem,
+            onEquip = onEquipItem,
+        }),
+        IdentityTab = activeTab == 3 and e(CategoryTab, {
+            category = "identity",
+            ownedItems = ownedItems,
+            equippedItems = equippedItems,
+            onBuy = onBuyItem,
+            onEquip = onEquipItem,
+        }),
+        ToolsTab = activeTab == 4 and e(CategoryTab, {
+            category = "tools",
+            ownedItems = ownedItems,
+            equippedItems = equippedItems,
+            onBuy = onBuyItem,
+            onEquip = onEquipItem,
+        }),
 			}),
 		}),
 	})
@@ -533,12 +542,13 @@ function ShopClient.init()
 		onClose = function() end,
 	}))
 
-	MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(purchasingPlayer, gamepassId, wasPurchased)
-		if purchasingPlayer == player and wasPurchased then
-			task.wait(1)
-			ShopClient.show()
-		end
-	end)
+MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(purchasingPlayer, gamepassId, wasPurchased)
+    if purchasingPlayer == player and wasPurchased then
+        task.wait(1)
+        shopRemote:InvokeServer("processGamepassPurchase", { gamepassId = gamepassId })
+        ShopClient.show()
+    end
+end)
 
 	_G.ShopClient = ShopClient
 
