@@ -25,6 +25,7 @@ local screenGui = nil
 local mainFrame = nil
 local inventoryFrame = nil
 local rollResultFrame = nil
+local currentBanner = "standard_aura"
 
 local function createMainUI()
     if screenGui then return end
@@ -96,11 +97,76 @@ local function createMainUI()
     shardsLabel.TextColor3 = Color3.fromRGB(200, 150, 255)
     shardsLabel.TextSize = 18
     shardsLabel.Parent = currencyBar
-    
+
+    local bannerTabsContainer = Instance.new("Frame")
+    bannerTabsContainer.Name = "BannerTabsContainer"
+    bannerTabsContainer.Size = UDim2.new(1, -20, 0, 32)
+    bannerTabsContainer.Position = UDim2.new(0, 10, 0.18, 0)
+    bannerTabsContainer.BackgroundTransparency = 1
+    bannerTabsContainer.Parent = mainFrame
+
+    local auraTabButton = Instance.new("TextButton")
+    auraTabButton.Name = "AuraTabButton"
+    auraTabButton.Size = UDim2.new(0.48, 0, 1, 0)
+    auraTabButton.Position = UDim2.new(0, 0, 0, 0)
+    auraTabButton.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
+    auraTabButton.Text = "Auras"
+    auraTabButton.TextColor3 = Color3.new(1, 1, 1)
+    auraTabButton.TextSize = 14
+    auraTabButton.Font = Enum.Font.GothamBold
+    auraTabButton.Parent = bannerTabsContainer
+
+    local auraCorner = Instance.new("UICorner")
+    auraCorner.CornerRadius = UDim.new(0, 6)
+    auraCorner.Parent = auraTabButton
+
+    local accessoryTabButton = Instance.new("TextButton")
+    accessoryTabButton.Name = "AccessoryTabButton"
+    accessoryTabButton.Size = UDim2.new(0.48, 0, 1, 0)
+    accessoryTabButton.Position = UDim2.new(0.52, 0, 0, 0)
+    accessoryTabButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+    accessoryTabButton.Text = "Accessories"
+    accessoryTabButton.TextColor3 = Color3.new(1, 1, 1)
+    accessoryTabButton.TextSize = 14
+    accessoryTabButton.Font = Enum.Font.GothamBold
+    accessoryTabButton.Parent = bannerTabsContainer
+
+    local accessoryCorner = Instance.new("UICorner")
+    accessoryCorner.CornerRadius = UDim.new(0, 6)
+    accessoryCorner.Parent = accessoryTabButton
+
+    local function updateBannerTabs()
+        if currentBanner == "standard_aura" then
+            auraTabButton.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
+            accessoryTabButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+        else
+            auraTabButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+            accessoryTabButton.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
+        end
+    end
+
+    auraTabButton.MouseButton1Click:Connect(function()
+        currentBanner = "standard_aura"
+        updateBannerTabs()
+        local bannerTitle = mainFrame:FindFirstChild("BannerContainer"):FindFirstChild("BannerTitle")
+        if bannerTitle then
+            bannerTitle.Text = "Standard Aura Banner"
+        end
+    end)
+
+    accessoryTabButton.MouseButton1Click:Connect(function()
+        currentBanner = "standard_accessory"
+        updateBannerTabs()
+        local bannerTitle = mainFrame:FindFirstChild("BannerContainer"):FindFirstChild("BannerTitle")
+        if bannerTitle then
+            bannerTitle.Text = "Standard Accessory Banner"
+        end
+    end)
+
     local bannerContainer = Instance.new("Frame")
     bannerContainer.Name = "BannerContainer"
     bannerContainer.Size = UDim2.new(1, -20, 0.25, 0)
-    bannerContainer.Position = UDim2.new(0, 10, 0.2, 5)
+    bannerContainer.Position = UDim2.new(0, 10, 0.28, 5)
     bannerContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
     bannerContainer.Parent = mainFrame
     
@@ -140,8 +206,8 @@ local function createMainUI()
     
     local buttonsContainer = Instance.new("Frame")
     buttonsContainer.Name = "ButtonsContainer"
-    buttonsContainer.Size = UDim2.new(1, -20, 0.15, 0)
-    buttonsContainer.Position = UDim2.new(0, 10, 0.48, 0)
+    buttonsContainer.Size = UDim2.new(1, -20, 0.12, 0)
+    buttonsContainer.Position = UDim2.new(0, 10, 0.56, 0)
     buttonsContainer.BackgroundTransparency = 1
     buttonsContainer.Parent = mainFrame
     
@@ -155,7 +221,7 @@ local function createMainUI()
     singleRollButton.TextSize = 14
     singleRollButton.Parent = buttonsContainer
     singleRollButton.MouseButton1Click:Connect(function()
-        GachaClient.requestRoll("standard_aura", 1)
+        GachaClient.requestRoll(currentBanner, 1)
     end)
     
     local tenRollButton = Instance.new("TextButton")
@@ -168,13 +234,13 @@ local function createMainUI()
     tenRollButton.TextSize = 14
     tenRollButton.Parent = buttonsContainer
     tenRollButton.MouseButton1Click:Connect(function()
-        GachaClient.requestRoll("standard_aura", 10)
+        GachaClient.requestRoll(currentBanner, 10)
     end)
     
     local inventoryButton = Instance.new("TextButton")
     inventoryButton.Name = "InventoryButton"
-    inventoryButton.Size = UDim2.new(1, -20, 0.1, 0)
-    inventoryButton.Position = UDim2.new(0, 10, 0.65, 0)
+    inventoryButton.Size = UDim2.new(1, -20, 0.08, 0)
+    inventoryButton.Position = UDim2.new(0, 10, 0.7, 0)
     inventoryButton.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
     inventoryButton.Text = "Inventory"
     inventoryButton.TextColor3 = Color3.new(1, 1, 1)
@@ -186,8 +252,8 @@ local function createMainUI()
     
     local shopButton = Instance.new("TextButton")
     shopButton.Name = "ShopButton"
-    shopButton.Size = UDim2.new(1, -20, 0.1, 0)
-    shopButton.Position = UDim2.new(0, 10, 0.77, 0)
+    shopButton.Size = UDim2.new(1, -20, 0.08, 0)
+    shopButton.Position = UDim2.new(0, 10, 0.8, 0)
     shopButton.BackgroundColor3 = Color3.fromRGB(100, 50, 150)
     shopButton.Text = "Buy Gems"
     shopButton.TextColor3 = Color3.new(1, 1, 1)
