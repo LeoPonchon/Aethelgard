@@ -33,6 +33,10 @@ local COLORS = {
 
 local TABS = {"Class", "Race", "Team"}
 
+local gachaToggleCallback = nil
+local gachaIsVisibleCallback = nil
+local forceUpdateCallback = nil
+
 local function flattenClasses()
 	local flat = {}
 	for _, category in ipairs(ClassData) do
@@ -236,11 +240,24 @@ local function TeamTab(props)
 end
 
 local function DebugApp()
-	local isVisible, setIsVisible = React.useState(true)
-	local activeTab, setActiveTab = React.useState(1)
-	local currentClass, setCurrentClass = React.useState(nil)
-	local currentRace, setCurrentRace = React.useState(nil)
-	local currentTeam, setCurrentTeam = React.useState(nil)
+    local isVisible, setIsVisible = React.useState(true)
+    local activeTab, setActiveTab = React.useState(1)
+    local currentClass, setCurrentClass = React.useState(nil)
+    local currentRace, setCurrentRace = React.useState(nil)
+    local currentTeam, setCurrentTeam = React.useState(nil)
+    local gachaVisible, setGachaVisible = React.useState(false)
+    local updateTrigger, setUpdateTrigger = React.useState(0)
+
+    React.useEffect(function()
+        forceUpdateCallback = function()
+            setUpdateTrigger(function(x)
+                return x + 1
+            end)
+            if gachaIsVisibleCallback then
+                setGachaVisible(gachaIsVisibleCallback())
+            end
+        end
+    end, {})
 
 	local function onClassSelect(classId)
 		setCurrentClass(classId)
@@ -280,32 +297,53 @@ local function DebugApp()
 		ResetOnSpawn = false,
 		IgnoreGuiInset = true,
 	}, {
-		ToggleButton = e("TextButton", {
-			Size = UDim2.new(0, 100, 0, 28),
-			Position = UDim2.new(0, 10, 0, 10),
-			BackgroundColor3 = COLORS.HEADER,
-			BackgroundTransparency = 0,
-			BorderSizePixel = 0,
-			TextColor3 = COLORS.TEXT,
-			TextSize = 12,
-			Font = Enum.Font.GothamBold,
-			Text = isVisible and "Hide Debug" or "Show Debug",
-			[React.Event.Activated] = function()
-				setIsVisible(not isVisible)
-			end,
-		}, {
-			Corner = e("UICorner", {
-				CornerRadius = UDim.new(0, 6),
-			}),
-		}),
+        ToggleButton = e("TextButton", {
+            Size = UDim2.new(0, 100, 0, 28),
+            Position = UDim2.new(1, -230, 0, 10),
+            BackgroundColor3 = COLORS.HEADER,
+            BackgroundTransparency = 0,
+            BorderSizePixel = 0,
+            TextColor3 = COLORS.TEXT,
+            TextSize = 12,
+            Font = Enum.Font.GothamBold,
+            Text = isVisible and "Hide Debug" or "Show Debug",
+            [React.Event.Activated] = function()
+                setIsVisible(not isVisible)
+            end,
+        }, {
+            Corner = e("UICorner", {
+                CornerRadius = UDim.new(0, 6),
+            }),
+        }),
 
-		Panel = isVisible and e("Frame", {
-			Size = UDim2.new(0, 220, 0, 350),
-			Position = UDim2.new(0, 10, 0, 45),
-			BackgroundColor3 = COLORS.BACKGROUND,
-			BackgroundTransparency = 0,
-			BorderSizePixel = 0,
-		}, {
+        GachaButton = e("TextButton", {
+            Size = UDim2.new(0, 100, 0, 28),
+            Position = UDim2.new(1, -340, 0, 10),
+            BackgroundColor3 = Color3.fromRGB(255, 170, 0),
+            BackgroundTransparency = 0,
+            BorderSizePixel = 0,
+            TextColor3 = Color3.new(1, 1, 1),
+            TextSize = 12,
+            Font = Enum.Font.GothamBold,
+            Text = gachaVisible and "Close Gacha" or "Gacha",
+            [React.Event.Activated] = function()
+                if gachaToggleCallback then
+                    gachaToggleCallback(not gachaVisible)
+                end
+            end,
+        }, {
+            Corner = e("UICorner", {
+                CornerRadius = UDim.new(0, 6),
+            }),
+        }),
+
+        Panel = isVisible and e("Frame", {
+            Size = UDim2.new(0, 220, 0, 350),
+            Position = UDim2.new(1, -230, 0, 45),
+            BackgroundColor3 = COLORS.BACKGROUND,
+            BackgroundTransparency = 0,
+            BorderSizePixel = 0,
+        }, {
 			Corner = e("UICorner", {
 				CornerRadius = UDim.new(0, 8),
 			}),
@@ -372,6 +410,24 @@ end
 local DebugUI = {}
 
 local root = nil
+
+function DebugUI.setGachaToggle(callback)
+    gachaToggleCallback = callback
+end
+
+function DebugUI.setGachaIsVisible(callback)
+    gachaIsVisibleCallback = callback
+end
+
+function DebugUI.setForceUpdate(callback)
+    forceUpdateCallback = callback
+end
+
+function DebugUI.forceUpdateGachaButton()
+    if forceUpdateCallback then
+        forceUpdateCallback()
+    end
+end
 
 function DebugUI.mount()
 	if root then

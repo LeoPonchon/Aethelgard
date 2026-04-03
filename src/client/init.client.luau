@@ -1,6 +1,6 @@
 --!nonstrict
 -- Client initialization script for Aethelgard
--- Minimal version: emote animations and NPC dialogue
+-- Full version: emote animations, NPC dialogue, gacha UI, notifications
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
@@ -43,15 +43,28 @@ end
 
 local DebugUI = script:FindFirstChild("DebugUI")
 if DebugUI then
-	DebugUI = require(DebugUI)
+    DebugUI = require(DebugUI)
 else
-	local parent = script.Parent
-	if parent then
-		DebugUI = parent:FindFirstChild("DebugUI")
-		if DebugUI then
-			DebugUI = require(DebugUI)
-		end
-	end
+    local parent = script.Parent
+    if parent then
+        DebugUI = parent:FindFirstChild("DebugUI")
+        if DebugUI then
+            DebugUI = require(DebugUI)
+        end
+    end
+end
+
+local GachaClient = script:FindFirstChild("GachaClient")
+if GachaClient then
+    GachaClient = require(GachaClient)
+else
+    local parent = script.Parent
+    if parent then
+        GachaClient = parent:FindFirstChild("GachaClient")
+        if GachaClient then
+            GachaClient = require(GachaClient)
+        end
+    end
 end
 
 -- Emote Animation Handling
@@ -157,11 +170,58 @@ player.CharacterAdded:Connect(function(newCharacter)
 	currentEmoteId = nil
 end)
 
-	print("[Client] Aethelgard client initialized - minimal version")
+print("[Client] Aethelgard client initialized - full version")
 
-	if DebugUI then
-		DebugUI.mount()
-	end
+if DebugUI then
+    DebugUI.mount()
+end
+
+if GachaClient then
+    GachaClient.init()
+
+    if DebugUI and DebugUI.setGachaToggle then
+        DebugUI.setGachaToggle(function(show)
+            if show then
+                GachaClient.show()
+            else
+                GachaClient.hide()
+            end
+        end)
+    end
+
+    if DebugUI and DebugUI.setGachaIsVisible then
+        DebugUI.setGachaIsVisible(function()
+            return GachaClient.isVisible()
+        end)
+    end
+
+    GachaClient.setOnVisibilityChanged(function(visible)
+        if DebugUI and DebugUI.forceUpdateGachaButton then
+            DebugUI.forceUpdateGachaButton()
+        end
+    end)
+end
+
+-- Notification handling
+local notificationEvent = waitForRemote("NotificationEvent", 10)
+if notificationEvent then
+    notificationEvent.OnClientEvent:Connect(function(data)
+        print(string.format("[Notification] %s: %s", data.type, data.message))
+    end)
+end
+
+-- Currency notification handling
+local currencyNotification = waitForRemote("CurrencyNotification", 10)
+if currencyNotification then
+    currencyNotification.OnClientEvent:Connect(function(data)
+        if data.type == "purchase" then
+            print(string.format("[Currency] Purchased %d gems! Total: %d", data.amount, data.total))
+            if GachaClient then
+                GachaClient.updateCurrencyDisplay()
+            end
+        end
+    end)
+end
 
 	-- NPC Dialogue handling
 	local npcDialogueEvent = waitForRemote("NPCDialogue", 10)
