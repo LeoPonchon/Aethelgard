@@ -9,10 +9,10 @@ local UserInputService = game:GetService("UserInputService")
 
 local WALK_SPEED = 4
 local RUN_SPEED = 20
-local SPRINT_SPEED = 30
+local SPRINT_SPEED = 28 -- kept for reference, sprint mode removed
 local ROLL_DURATION = 0.6
 local ROLL_COOLDOWN = 0.5
-local ROLL_SPEED = 15
+local ROLL_SPEED = 10
 
 local ANIMATION_IDS = {
 	jump = "rbxassetid://108106429101245",
@@ -139,22 +139,7 @@ local function toggleMovementMode()
 	updateWalkSpeed()
 end
 
-local function startSprint()
-	if currentMovementMode == MovementMode.Walk then
-		currentMovementMode = MovementMode.Run
-	end
-	if currentMovementMode == MovementMode.Run then
-		currentMovementMode = MovementMode.Sprint
-	end
-	updateWalkSpeed()
-end
 
-local function stopSprint()
-	if currentMovementMode == MovementMode.Sprint then
-		currentMovementMode = MovementMode.Run
-	end
-	updateWalkSpeed()
-end
 
 local function roll()
 	if isRolling then
@@ -177,18 +162,15 @@ local function roll()
 	task.delay(ROLL_DURATION, function()
 		if isRolling then
 			isRolling = false
-
-			if sprintActive then
+			if moveDir.Magnitude > 0.1 then
 				currentMovementMode = MovementMode.Sprint
 			end
-
 			updateWalkSpeed()
 		end
 	end)
 end
 
 local function onRollKeyBegin()
-	sprintActive = true
 	if isRolling then
 		return
 	end
@@ -200,13 +182,7 @@ local function onRollKeyEnd()
 end
 
 local function onLeftCtrlPress()
-	if currentMovementMode == MovementMode.Sprint then
-		currentMovementMode = MovementMode.Run
-		sprintActive = false
-		updateWalkSpeed()
-	else
-		toggleMovementMode()
-	end
+	toggleMovementMode()
 end
 
 local function onInputBegan(input: InputObject, gameProcessed: boolean)
@@ -214,7 +190,7 @@ local function onInputBegan(input: InputObject, gameProcessed: boolean)
 		return
 	end
 
-	if input.KeyCode == Enum.KeyCode.LeftAlt then
+	if input.KeyCode == Enum.KeyCode.F then
 		onRollKeyBegin()
 	elseif input.KeyCode == Enum.KeyCode.LeftControl then
 		onLeftCtrlPress()
@@ -226,7 +202,7 @@ local function onInputEnded(input: InputObject, gameProcessed: boolean)
 		return
 	end
 
-	if input.KeyCode == Enum.KeyCode.LeftAlt then
+	if input.KeyCode == Enum.KeyCode.F then
 		onRollKeyEnd()
 	end
 end
@@ -275,6 +251,10 @@ local function updateAnimations()
 				playAnimation("walk", 0.15)
 			end
 		else
+			if currentMovementMode == MovementMode.Sprint then
+				currentMovementMode = MovementMode.Run
+				updateWalkSpeed()
+			end
 			playAnimation("idle", 0.2)
 		end
 	elseif state == Enum.HumanoidStateType.Seated then
@@ -296,19 +276,6 @@ local function onHeartbeat()
 		end
 	end
 
-	local moveDir = getMoveDirection()
-	local isMoving = moveDir.Magnitude > 0.5
-
-	if wasMoving and not isMoving and sprintActive then
-		sprintActive = false
-		if currentMovementMode == MovementMode.Sprint then
-			currentMovementMode = MovementMode.Run
-			updateWalkSpeed()
-		end
-	end
-
-	wasMoving = isMoving
-
 	updateAnimations()
 end
 
@@ -320,8 +287,6 @@ function CharacterController.init(newCharacter: Model)
 	currentMovementMode = MovementMode.Run
 	isRolling = false
 	lastRollTime = 0
-	sprintActive = false
-	wasMoving = false
 
 	loadAllAnimations()
 	playAnimation("idle", 0)

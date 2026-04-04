@@ -27,6 +27,7 @@ local GachaSystem = require(script:WaitForChild("GachaSystem"))
 local ShopSystem = require(script:WaitForChild("ShopSystem"))
 local NotificationSystem = require(script:WaitForChild("NotificationSystem"))
 
+
 -- Initialize systems
 PlayerDisplaySystem.init()
 NPCProximitySystem.init()
@@ -34,6 +35,7 @@ CurrencySystem.init()
 GachaSystem.init()
 ShopSystem.init()
 NotificationSystem.init()
+
 
 -- Create teams
 local function createTeams()

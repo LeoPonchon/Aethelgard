@@ -67,6 +67,8 @@ else
 	end
 end
 
+
+
 local ShopClient = script:FindFirstChild("ShopClient")
 if ShopClient then
 	ShopClient = require(ShopClient)
