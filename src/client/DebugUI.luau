@@ -10,6 +10,7 @@ local ReactRoblox = require(ReplicatedStorage:WaitForChild("Packages"):WaitForCh
 local ClassData = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("ClassData"))
 local RaceData = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("RaceData"))
 local TeamData = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("TeamData"))
+local GachaData = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("GachaData"))
 
 local e = React.createElement
 
@@ -17,6 +18,7 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 local playerDataRemote = ReplicatedStorage:WaitForChild("PlayerData")
+local auraRemote = ReplicatedStorage:FindFirstChild("AuraRemote")
 
 local COLORS = {
 	BACKGROUND = Color3.fromRGB(30, 30, 40),
@@ -31,13 +33,14 @@ local COLORS = {
 	SCROLLBAR = Color3.fromRGB(80, 80, 100),
 }
 
-local TABS = {"Class", "Race", "Team"}
+local TABS = {"Class", "Race", "Team", "Aura"}
 
 local gachaToggleCallback = nil
 local gachaIsVisibleCallback = nil
 local shopToggleCallback = nil
 local shopIsVisibleCallback = nil
 local forceUpdateCallback = nil
+local setAuraCallback = nil
 
 local function flattenClasses()
 	local flat = {}
@@ -74,6 +77,7 @@ end
 local ALL_CLASSES = flattenClasses()
 local ALL_RACES = flattenRaces()
 local ALL_TEAMS = flattenTeams()
+local ALL_AURAS = GachaData.AURAS
 
 local function TabButton(props)
 	local label = props.label
@@ -81,7 +85,7 @@ local function TabButton(props)
 	local onClick = props.onClick
 
 	return e("TextButton", {
-		Size = UDim2.new(1 / 3, -2, 1, 0),
+		Size = UDim2.new(1 / 4, -2, 1, 0),
 		BackgroundColor3 = isActive and COLORS.TAB_ACTIVE or COLORS.TAB_INACTIVE,
 		BackgroundTransparency = 0,
 		BorderSizePixel = 0,
@@ -241,12 +245,45 @@ local function TeamTab(props)
 	}, children)
 end
 
+local function AuraTab(props)
+	local selectedAura = props.selectedAura
+	local onSelect = props.onSelect
+
+	local children = {
+		Layout = e("UIListLayout", {
+			SortOrder = Enum.SortOrder.LayoutOrder,
+			Padding = UDim.new(0, 4),
+		}),
+	}
+
+	for i, auraInfo in ipairs(ALL_AURAS) do
+		local rarityData = GachaData.getRarityById(auraInfo.rarity)
+		children["Aura_" .. i] = e(ItemButton, {
+			label = auraInfo.name,
+			isSelected = auraInfo.id == selectedAura,
+			onClick = function()
+				onSelect(auraInfo.id, auraInfo.rarity)
+			end,
+			color = rarityData and rarityData.color,
+		})
+	end
+
+	return e("ScrollingFrame", {
+		Size = UDim2.new(1, 0, 1, 0),
+		BackgroundTransparency = 1,
+		ScrollBarThickness = 6,
+		ScrollBarImageColor3 = COLORS.SCROLLBAR,
+		CanvasSize = UDim2.new(0, 0, 0, #ALL_AURAS * 36),
+	}, children)
+end
+
 local function DebugApp()
 	local isVisible, setIsVisible = React.useState(true)
 	local activeTab, setActiveTab = React.useState(1)
 	local currentClass, setCurrentClass = React.useState(nil)
 	local currentRace, setCurrentRace = React.useState(nil)
 	local currentTeam, setCurrentTeam = React.useState(nil)
+	local currentAura, setCurrentAura = React.useState(nil)
 	local gachaVisible, setGachaVisible = React.useState(false)
 	local shopVisible, setShopVisible = React.useState(false)
 	local updateTrigger, setUpdateTrigger = React.useState(0)
@@ -295,6 +332,14 @@ local function DebugApp()
 			print("[DebugUI] Server confirmed team change")
 		else
 			warn("[DebugUI] Server rejected team change")
+		end
+	end
+
+	local function onAuraSelect(auraId, rarity)
+		setCurrentAura(auraId)
+		print("[DebugUI] Aura changed to:", auraId, rarity)
+		if setAuraCallback then
+			setAuraCallback(auraId, rarity)
 		end
 	end
 
@@ -403,34 +448,45 @@ local function DebugApp()
 						setActiveTab(2)
 					end,
 				}),
-				Tab3 = e(TabButton, {
-					label = "Team",
-					isActive = activeTab == 3,
-					onClick = function()
-						setActiveTab(3)
-					end,
-				}),
+			Tab3 = e(TabButton, {
+				label = "Team",
+				isActive = activeTab == 3,
+				onClick = function()
+					setActiveTab(3)
+				end,
 			}),
-
-			ContentContainer = e("Frame", {
-				Size = UDim2.new(1, -16, 1, -56),
-				Position = UDim2.new(0, 8, 0, 48),
-				BackgroundTransparency = 1,
-			}, {
-				ClassTab = activeTab == 1 and e(ClassTab, {
-					selectedClass = currentClass,
-					onSelect = onClassSelect,
-				}),
-				RaceTab = activeTab == 2 and e(RaceTab, {
-					selectedRace = currentRace,
-					onSelect = onRaceSelect,
-				}),
-				TeamTab = activeTab == 3 and e(TeamTab, {
-					selectedTeam = currentTeam,
-					onSelect = onTeamSelect,
-				}),
+			Tab4 = e(TabButton, {
+				label = "Aura",
+				isActive = activeTab == 4,
+				onClick = function()
+					setActiveTab(4)
+				end,
 			}),
 		}),
+
+		ContentContainer = e("Frame", {
+			Size = UDim2.new(1, -16, 1, -56),
+			Position = UDim2.new(0, 8, 0, 48),
+			BackgroundTransparency = 1,
+		}, {
+			ClassTab = activeTab == 1 and e(ClassTab, {
+				selectedClass = currentClass,
+				onSelect = onClassSelect,
+			}),
+			RaceTab = activeTab == 2 and e(RaceTab, {
+				selectedRace = currentRace,
+				onSelect = onRaceSelect,
+			}),
+			TeamTab = activeTab == 3 and e(TeamTab, {
+				selectedTeam = currentTeam,
+				onSelect = onTeamSelect,
+			}),
+			AuraTab = activeTab == 4 and e(AuraTab, {
+				selectedAura = currentAura,
+				onSelect = onAuraSelect,
+			}),
+		}),
+	}),
 	})
 end
 
@@ -468,6 +524,10 @@ function DebugUI.forceUpdateShopButton()
 	if forceUpdateCallback then
 		forceUpdateCallback()
 	end
+end
+
+function DebugUI.setSetAura(callback)
+	setAuraCallback = callback
 end
 
 function DebugUI.mount()

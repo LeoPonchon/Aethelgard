@@ -89,11 +89,17 @@ if GachaClient then
     local gachaRemote = ReplicatedStorage:FindFirstChild("GachaRemote")
     AuraSystem.init(gachaRemote)
 
-    GachaClient.setOnItemEquipped(function(item)
-        print("[Aura] Item equipped:", item.id, "type:", item.type, "rarity:", item.rarity)
-        AuraSystem.setEquippedAura(item.id, item.rarity)
-    end)
-    print("[Client] setOnItemEquipped callback registered")
+	GachaClient.setOnItemEquipped(function(item)
+		print("[Aura] Item equipped:", item.id, "type:", item.type, "rarity:", item.rarity)
+		AuraSystem.setEquippedAura(item.id, item.rarity)
+	end)
+	print("[Client] setOnItemEquipped callback registered")
+
+	if DebugUI and DebugUI.setSetAura then
+		DebugUI.setSetAura(function(auraId, rarity)
+			AuraSystem.setEquippedAura(auraId, rarity)
+		end)
+	end
 
     _G.GachaClient = GachaClient
 end
