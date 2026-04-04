@@ -26,9 +26,10 @@ local CurrencySystem = require(script:WaitForChild("CurrencySystem"))
 local GachaSystem = require(script:WaitForChild("GachaSystem"))
 local ShopSystem = require(script:WaitForChild("ShopSystem"))
 local NotificationSystem = require(script:WaitForChild("NotificationSystem"))
-
+local DayNightCycle = require(script:WaitForChild("DayNightCycle"))
 
 -- Initialize systems
+DayNightCycle.init()
 PlayerDisplaySystem.init()
 NPCProximitySystem.init()
 CurrencySystem.init()
