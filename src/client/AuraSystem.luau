@@ -1,236 +1,222 @@
 --!nonstrict
 -- Aura System Client for Aethelgard
--- Handles aura visual effects and activation with P key
+-- Clones VFX from ReplicatedStorage/Auras onto the character
+-- Synchronizes with server for multiplayer visibility
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
-local character = nil
-local humanoidRootPart = nil
-
-local AURA_CONFIG = {
-    glow = {
-        golden_aura = Color3.fromRGB(255, 215, 0),
-        shadow_aura = Color3.fromRGB(60, 20, 80),
-        flame_aura = Color3.fromRGB(255, 100, 0),
-        ice_aura = Color3.fromRGB(150, 220, 255),
-        nature_aura = Color3.fromRGB(100, 200, 100),
-        water_aura = Color3.fromRGB(50, 150, 255),
-        wind_aura = Color3.fromRGB(200, 220, 240),
-        dust_aura = Color3.fromRGB(180, 160, 140),
-    },
-    particleCount = {
-        legendary = 50,
-        epic = 35,
-        rare = 25,
-        common = 15,
-    }
-}
 
 local AuraSystem = {}
 
 local auraActive = false
 local currentAuraId = nil
-local auraEffects = {}
-local auraConnection = nil
+local currentRarity = nil
+local currentAuraInstance = nil
+local auraRemote = nil
+local auraEvent = nil
+local otherPlayerAuras = {}
 
-local function getCharacter()
-    if not character then
-        character = player.Character
-        if character then
-            humanoidRootPart = character:WaitForChild("HumanoidRootPart", 2)
-        end
-    end
-    return character, humanoidRootPart
+local function getHumanoidRootPart(targetPlayer)
+	if targetPlayer == player then
+		local character = player.Character
+		if not character then return nil end
+		return character:FindFirstChild("HumanoidRootPart")
+	else
+		if not targetPlayer.Character then return nil end
+		return targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+	end
 end
 
-local function clearAuraEffects()
-    for _, effect in ipairs(auraEffects) do
-        if effect then
-            effect:Destroy()
-        end
-    end
-    auraEffects = {}
-    
-    if auraConnection then
-        auraConnection:Disconnect()
-        auraConnection = nil
-    end
+local function clearAura()
+	if currentAuraInstance then
+		currentAuraInstance:Destroy()
+		currentAuraInstance = nil
+	end
 end
 
-local function createGlowEffect(color)
-    local char, hrp = getCharacter()
-    if not hrp then return end
-    
-    local attachment = Instance.new("Attachment")
-    attachment.Name = "AuraAttachment"
-    attachment.Position = Vector3.new(0, 0, 0)
-    attachment.Parent = hrp
-    table.insert(auraEffects, attachment)
-    
-    local glow = Instance.new("PointLight")
-    glow.Name = "AuraGlow"
-    glow.Color = color
-    glow.Brightness = 2
-    glow.Range = 10
-    glow.Parent = attachment
-    table.insert(auraEffects, glow)
-    
-    return attachment
+local function clearOtherPlayerAura(playerId)
+	if otherPlayerAuras[playerId] then
+		if otherPlayerAuras[playerId].instance then
+			otherPlayerAuras[playerId].instance:Destroy()
+		end
+		otherPlayerAuras[playerId] = nil
+	end
 end
 
-local function createParticleEffect(color, rarity)
-    local char, hrp = getCharacter()
-    if not hrp then return end
-    
-    local particleCount = AURA_CONFIG.particleCount[rarity] or 15
-    
-    for i = 1, particleCount do
-        local particle = Instance.new("Part")
-        particle.Name = "AuraParticle_" .. i
-        particle.Shape = Enum.PartType.Ball
-        particle.Size = Vector3.new(0.2, 0.2, 0.2)
-        particle.Color = color
-        particle.Material = Enum.Material.Neon
-        particle.Anchored = true
-        particle.CanCollide = false
-        particle.Transparency = 0.3
-        particle.Parent = hrp
-        table.insert(auraEffects, particle)
-        
-        local offset = Vector3.new(
-            (math.random() - 0.5) * 4,
-            (math.random() - 0.5) * 6,
-            (math.random() - 0.5) * 4
-        )
-        
-        local angle = math.random() * math.pi * 2
-        local radius = 2 + math.random() * 2
-        local height = math.random() * 4
-        
-        particle:SetAttribute("Angle", angle)
-        particle:SetAttribute("Radius", radius)
-        particle:SetAttribute("Height", height)
-        particle:SetAttribute("Speed", 1 + math.random() * 2)
-        particle:SetAttribute("YOffset", math.random() * math.pi * 2)
-    end
-    
-    auraConnection = RunService.Heartbeat:Connect(function(dt)
-        if not auraActive then return end
-        
-        local _, currentHrp = getCharacter()
-        if not currentHrp then return end
-        
-        local time = tick()
-        
-        for _, effect in ipairs(auraEffects) do
-            if effect:IsA("Part") and effect.Name:find("AuraParticle") then
-                local angle = effect:GetAttribute("Angle") + effect:GetAttribute("Speed") * dt
-                effect:SetAttribute("Angle", angle)
-                
-                local radius = effect:GetAttribute("Radius")
-                local height = effect:GetAttribute("Height")
-                local yOffset = effect:GetAttribute("YOffset")
-                
-                local x = math.cos(angle) * radius
-                local z = math.sin(angle) * radius
-                local y = height + math.sin(time * 2 + yOffset) * 0.5
-                
-                effect.CFrame = currentHrp.CFrame * CFrame.new(x, y - 2, z)
-            end
-        end
-    end)
-end
+local function createAuraEffect(auraId, rarity, targetPlayer, isOtherPlayer)
+	local hrp = getHumanoidRootPart(targetPlayer)
+	if not hrp then
+		warn("[AuraSystem] No HumanoidRootPart found")
+		return
+	end
 
-local function createAuraEffect(auraId, rarity)
-    clearAuraEffects()
-    
-    local color = AURA_CONFIG.glow[auraId] or Color3.fromRGB(255, 255, 255)
-    
-    createGlowEffect(color)
-    createParticleEffect(color, rarity or "common")
+	if isOtherPlayer then
+		clearOtherPlayerAura(targetPlayer.UserId)
+	else
+		clearAura()
+	end
+
+	local aurasFolder = ReplicatedStorage:FindFirstChild("Auras")
+	if not aurasFolder then
+		warn("[AuraSystem] Auras folder not found in ReplicatedStorage")
+		return
+	end
+
+	local auraVFX = aurasFolder:FindFirstChild(auraId)
+	if not auraVFX then
+		warn("[AuraSystem] Aura VFX not found:", auraId)
+		return
+	end
+
+	local auraInstance = auraVFX:Clone()
+	auraInstance.Parent = hrp
+
+	if auraInstance:IsA("BasePart") then
+		auraInstance.Position = hrp.Position
+	end
+
+	if isOtherPlayer then
+		otherPlayerAuras[targetPlayer.UserId] = {
+			instance = auraInstance,
+			auraId = auraId,
+		}
+	else
+		currentAuraInstance = auraInstance
+	end
+
+	print("[AuraSystem] Created aura effect:", auraId, rarity, "for", isOtherPlayer and targetPlayer.Name or "local")
 end
 
 function AuraSystem.setEquippedAura(auraId, rarity)
-    print("[AuraSystem] setEquippedAura called:", auraId, rarity)
-    currentAuraId = auraId
+	print("[AuraSystem] setEquippedAura called:", auraId, rarity)
+	currentAuraId = auraId
+	currentRarity = rarity
 
-    if auraActive then
-        if auraId then
-            createAuraEffect(auraId, rarity)
-        else
-            clearAuraEffects()
-        end
-    end
+	if auraRemote then
+		pcall(function()
+			auraRemote:InvokeServer("setAura", { auraId = auraId, rarity = rarity })
+		end)
+	end
+
+	if auraActive and auraId then
+		createAuraEffect(auraId, rarity or "common", player, false)
+	elseif not auraId then
+		clearAura()
+	end
 end
 
 function AuraSystem.toggleAura()
-    auraActive = not auraActive
-    print("[AuraSystem] toggleAura called, now active:", auraActive, "currentAuraId:", currentAuraId)
+	auraActive = not auraActive
+	print("[AuraSystem] toggleAura called, now active:", auraActive, "currentAuraId:", currentAuraId)
 
-    if auraActive and currentAuraId then
-        local GachaData = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("GachaData"))
-        local auraData = GachaData.getItemById(currentAuraId)
-        createAuraEffect(currentAuraId, auraData and auraData.rarity or "common")
-    else
-        clearAuraEffects()
-    end
+	if auraRemote then
+		pcall(function()
+			auraRemote:InvokeServer("toggleAura", {})
+		end)
+	end
 
-    return auraActive
+	if auraActive and currentAuraId then
+		createAuraEffect(currentAuraId, currentRarity or "common", player, false)
+	else
+		clearAura()
+	end
+
+	return auraActive
 end
 
 function AuraSystem.isActive()
-    return auraActive
+	return auraActive
 end
 
 function AuraSystem.getEquippedAura()
-    return currentAuraId
+	return currentAuraId
+end
+
+local function syncWithServer()
+	if not auraRemote then return end
+	
+	pcall(function()
+		local allAuras = auraRemote:InvokeServer("requestSync", {})
+		if allAuras then
+			for _, auraData in ipairs(allAuras) do
+				local targetPlayer = Players:GetPlayerByUserId(auraData.playerId)
+				if targetPlayer and targetPlayer ~= player then
+					createAuraEffect(auraData.auraId, auraData.rarity, targetPlayer, true)
+				end
+			end
+		end
+	end)
+end
+
+local function onAuraEventReceived(data)
+	local targetPlayer = Players:GetPlayerByUserId(data.playerId)
+	if not targetPlayer then return end
+
+	if targetPlayer == player then return end
+
+	if data.active then
+		createAuraEffect(data.auraId, data.rarity, targetPlayer, true)
+	else
+		clearOtherPlayerAura(data.playerId)
+	end
 end
 
 function AuraSystem.init(gachaRemote)
-    player.CharacterAdded:Connect(function(newChar)
-        character = newChar
-        humanoidRootPart = newChar:WaitForChild("HumanoidRootPart", 2)
-        
-        if auraActive and currentAuraId then
-            local GachaData = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("GachaData"))
-            local auraData = GachaData.getItemById(currentAuraId)
-            task.delay(0.5, function()
-                createAuraEffect(currentAuraId, auraData and auraData.rarity or "common")
-            end)
-        end
-    end)
-    
-    if player.Character then
-        character = player.Character
-        humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-    end
-    
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if gameProcessed then return end
-        if input.KeyCode == Enum.KeyCode.P then
-            AuraSystem.toggleAura()
-        end
-    end)
-    
-    if gachaRemote then
-        task.spawn(function()
-            local inventory = gachaRemote:InvokeServer("getInventory")
-            if inventory and inventory.auras then
-                for _, aura in ipairs(inventory.auras) do
-                    if aura.equipped then
-                        currentAuraId = aura.id
-                        break
-                    end
-                end
-            end
-        end)
-    end
-    
-    print("[AuraSystem] Initialized")
+	auraRemote = ReplicatedStorage:FindFirstChild("AuraRemote")
+	auraEvent = ReplicatedStorage:FindFirstChild("AuraEvent")
+
+	if auraEvent then
+		auraEvent.OnClientEvent:Connect(onAuraEventReceived)
+	end
+
+	player.CharacterAdded:Connect(function()
+		task.wait(0.5)
+		if auraActive and currentAuraId then
+			createAuraEffect(currentAuraId, currentRarity or "common", player, false)
+		end
+		syncWithServer()
+	end)
+
+	if player.Character then
+		local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+		if hrp and auraActive and currentAuraId then
+			createAuraEffect(currentAuraId, currentRarity or "common", player, false)
+		end
+		syncWithServer()
+	end
+
+	UserInputService.InputBegan:Connect(function(input, gameProcessed)
+		if gameProcessed then return end
+		if input.KeyCode == Enum.KeyCode.P then
+			AuraSystem.toggleAura()
+		end
+	end)
+
+	if gachaRemote then
+		task.spawn(function()
+			local success, inventory = pcall(function()
+				return gachaRemote:InvokeServer("getInventory")
+			end)
+			if success and inventory and inventory.auras then
+				for _, aura in ipairs(inventory.auras) do
+					if aura.equipped then
+						currentAuraId = aura.id
+						currentRarity = aura.rarity
+						break
+					end
+				end
+			end
+		end)
+	end
+
+	Players.PlayerRemoving:Connect(function(leavingPlayer)
+		clearOtherPlayerAura(leavingPlayer.UserId)
+	end)
+
+	print("[AuraSystem] Initialized")
 end
 
 return AuraSystem

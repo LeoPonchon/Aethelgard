@@ -29,6 +29,7 @@ local GachaSystem = require(script:WaitForChild("GachaSystem"))
 local ShopSystem = require(script:WaitForChild("ShopSystem"))
 local NotificationSystem = require(script:WaitForChild("NotificationSystem"))
 local DayNightCycle = require(script:WaitForChild("DayNightCycle"))
+local AuraServerSystem = require(script:WaitForChild("AuraServerSystem"))
 
 local systems = {
 	DayNightCycle,
@@ -38,6 +39,7 @@ local systems = {
 	GachaSystem,
 	ShopSystem,
 	NotificationSystem,
+	AuraServerSystem,
 }
 
 for _, system in ipairs(systems) do
@@ -57,12 +59,14 @@ for teamName, teamData in pairs(teams) do
 end
 
 RemoteManager.init()
+AuraServerSystem.initRemotes(RemoteManager)
 
 local npcInteractionRemote = RemoteManager.get("NPCInteraction")
 local emoteEvent = RemoteManager.get("PlayEmote")
 local playerDataRemote = RemoteManager.get("PlayerData")
 local gachaRemote = RemoteManager.get("GachaRemote")
 local shopRemote = RemoteManager.get("ShopRemote")
+local auraRemote = RemoteManager.get("AuraRemote")
 
 npcInteractionRemote.OnServerInvoke = function(player, action, data)
 	if action == "startConversation" then
@@ -180,6 +184,10 @@ emoteEvent.OnServerEvent:Connect(function(player, emoteId)
 		emoteEvent:FireClient(player, { error = reason })
 	end
 end)
+
+auraRemote.OnServerInvoke = function(player, action, data)
+	return AuraServerSystem.handleRemoteInvoke(player, action, data)
+end
 
 local function onPlayerAdded(player)
 	player.Chatted:Connect(function(message)

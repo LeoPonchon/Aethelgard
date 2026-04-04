@@ -18,6 +18,8 @@ local REMOTE_CONFIG = {
 	{ name = "ShopRemote", type = "Function" },
 	{ name = "NotificationEvent", type = "Event" },
 	{ name = "CurrencyNotification", type = "Event" },
+	{ name = "AuraRemote", type = "Function" },
+	{ name = "AuraEvent", type = "Event" },
 }
 
 function RemoteManager.init()
