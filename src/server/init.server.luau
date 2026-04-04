@@ -151,7 +151,18 @@ MarketplaceService.ProcessReceipt = function(receiptInfo)
 		return Enum.ProductPurchaseDecision.NotProcessedYet
 	end
 
-	local success = ShopSystem.processGamepassPurchase(player, receiptInfo.ProductId)
+	local productId = receiptInfo.ProductId
+
+	local currencyPack = CurrencySystem.getPackByProductId(productId)
+	if currencyPack then
+		local success = CurrencySystem.processRobuxPurchase(player, productId)
+		if success then
+			return Enum.ProductPurchaseDecision.PurchaseGranted
+		end
+		return Enum.ProductPurchaseDecision.NotProcessedYet
+	end
+
+	local success = ShopSystem.processGamepassPurchase(player, productId)
 	if success then
 		return Enum.ProductPurchaseDecision.PurchaseGranted
 	end

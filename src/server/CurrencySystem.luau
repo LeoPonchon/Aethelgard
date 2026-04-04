@@ -125,32 +125,17 @@ function CurrencySystem.processRobuxPurchase(player: Player, productId: number):
 end
 
 function CurrencySystem.init()
-    MarketplaceService.ProcessReceipt = function(receiptInfo)
-        local player = Players:GetPlayerByUserId(receiptInfo.PlayerId)
-        if not player then
-            return Enum.ProductProcessingDecision.NotProcessedYet
-        end
-        
-        local success = CurrencySystem.processRobuxPurchase(player, receiptInfo.ProductId)
-        
-        if success then
-            return Enum.ProductProcessingDecision.PurchaseGranted
-        else
-            return Enum.ProductProcessingDecision.NotProcessedYet
-        end
-    end
-    
-    Players.PlayerAdded:Connect(function(player)
-        playerCurrency[player.UserId] = DEFAULT_CURRENCY
-        playerSecondaryCurrency[player.UserId] = DEFAULT_SECONDARY
-    end)
-    
-    Players.PlayerRemoving:Connect(function(player)
-        playerCurrency[player.UserId] = nil
-        playerSecondaryCurrency[player.UserId] = nil
-    end)
-    
-    print("[CurrencySystem] Initialized")
+	Players.PlayerAdded:Connect(function(player)
+		playerCurrency[player.UserId] = DEFAULT_CURRENCY
+		playerSecondaryCurrency[player.UserId] = DEFAULT_SECONDARY
+	end)
+
+	Players.PlayerRemoving:Connect(function(player)
+		playerCurrency[player.UserId] = nil
+		playerSecondaryCurrency[player.UserId] = nil
+	end)
+
+	print("[CurrencySystem] Initialized")
 end
 
 function CurrencySystem.getPlayerCurrencyData(playerId: number)
