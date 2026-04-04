@@ -8,20 +8,15 @@ local Players = game:GetService("Players")
 local sharedFolder = ReplicatedStorage:FindFirstChild("Shared")
 local GachaData = require(sharedFolder:WaitForChild("GachaData"))
 local CurrencySystem = require(script.Parent:WaitForChild("CurrencySystem"))
+local PlayerDataSystem = require(script.Parent:WaitForChild("PlayerDataSystem"))
 
 local GachaSystem = {}
 
 local playerPity = {}
-local playerInventory = {}
 
 local DEFAULT_PITY = {
     rolls = 0,
     softPityActive = false,
-}
-
-local DEFAULT_INVENTORY = {
-    auras = {},
-    accessories = {},
 }
 
 local function getPityData(playerId: number)
@@ -32,10 +27,7 @@ local function getPityData(playerId: number)
 end
 
 local function getInventory(playerId: number)
-    if not playerInventory[playerId] then
-        playerInventory[playerId] = table.clone(DEFAULT_INVENTORY)
-    end
-    return playerInventory[playerId]
+    return PlayerDataSystem.getInventory(playerId)
 end
 
 local function calculateRarityRates(pityData)
@@ -100,26 +92,21 @@ local function selectRandomItem(items, rarity)
 end
 
 local function addItemToInventory(playerId: number, item)
-    local inventory = getInventory(playerId)
     local category = item.type .. "s"
-    
-    if not inventory[category] then
-        inventory[category] = {}
-    end
-    
-    for _, owned in ipairs(inventory[category]) do
-        if owned.id == item.id then
-            return false, item
-        end
-    end
-    
-    table.insert(inventory[category], {
+    local itemData = {
         id = item.id,
         name = item.name,
+        type = item.type,
         rarity = item.rarity,
         equipped = false,
-    })
-    
+    }
+
+    if PlayerDataSystem.hasItem(playerId, item.id) then
+        return false, item
+    end
+
+    PlayerDataSystem.addItem(playerId, item.type, itemData)
+
     return true, nil
 end
 

@@ -7,6 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RemoteHelper = require(script:WaitForChild("RemoteHelper"))
 local EmoteClient = require(script:WaitForChild("EmoteClient"))
 local NPCDialogueClient = require(script:WaitForChild("NPCDialogueClient"))
+local AuraSystem = require(script:WaitForChild("AuraSystem"))
 
 local remotes = RemoteHelper.waitForRemotes({
 	"PlayEmote",
@@ -61,31 +62,40 @@ if DebugUI then
 end
 
 if GachaClient then
-	GachaClient.init()
+    GachaClient.init()
 
-	if DebugUI and DebugUI.setGachaToggle then
-		DebugUI.setGachaToggle(function(show)
-			if show then
-				GachaClient.show()
-			else
-				GachaClient.hide()
-			end
-		end)
-	end
+    if DebugUI and DebugUI.setGachaToggle then
+        DebugUI.setGachaToggle(function(show)
+            if show then
+                GachaClient.show()
+            else
+                GachaClient.hide()
+            end
+        end)
+    end
 
-	if DebugUI and DebugUI.setGachaIsVisible then
-		DebugUI.setGachaIsVisible(function()
-			return GachaClient.isVisible()
-		end)
-	end
+    if DebugUI and DebugUI.setGachaIsVisible then
+        DebugUI.setGachaIsVisible(function()
+            return GachaClient.isVisible()
+        end)
+    end
 
-	GachaClient.setOnVisibilityChanged(function(visible)
-		if DebugUI and DebugUI.forceUpdateGachaButton then
-			DebugUI.forceUpdateGachaButton()
-		end
-	end)
+    GachaClient.setOnVisibilityChanged(function(visible)
+        if DebugUI and DebugUI.forceUpdateGachaButton then
+            DebugUI.forceUpdateGachaButton()
+        end
+    end)
 
-	_G.GachaClient = GachaClient
+    local gachaRemote = ReplicatedStorage:FindFirstChild("GachaRemote")
+    AuraSystem.init(gachaRemote)
+
+    GachaClient.setOnItemEquipped(function(item)
+        print("[Aura] Item equipped:", item.id, "type:", item.type, "rarity:", item.rarity)
+        AuraSystem.setEquippedAura(item.id, item.rarity)
+    end)
+    print("[Client] setOnItemEquipped callback registered")
+
+    _G.GachaClient = GachaClient
 end
 
 if ShopClient then

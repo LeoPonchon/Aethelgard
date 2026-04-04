@@ -367,13 +367,20 @@ local function GachaApp(props)
 		end
 	end
 
-	local onEquipItem = function(item)
-		if not gachaRemote then return end
-		gachaRemote:InvokeServer("equipItem", { itemId = item.id })
-		setUpdateTrigger(function(x)
-			return x + 1
-		end)
-	end
+    local onEquipItem = function(item)
+        if not gachaRemote then return end
+        gachaRemote:InvokeServer("equipItem", { itemId = item.id })
+        setUpdateTrigger(function(x)
+            return x + 1
+        end)
+        print("[GachaClient] onEquipItem called for:", item.id, item.name, item.rarity)
+        local cb = props.onItemEquipped
+        print("[GachaClient] onItemEquipped prop exists:", cb ~= nil)
+        if cb then
+            print("[GachaClient] Calling onItemEquipped callback")
+            cb(item)
+        end
+    end
 
 	if not isVisible then
 		return nil
@@ -675,27 +682,33 @@ local GachaClient = {}
 local root = nil
 local isVisibleState = false
 local onVisibilityChanged = nil
+local itemEquippedCallback = nil
 
 function GachaClient.setOnVisibilityChanged(callback)
-	onVisibilityChanged = callback
+    onVisibilityChanged = callback
+end
+
+function GachaClient.setOnItemEquipped(callback)
+    itemEquippedCallback = callback
 end
 
 function GachaClient.show()
 	isVisibleState = true
 	if root then
-		root:render(React.createElement(GachaApp, {
-			isVisible = isVisibleState,
-			onClose = function()
-				GachaClient.hide()
-			end,
-			onOpenShop = function()
-				GachaClient.hide()
-				local ShopClient = _G.ShopClient
-				if ShopClient then
-					ShopClient.show()
-				end
-			end,
-		}))
+root:render(React.createElement(GachaApp, {
+        isVisible = isVisibleState,
+        onClose = function()
+            GachaClient.hide()
+        end,
+        onOpenShop = function()
+            GachaClient.hide()
+            local ShopClient = _G.ShopClient
+            if ShopClient then
+                ShopClient.show()
+            end
+        end,
+        onItemEquipped = itemEquippedCallback,
+    }))
 	end
 	if onVisibilityChanged then
 		onVisibilityChanged(true)
@@ -705,11 +718,12 @@ end
 function GachaClient.hide()
 	isVisibleState = false
 	if root then
-		root:render(React.createElement(GachaApp, {
-			isVisible = isVisibleState,
-			onClose = function() end,
-			onOpenShop = function() end,
-		}))
+root:render(React.createElement(GachaApp, {
+        isVisible = isVisibleState,
+        onClose = function() end,
+        onOpenShop = function() end,
+        onItemEquipped = itemEquippedCallback,
+    }))
 	end
 	if onVisibilityChanged then
 		onVisibilityChanged(false)
