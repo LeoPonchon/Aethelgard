@@ -560,7 +560,9 @@ local function AuraPreviewViewport(props)
 
 		UserInputService.ModalEnabled = true
 
+		local humanoid = nil
 		if character then
+			humanoid = character:FindFirstChild("Humanoid")
 			for _, part in ipairs(character:GetDescendants()) do
 				if part:IsA("BasePart") then
 					part.LocalTransparencyModifier = 1
@@ -570,12 +572,24 @@ local function AuraPreviewViewport(props)
 			if playerDisplay then
 				playerDisplay.Enabled = false
 			end
+			if humanoid then
+				humanoid.WalkSpeed = 0
+				humanoid.JumpPower = 0
+			end
+			local backpack = player:FindFirstChild("Backpack")
+			if backpack then
+				for _, tool in ipairs(backpack:GetChildren()) do
+					if tool:IsA("Tool") then
+						tool.Parent = backpack
+					end
+				end
+			end
 		end
 
 		task.wait(0.1)
 
 		local cameraCFrame = camera.CFrame
-		local modelPosition = cameraCFrame * CFrame.new(3, 0, -4)
+		local modelPosition = cameraCFrame * CFrame.new(3, .5, -6) * CFrame.Angles(0, math.rad(180), 0)
 
 		camera.CameraType = Enum.CameraType.Scriptable
 		camera.CFrame = cameraCFrame
@@ -627,6 +641,11 @@ local function AuraPreviewViewport(props)
 				local playerDisplay = character:FindFirstChild("PlayerDisplay")
 				if playerDisplay then
 					playerDisplay.Enabled = true
+				end
+				local humanoid = character:FindFirstChild("Humanoid")
+				if humanoid then
+					humanoid.WalkSpeed = 16
+					humanoid.JumpPower = 50
 				end
 			end
 
