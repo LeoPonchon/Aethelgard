@@ -556,12 +556,23 @@ local function AuraPreviewViewport(props)
 
 		local camera = Workspace.CurrentCamera
 		local player = Players.LocalPlayer
+		local character = player.Character
 
 		UserInputService.ModalEnabled = true
-		player.CameraMaxZoomDistance = 0.5
-		player.CameraMinZoomDistance = 0.5
 
-		task.wait(0.3)
+		if character then
+			for _, part in ipairs(character:GetDescendants()) do
+				if part:IsA("BasePart") then
+					part.LocalTransparencyModifier = 1
+				end
+			end
+			local playerDisplay = character:FindFirstChild("PlayerDisplay")
+			if playerDisplay then
+				playerDisplay.Enabled = false
+			end
+		end
+
+		task.wait(0.1)
 
 		local cameraCFrame = camera.CFrame
 		local modelPosition = cameraCFrame * CFrame.new(3, 0, -4)
@@ -602,11 +613,22 @@ local function AuraPreviewViewport(props)
 				cameraConnection:Disconnect()
 				cameraConnection = nil
 			end
-			camera.CameraType = Enum.CameraType.Custom
 			
+			camera.CameraType = Enum.CameraType.Custom
+
 			UserInputService.ModalEnabled = false
-			player.CameraMaxZoomDistance = 128
-			player.CameraMinZoomDistance = 0.5
+
+			if character then
+				for _, part in ipairs(character:GetDescendants()) do
+					if part:IsA("BasePart") then
+						part.LocalTransparencyModifier = 0
+					end
+				end
+				local playerDisplay = character:FindFirstChild("PlayerDisplay")
+				if playerDisplay then
+					playerDisplay.Enabled = true
+				end
+			end
 
 			if previewModelInstance then
 				previewModelInstance:Destroy()
