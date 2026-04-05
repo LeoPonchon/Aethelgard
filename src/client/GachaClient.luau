@@ -528,6 +528,7 @@ end
 
 local previewModelInstance = nil
 local previewAuraInstance = nil
+local cameraConnection = nil
 
 local function AuraPreviewViewport(props)
 	local featuredItemId = props.featuredItemId
@@ -542,6 +543,10 @@ local function AuraPreviewViewport(props)
 			previewAuraInstance:Destroy()
 			previewAuraInstance = nil
 		end
+		if cameraConnection then
+			cameraConnection:Disconnect()
+			cameraConnection = nil
+		end
 
 		local previewModel = ReplicatedStorage:FindFirstChild("PreviewModel")
 		if not previewModel then
@@ -550,9 +555,23 @@ local function AuraPreviewViewport(props)
 		end
 
 		local camera = Workspace.CurrentCamera
-		local cameraCFrame = camera.CFrame
+		local player = Players.LocalPlayer
 
+		UserInputService.ModalEnabled = true
+		player.CameraMaxZoomDistance = 0.5
+		player.CameraMinZoomDistance = 0.5
+
+		task.wait(0.3)
+
+		local cameraCFrame = camera.CFrame
 		local modelPosition = cameraCFrame * CFrame.new(3, 0, -4)
+
+		camera.CameraType = Enum.CameraType.Scriptable
+		camera.CFrame = cameraCFrame
+
+		cameraConnection = RunService.RenderStepped:Connect(function()
+			camera.CFrame = cameraCFrame
+		end)
 
 		local clonedModel = previewModel:Clone()
 		previewModelInstance = clonedModel
@@ -579,6 +598,16 @@ local function AuraPreviewViewport(props)
 		end
 
 		return function()
+			if cameraConnection then
+				cameraConnection:Disconnect()
+				cameraConnection = nil
+			end
+			camera.CameraType = Enum.CameraType.Custom
+			
+			UserInputService.ModalEnabled = false
+			player.CameraMaxZoomDistance = 128
+			player.CameraMinZoomDistance = 0.5
+
 			if previewModelInstance then
 				previewModelInstance:Destroy()
 				previewModelInstance = nil
