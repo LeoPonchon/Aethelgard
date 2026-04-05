@@ -349,11 +349,12 @@ local function GemsTab(props)
 		Layout = e("UIGridLayout", {
 			CellSize = UDim2.new(0, 150, 0, 180),
 			CellPadding = UDim2.new(0, 40, 0, 40),
-			HorizontalAlignment = Enum.HorizontalAlignment.Center,
+			HorizontalAlignment = Enum.HorizontalAlignment.Left,
 			VerticalAlignment = Enum.VerticalAlignment.Top,
 		}),
 		Padding = e("UIPadding", {
-			PaddingTop = UDim.new(0, 20),
+			PaddingTop = UDim.new(0, 1),
+			PaddingLeft = UDim.new(0, 1),
 		}),
 	}
 
@@ -384,9 +385,9 @@ local function CategoryTab(props)
 
 	local children = {
 		Layout = e("UIGridLayout", {
-			CellSize = UDim2.new(0, 150, 0, 200),
+			CellSize = UDim2.new(0, 150, 0, 150),
 			CellPadding = UDim2.new(0, 25, 0, 25),
-			HorizontalAlignment = Enum.HorizontalAlignment.Center,
+			HorizontalAlignment = Enum.HorizontalAlignment.Left,
 			VerticalAlignment = Enum.VerticalAlignment.Top,
 		}),
 		Padding = e("UIPadding", {
@@ -645,8 +646,8 @@ local function ShopApp(props)
 			}),
 
 		CategoryColumn = e("Frame", {
-			Size = UDim2.new(0, 220, 0.85, 0),
-			Position = UDim2.new(0, 20, 0.08, 0),
+			Size = UDim2.new(0, 220, 0.75, 0),
+			Position = UDim2.new(0, 20, 0.125, 0),
 				BackgroundColor3 = Color3.fromRGB(250, 250, 250),
 				BorderSizePixel = 0,
 				ZIndex = 10,
@@ -668,37 +669,13 @@ local function ShopApp(props)
 				}, categoryButtonsChildren),
 			}),
 
-			ContentPanel = e("Frame", {
-				Size = UDim2.new(0.5, 0, 0.85, 0),
-				Position = UDim2.new(0.635, 0, 0.08, 0),
-				BackgroundColor3 = COLORS.BACKGROUND,
-				BorderSizePixel = 0,
-				ZIndex = 5,
-			}, {
-				Corner = e("UICorner", {
-					CornerRadius = UDim.new(0, 20),
-				}),
-				Stroke = e("UIStroke", {
-					Color = Color3.fromRGB(255, 200, 50),
-					Thickness = 1,
-				}),
-				Padding = e("UIPadding", {
-					PaddingTop = UDim.new(0, 20),
-				}),
-				Content = e("Frame", {
-					Size = UDim2.new(1, -20, 1, -20),
-					Position = UDim2.new(0, 10, 0, 10),
-					BackgroundTransparency = 1,
-				}, categoryButtonsChildren),
-			}),
-
-	ContentPanel = e("Frame", {
-		Size = UDim2.new(1, -280, 0.85, 0),
-		Position = UDim2.new(0, 260, 0.08, 0),
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		ZIndex = 5,
-	}, {
+		ContentPanel = e("Frame", {
+			Size = UDim2.new(1, -280, 0.75, 0),
+			Position = UDim2.new(0, 250, 0.125, 0),
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			ZIndex = 5,
+		}, {
 		ContentContainer = e("Frame", {
 			Size = UDim2.new(1, 0, 1, 0),
 			Position = UDim2.new(0, 0, 0, 0),
