@@ -540,52 +540,9 @@ local function ShopApp(props)
 	MainContainer = e("Frame", {
 		Size = UDim2.new(1, 0, 1, 0),
 		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-	}, {
-		BackgroundParticles = e("Frame", {
-				Size = UDim2.new(1, 0, 1, 0),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-			}, {
-				Star1 = e("TextLabel", {
-					Size = UDim2.new(0, 4, 0, 4),
-					Position = UDim2.new(0.1, 0, 0.2, 0),
-					BackgroundTransparency = 1,
-					Text = "✦",
-					TextColor3 = Color3.fromRGB(255, 200, 100),
-					TextSize = 20,
-					Font = Enum.Font.Gotham,
-				}),
-				Star2 = e("TextLabel", {
-					Size = UDim2.new(0, 4, 0, 4),
-					Position = UDim2.new(0.85, 0, 0.15, 0),
-					BackgroundTransparency = 1,
-					Text = "✧",
-					TextColor3 = Color3.fromRGB(200, 150, 255),
-					TextSize = 16,
-					Font = Enum.Font.Gotham,
-				}),
-				Star3 = e("TextLabel", {
-					Size = UDim2.new(0, 4, 0, 4),
-					Position = UDim2.new(0.7, 0, 0.6, 0),
-					BackgroundTransparency = 1,
-					Text = "✦",
-					TextColor3 = Color3.fromRGB(100, 200, 255),
-					TextSize = 24,
-					Font = Enum.Font.Gotham,
-				}),
-				Star4 = e("TextLabel", {
-					Size = UDim2.new(0, 4, 0, 4),
-					Position = UDim2.new(0.15, 0, 0.7, 0),
-					BackgroundTransparency = 1,
-					Text = "✧",
-					TextColor3 = Color3.fromRGB(255, 180, 80),
-					TextSize = 18,
-					Font = Enum.Font.Gotham,
-				}),
-			}),
-
-			CloseButton = e("TextButton", {
+ BorderSizePixel = 0,
+ }, {
+ CloseButton = e("TextButton", {
 				Size = UDim2.new(0, 50, 0, 50),
 				Position = UDim2.new(1, -70, 0, 20),
 				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
