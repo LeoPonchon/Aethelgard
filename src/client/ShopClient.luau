@@ -1,6 +1,7 @@
 --!nonstrict
 -- Shop Client for Aethelgard
 -- React-based UI for purchasing gamepasses and gems
+-- Redesigned to match GachaClient visual style
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
@@ -21,16 +22,33 @@ local shopRemote = ReplicatedStorage:FindFirstChild("ShopRemote")
 local gachaRemote = ReplicatedStorage:FindFirstChild("GachaRemote")
 
 local COLORS = {
-	BACKGROUND = Color3.fromRGB(25, 25, 35),
-	TAB_INACTIVE = Color3.fromRGB(40, 40, 55),
+	BACKGROUND = Color3.fromRGB(15, 15, 25),
+	BACKGROUND_GRADIENT = Color3.fromRGB(25, 20, 40),
+	HEADER = Color3.fromRGB(35, 30, 55),
+	TAB_INACTIVE = Color3.fromRGB(30, 25, 45),
 	TAB_ACTIVE = Color3.fromRGB(255, 170, 0),
-	BUTTON_PURCHASE = Color3.fromRGB(70, 130, 200),
-	BUTTON_EQUIP = Color3.fromRGB(80, 140, 80),
+	BUTTON_DEFAULT = Color3.fromRGB(45, 40, 65),
+	BUTTON_HOVER = Color3.fromRGB(65, 55, 90),
+	BUTTON_PURCHASE = Color3.fromRGB(50, 120, 220),
+	BUTTON_PURCHASE_HOVER = Color3.fromRGB(70, 150, 255),
+	BUTTON_EQUIP = Color3.fromRGB(60, 160, 80),
+	BUTTON_EQUIP_HOVER = Color3.fromRGB(80, 200, 100),
+	BUTTON_UNEQUIP = Color3.fromRGB(180, 60, 60),
 	TEXT = Color3.fromRGB(255, 255, 255),
-	TEXT_DIM = Color3.fromRGB(180, 180, 180),
-	GEMS = Color3.fromRGB(100, 200, 255),
-	SHARDS = Color3.fromRGB(200, 150, 255),
-	GOLD = Color3.fromRGB(255, 215, 0),
+	TEXT_DIM = Color3.fromRGB(180, 180, 190),
+	GEMS = Color3.fromRGB(80, 200, 255),
+	SHARDS = Color3.fromRGB(200, 140, 255),
+	GOLD = Color3.fromRGB(255, 200, 50),
+	CARD_BG = Color3.fromRGB(25, 22, 38),
+	GLOW_GOLD = Color3.fromRGB(255, 180, 50),
+	GLOW_PURPLE = Color3.fromRGB(180, 80, 255),
+}
+
+local CATEGORY_GRADIENTS = {
+	gems = {Color3.fromRGB(30, 100, 255), Color3.fromRGB(100, 180, 255)},
+	alerts = {Color3.fromRGB(200, 80, 255), Color3.fromRGB(255, 150, 255)},
+	identity = {Color3.fromRGB(255, 150, 30), Color3.fromRGB(255, 200, 80)},
+	tools = {Color3.fromRGB(80, 200, 100), Color3.fromRGB(150, 255, 150)},
 }
 
 local CATEGORIES = {"gems", "alerts", "identity", "tools"}
@@ -42,24 +60,32 @@ local CATEGORY_ICONS = {
 	tools = "⚔️",
 }
 
-local function TabButton(props)
+local function CategoryButton(props)
 	local label = props.label
 	local isActive = props.isActive
 	local onClick = props.onClick
 
 	return e("TextButton", {
-		Size = UDim2.new(1 / #CATEGORIES, -4, 1, 0),
-		BackgroundColor3 = isActive and COLORS.TAB_ACTIVE or COLORS.TAB_INACTIVE,
-		BackgroundTransparency = 0,
+		Size = UDim2.new(1, 0, 0, 55),
+		BackgroundColor3 = isActive and Color3.fromRGB(255, 200, 50) or Color3.fromRGB(250, 250, 250),
 		BorderSizePixel = 0,
-		TextColor3 = COLORS.TEXT,
-		TextSize = 11,
-		Font = Enum.Font.GothamBold,
-		Text = label,
+		Text = "",
 		[React.Event.Activated] = onClick,
 	}, {
 		Corner = e("UICorner", {
-			CornerRadius = UDim.new(0, 6),
+			CornerRadius = UDim.new(0, 16),
+		}),
+		Stroke = e("UIStroke", {
+			Color = isActive and Color3.fromRGB(255, 150, 50) or Color3.fromRGB(255, 200, 50),
+			Thickness = 1,
+		}),
+		Label = e("TextLabel", {
+			Size = UDim2.new(1, 0, 1, 0),
+			BackgroundTransparency = 1,
+			Text = label,
+			TextColor3 = isActive and Color3.fromRGB(50, 50, 50) or Color3.fromRGB(100, 100, 100),
+			TextSize = 16,
+			Font = Enum.Font.GothamBold,
 		}),
 	})
 end
@@ -68,44 +94,89 @@ local function GemPackCard(props)
 	local pack = props.pack
 	local onPurchase = props.onPurchase
 	local isHovered, setIsHovered = React.useState(false)
+	local gradientColors = CATEGORY_GRADIENTS.gems
 
 	return e("Frame", {
-		Size = UDim2.new(0, 150, 0, 140),
-		BackgroundColor3 = isHovered and Color3.fromRGB(50, 50, 70) or Color3.fromRGB(40, 40, 60),
+		Size = UDim2.new(0, 140, 0, 170),
+		BackgroundColor3 = COLORS.CARD_BG,
 		BorderSizePixel = 0,
 	}, {
 		Corner = e("UICorner", {
-			CornerRadius = UDim.new(0, 8),
+			CornerRadius = UDim.new(0, 12),
+		}),
+		Gradient = e("UIGradient", {
+			Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, gradientColors[1]),
+				ColorSequenceKeypoint.new(1, gradientColors[2]),
+			}),
+			Rotation = 45,
+		}),
+		Stroke = e("UIStroke", {
+			Color = isHovered and COLORS.GLOW_GOLD or COLORS.GEMS,
+			Thickness = isHovered and 3 or 2,
+		}),
+
+		GlowOuter = e("Frame", {
+			Size = UDim2.new(1, 8, 1, 8),
+			Position = UDim2.new(0, -4, 0, -4),
+			BackgroundColor3 = COLORS.GEMS,
+			BackgroundTransparency = 0.85,
+			BorderSizePixel = 0,
+			ZIndex = -1,
+		}, {
+			Corner = e("UICorner", {
+				CornerRadius = UDim.new(0, 14),
+			}),
+		}),
+
+		IconFrame = e("Frame", {
+			Size = UDim2.new(1, -20, 0, 50),
+			Position = UDim2.new(0, 10, 0, 15),
+			BackgroundColor3 = Color3.fromRGB(40, 35, 60),
+			BackgroundTransparency = 0.3,
+			BorderSizePixel = 0,
+		}, {
+			Corner = e("UICorner", {
+				CornerRadius = UDim.new(0, 8),
+			}),
+			AmountLabel = e("TextLabel", {
+				Size = UDim2.new(1, 0, 1, 0),
+				BackgroundTransparency = 1,
+				Text = "💎",
+				TextColor3 = COLORS.GEMS,
+				TextSize = 36,
+				Font = Enum.Font.Gotham,
+			}),
 		}),
 
 		AmountLabel = e("TextLabel", {
-			Size = UDim2.new(1, 0, 0.3, 0),
-			Position = UDim2.new(0, 0, 0.1, 0),
+			Size = UDim2.new(1, 0, 0, 30),
+			Position = UDim2.new(0, 0, 0, 70),
 			BackgroundTransparency = 1,
-			Text = "💎 " .. tostring(pack.amount),
-			TextColor3 = COLORS.GEMS,
-			TextSize = 24,
+			Text = tostring(pack.amount),
+			TextColor3 = COLORS.TEXT,
+			TextSize = 28,
 			Font = Enum.Font.GothamBold,
 		}),
 
 		NameLabel = e("TextLabel", {
-			Size = UDim2.new(1, 0, 0.2, 0),
-			Position = UDim2.new(0, 0, 0.4, 0),
+			Size = UDim2.new(1, -10, 0, 20),
+			Position = UDim2.new(0, 5, 0, 100),
 			BackgroundTransparency = 1,
 			Text = pack.name,
-			TextColor3 = COLORS.TEXT,
-			TextSize = 14,
+			TextColor3 = COLORS.TEXT_DIM,
+			TextSize = 12,
 			Font = Enum.Font.Gotham,
 		}),
 
 		BuyButton = e("TextButton", {
-			Size = UDim2.new(1, -20, 0.25, 0),
-			Position = UDim2.new(0, 10, 0.65, 0),
-			BackgroundColor3 = COLORS.BUTTON_PURCHASE,
+			Size = UDim2.new(1, -20, 0, 35),
+			Position = UDim2.new(0, 10, 1, -45),
+			BackgroundColor3 = isHovered and COLORS.BUTTON_PURCHASE_HOVER or COLORS.BUTTON_PURCHASE,
 			BackgroundTransparency = 0,
 			BorderSizePixel = 0,
 			TextColor3 = COLORS.TEXT,
-			TextSize = 14,
+			TextSize = 16,
 			Font = Enum.Font.GothamBold,
 			Text = tostring(pack.robux) .. " R$",
 			[React.Event.MouseEnter] = function()
@@ -119,32 +190,77 @@ local function GemPackCard(props)
 			end,
 		}, {
 			Corner = e("UICorner", {
-				CornerRadius = UDim.new(0, 6),
+				CornerRadius = UDim.new(0, 8),
 			}),
 		}),
 	})
 end
 
 local function ShopItemCard(props)
-    local item = props.item
-    local isOwned = props.isOwned
-    local isEquipped = props.isEquipped
-    local onBuy = props.onBuy
-    local onEquip = props.onEquip
-    local isHovered, setIsHovered = React.useState(false)
+	local item = props.item
+	local isOwned = props.isOwned
+	local isEquipped = props.isEquipped
+	local onBuy = props.onBuy
+	local onEquip = props.onEquip
+	local isHovered, setIsHovered = React.useState(false)
+	local gradientColors = CATEGORY_GRADIENTS[item.category] or CATEGORY_GRADIENTS.tools
 
 	return e("Frame", {
-		Size = UDim2.new(0, 150, 0, 180),
-		BackgroundColor3 = isOwned and Color3.fromRGB(40, 80, 40) or (isHovered and Color3.fromRGB(50, 50, 60) or Color3.fromRGB(40, 40, 50)),
+		Size = UDim2.new(0, 140, 0, 190),
+		BackgroundColor3 = COLORS.CARD_BG,
 		BorderSizePixel = 0,
 	}, {
 		Corner = e("UICorner", {
-			CornerRadius = UDim.new(0, 8),
+			CornerRadius = UDim.new(0, 12),
+		}),
+		Gradient = e("UIGradient", {
+			Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, gradientColors[1]),
+				ColorSequenceKeypoint.new(1, gradientColors[2]),
+			}),
+			Rotation = 45,
+		}),
+		Stroke = e("UIStroke", {
+			Color = isOwned and Color3.fromRGB(80, 255, 120) or (isHovered and COLORS.GLOW_GOLD or gradientColors[1]),
+			Thickness = isOwned and 3 or 2,
+		}),
+
+		GlowOuter = isOwned and e("Frame", {
+			Size = UDim2.new(1, 6, 1, 6),
+			Position = UDim2.new(0, -3, 0, -3),
+			BackgroundColor3 = Color3.fromRGB(80, 255, 120),
+			BackgroundTransparency = 0.9,
+			BorderSizePixel = 0,
+			ZIndex = -1,
+		}, {
+			Corner = e("UICorner", {
+				CornerRadius = UDim.new(0, 14),
+			}),
+		}),
+
+		CategoryBadge = e("Frame", {
+			Size = UDim2.new(1, -16, 0, 22),
+			Position = UDim2.new(0, 8, 0, 8),
+			BackgroundColor3 = gradientColors[1],
+			BackgroundTransparency = 0.2,
+			BorderSizePixel = 0,
+		}, {
+			Corner = e("UICorner", {
+				CornerRadius = UDim.new(0, 6),
+			}),
+			Label = e("TextLabel", {
+				Size = UDim2.new(1, 0, 1, 0),
+				BackgroundTransparency = 1,
+				Text = (CATEGORY_ICONS[item.category] or "") .. " " .. string.upper(item.category or ""),
+				TextColor3 = COLORS.TEXT,
+				TextSize = 10,
+				Font = Enum.Font.GothamBold,
+			}),
 		}),
 
 		NameLabel = e("TextLabel", {
-			Size = UDim2.new(1, -10, 0.25, 0),
-			Position = UDim2.new(0, 5, 0.05, 0),
+			Size = UDim2.new(1, -16, 0, 36),
+			Position = UDim2.new(0, 8, 0, 35),
 			BackgroundTransparency = 1,
 			Text = item.name,
 			TextColor3 = COLORS.TEXT,
@@ -154,36 +270,56 @@ local function ShopItemCard(props)
 		}),
 
 		DescLabel = e("TextLabel", {
-			Size = UDim2.new(1, -10, 0.35, 0),
-			Position = UDim2.new(0, 5, 0.3, 0),
+			Size = UDim2.new(1, -16, 0, 50),
+			Position = UDim2.new(0, 8, 0, 72),
 			BackgroundTransparency = 1,
 			Text = item.description or "",
 			TextColor3 = COLORS.TEXT_DIM,
-			TextSize = 11,
+			TextSize = 10,
 			Font = Enum.Font.Gotham,
 			TextWrapped = true,
 		}),
 
 		PriceLabel = e("TextLabel", {
-			Size = UDim2.new(1, -10, 0.15, 0),
-			Position = UDim2.new(0, 5, 0.65, 0),
+			Size = UDim2.new(1, -16, 0, 20),
+			Position = UDim2.new(0, 8, 0, 125),
 			BackgroundTransparency = 1,
-			Text = isOwned and "OWNED" or (tostring(item.price) .. " R$"),
-			TextColor3 = isOwned and Color3.fromRGB(100, 255, 100) or COLORS.GOLD,
-			TextSize = 14,
+			Text = isOwned and "✓ OWNED" or (tostring(item.price) .. " R$"),
+			TextColor3 = isOwned and Color3.fromRGB(100, 255, 150) or COLORS.GOLD,
+			TextSize = 13,
 			Font = Enum.Font.GothamBold,
 		}),
 
+		EquippedBadge = isEquipped and e("Frame", {
+			Size = UDim2.new(1, -16, 0, 20),
+			Position = UDim2.new(0, 8, 1, -58),
+			BackgroundColor3 = Color3.fromRGB(60, 200, 100),
+			BackgroundTransparency = 0.2,
+			BorderSizePixel = 0,
+		}, {
+			Corner = e("UICorner", {
+				CornerRadius = UDim.new(0, 5),
+			}),
+			Label = e("TextLabel", {
+				Size = UDim2.new(1, 0, 1, 0),
+				BackgroundTransparency = 1,
+				Text = "✓ EQUIPPED",
+				TextColor3 = COLORS.TEXT,
+				TextSize = 10,
+				Font = Enum.Font.GothamBold,
+			}),
+		}),
+
 		ActionButton = e("TextButton", {
-			Size = UDim2.new(1, -10, 0.15, 0),
-			Position = UDim2.new(0, 5, 0.82, 0),
-        BackgroundColor3 = isEquipped and Color3.fromRGB(180, 60, 60) or (isOwned and COLORS.BUTTON_EQUIP or COLORS.BUTTON_PURCHASE),
+			Size = UDim2.new(1, -16, 0, 32),
+			Position = UDim2.new(0, 8, 1, -42),
+			BackgroundColor3 = isEquipped and COLORS.BUTTON_UNEQUIP or (isOwned and COLORS.BUTTON_EQUIP or COLORS.BUTTON_PURCHASE),
 			BackgroundTransparency = 0,
 			BorderSizePixel = 0,
 			TextColor3 = COLORS.TEXT,
-			TextSize = 12,
+			TextSize = 13,
 			Font = Enum.Font.GothamBold,
-        Text = isOwned and (isEquipped and "UNEQUIP" or "EQUIP") or "BUY",
+			Text = isOwned and (isEquipped and "UNEQUIP" or "EQUIP") or "BUY",
 			[React.Event.MouseEnter] = function()
 				setIsHovered(true)
 			end,
@@ -199,7 +335,7 @@ local function ShopItemCard(props)
 			end,
 		}, {
 			Corner = e("UICorner", {
-				CornerRadius = UDim.new(0, 4),
+				CornerRadius = UDim.new(0, 8),
 			}),
 		}),
 	})
@@ -210,9 +346,13 @@ local function GemsTab(props)
 
 	local children = {
 		Layout = e("UIGridLayout", {
-			CellSize = UDim2.new(0, 160, 0, 150),
-			CellPadding = UDim2.new(0, 10, 0, 10),
+			CellSize = UDim2.new(0, 150, 0, 180),
+			CellPadding = UDim2.new(0, 15, 0, 15),
 			HorizontalAlignment = Enum.HorizontalAlignment.Center,
+			VerticalAlignment = Enum.VerticalAlignment.Top,
+		}),
+		Padding = e("UIPadding", {
+			PaddingTop = UDim.new(0, 10),
 		}),
 	}
 
@@ -226,76 +366,80 @@ local function GemsTab(props)
 	return e("ScrollingFrame", {
 		Size = UDim2.new(1, 0, 1, 0),
 		BackgroundTransparency = 1,
-		ScrollBarThickness = 6,
-		ScrollBarImageColor3 = Color3.fromRGB(80, 80, 100),
-		CanvasSize = UDim2.new(0, 0, 0, 400),
+		ScrollBarThickness = 8,
+		ScrollBarImageColor3 = COLORS.GOLD,
+		CanvasSize = UDim2.new(0, 0, 0, math.ceil(#ShopData.GEM_PACKS / 3) * 200),
 	}, children)
 end
 
 local function CategoryTab(props)
-    local category = props.category
-    local ownedItems = props.ownedItems
-    local equippedItems = props.equippedItems
-    local onBuy = props.onBuy
-    local onEquip = props.onEquip
+	local category = props.category
+	local ownedItems = props.ownedItems
+	local equippedItems = props.equippedItems
+	local onBuy = props.onBuy
+	local onEquip = props.onEquip
 
-    local items = ShopData.getItemsByCategory(category)
+	local items = ShopData.getItemsByCategory(category)
 
-    local children = {
-        Layout = e("UIGridLayout", {
-            CellSize = UDim2.new(0, 160, 0, 190),
-            CellPadding = UDim2.new(0, 10, 0, 10),
-            HorizontalAlignment = Enum.HorizontalAlignment.Center,
-        }),
-    }
+	local children = {
+		Layout = e("UIGridLayout", {
+			CellSize = UDim2.new(0, 150, 0, 200),
+			CellPadding = UDim2.new(0, 15, 0, 15),
+			HorizontalAlignment = Enum.HorizontalAlignment.Center,
+			VerticalAlignment = Enum.VerticalAlignment.Top,
+		}),
+		Padding = e("UIPadding", {
+			PaddingTop = UDim.new(0, 10),
+		}),
+	}
 
-    for i, item in ipairs(items) do
-        local isOwned = table.find(ownedItems, item.id) ~= nil
-        local isEquipped = table.find(equippedItems, item.id) ~= nil
-        children["Item_" .. i] = e(ShopItemCard, {
-            item = item,
-            isOwned = isOwned,
-            isEquipped = isEquipped,
-            onBuy = onBuy,
-            onEquip = onEquip,
-        })
-    end
+	for i, item in ipairs(items) do
+		local isOwned = table.find(ownedItems, item.id) ~= nil
+		local isEquipped = table.find(equippedItems, item.id) ~= nil
+		children["Item_" .. i] = e(ShopItemCard, {
+			item = item,
+			isOwned = isOwned,
+			isEquipped = isEquipped,
+			onBuy = onBuy,
+			onEquip = onEquip,
+		})
+	end
 
 	return e("ScrollingFrame", {
 		Size = UDim2.new(1, 0, 1, 0),
 		BackgroundTransparency = 1,
-		ScrollBarThickness = 6,
-		ScrollBarImageColor3 = Color3.fromRGB(80, 80, 100),
-		CanvasSize = UDim2.new(0, 0, 0, math.ceil(#items / 3) * 200),
+		ScrollBarThickness = 8,
+		ScrollBarImageColor3 = COLORS.GOLD,
+		CanvasSize = UDim2.new(0, 0, 0, math.ceil(#items / 3) * 220),
 	}, children)
 end
 
 local function ShopApp(props)
-    local isVisible = props.isVisible
-    local activeTab, setActiveTab = React.useState(1)
-    local currency, setCurrency = React.useState({ gems = 0, shards = 0 })
-    local ownedItems, setOwnedItems = React.useState({})
-    local equippedItems, setEquippedItems = React.useState({})
-    local updateTrigger, setUpdateTrigger = React.useState(0)
+	local isVisible = props.isVisible
+	local activeTab, setActiveTab = React.useState(1)
+	local currency, setCurrency = React.useState({ gems = 0, shards = 0 })
+	local ownedItems, setOwnedItems = React.useState({})
+	local equippedItems, setEquippedItems = React.useState({})
+	local updateTrigger, setUpdateTrigger = React.useState(0)
 
-    React.useEffect(function()
-        if gachaRemote then
-            local currencyData = gachaRemote:InvokeServer("getCurrency")
-            if currencyData then
-                setCurrency(currencyData)
-            end
-        end
+	React.useEffect(function()
+		if gachaRemote then
+			local currencyData = gachaRemote:InvokeServer("getCurrency")
+			if currencyData then
+				setCurrency(currencyData)
+			end
+		end
 
-        if shopRemote then
-            local playerData = shopRemote:InvokeServer("getOwnedItems")
-            if playerData and playerData.owned then
-                setOwnedItems(playerData.owned)
-            end
-            if playerData and playerData.equipped then
-                setEquippedItems(playerData.equipped)
-            end
-        end
-    end, {isVisible, updateTrigger})
+		if shopRemote then
+			local playerData = shopRemote:InvokeServer("getOwnedItems")
+			if playerData and playerData.owned then
+				setOwnedItems(playerData.owned)
+			end
+			if playerData and playerData.equipped then
+				setEquippedItems(playerData.equipped)
+			end
+		end
+	end, {isVisible, updateTrigger})
 
 	React.useEffect(function()
 		local currencyNotification = ReplicatedStorage:FindFirstChild("CurrencyNotification")
@@ -330,33 +474,45 @@ local function ShopApp(props)
 		end
 	end
 
-    local onEquipItem = function(item)
-        if shopRemote then
-            local isEquipped = table.find(equippedItems, item.id) ~= nil
-            if isEquipped then
-                shopRemote:InvokeServer("unequipItem", { itemId = item.id })
-            else
-                shopRemote:InvokeServer("equipItem", { itemId = item.id })
-            end
-            setUpdateTrigger(function(x)
-                return x + 1
-            end)
-        end
-    end
+	local onEquipItem = function(item)
+		if shopRemote then
+			local isEquipped = table.find(equippedItems, item.id) ~= nil
+			if isEquipped then
+				shopRemote:InvokeServer("unequipItem", { itemId = item.id })
+			else
+				shopRemote:InvokeServer("equipItem", { itemId = item.id })
+			end
+			setUpdateTrigger(function(x)
+				return x + 1
+			end)
+		end
+	end
 
 	if not isVisible then
 		return nil
 	end
 
-	local tabChildren = {
+	local categoryButtonsChildren = {
 		Layout = e("UIListLayout", {
-			FillDirection = Enum.FillDirection.Horizontal,
+			FillDirection = Enum.FillDirection.Vertical,
 			SortOrder = Enum.SortOrder.LayoutOrder,
-			Padding = UDim.new(0, 4),
+			Padding = UDim.new(0, 12),
+			HorizontalAlignment = Enum.HorizontalAlignment.Center,
+			VerticalAlignment = Enum.VerticalAlignment.Top,
+		}),
+		TitleLabel = e("TextLabel", {
+			Size = UDim2.new(1, 0, 0, 40),
+			BackgroundTransparency = 1,
+			Text = "🏪",
+			TextColor3 = COLORS.GOLD,
+			TextSize = 32,
+			Font = Enum.Font.GothamBold,
+			LayoutOrder = 0,
 		}),
 	}
+
 	for i, categoryId in ipairs(CATEGORIES) do
-		tabChildren["Tab_" .. i] = e(TabButton, {
+		categoryButtonsChildren["Cat_" .. i] = e(CategoryButton, {
 			label = (CATEGORY_ICONS[categoryId] or "") .. " " .. categoryId:upper(),
 			isActive = activeTab == i,
 			onClick = function()
@@ -371,109 +527,231 @@ local function ShopApp(props)
 		IgnoreGuiInset = true,
 		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
 	}, {
-		MainFrame = e("Frame", {
-			Size = UDim2.new(0.5, 0, 0.7, 0),
-			Position = UDim2.new(0.25, 0, 0.15, 0),
-			BackgroundColor3 = COLORS.BACKGROUND,
-			BackgroundTransparency = 0,
+		MainContainer = e("Frame", {
+			Size = UDim2.new(1, 0, 1, 0),
+			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 		}, {
-			Corner = e("UICorner", {
-				CornerRadius = UDim.new(0, 12),
+			BackgroundImage = e("ImageLabel", {
+				Size = UDim2.new(1, 0, 1, 0),
+				BackgroundTransparency = 1,
+				Image = "rbxassetid://119971043013965",
+				ScaleType = Enum.ScaleType.Crop,
 			}),
 
-			Title = e("TextLabel", {
-				Size = UDim2.new(1, 0, 0.08, 0),
-				Position = UDim2.new(0, 0, 0, 0),
+			BackgroundParticles = e("Frame", {
+				Size = UDim2.new(1, 0, 1, 0),
 				BackgroundTransparency = 1,
-				Text = "SHOP",
-				TextColor3 = COLORS.GOLD,
-				TextSize = 28,
-				Font = Enum.Font.GothamBold,
+				BorderSizePixel = 0,
+			}, {
+				Star1 = e("TextLabel", {
+					Size = UDim2.new(0, 4, 0, 4),
+					Position = UDim2.new(0.1, 0, 0.2, 0),
+					BackgroundTransparency = 1,
+					Text = "✦",
+					TextColor3 = Color3.fromRGB(255, 200, 100),
+					TextSize = 20,
+					Font = Enum.Font.Gotham,
+				}),
+				Star2 = e("TextLabel", {
+					Size = UDim2.new(0, 4, 0, 4),
+					Position = UDim2.new(0.85, 0, 0.15, 0),
+					BackgroundTransparency = 1,
+					Text = "✧",
+					TextColor3 = Color3.fromRGB(200, 150, 255),
+					TextSize = 16,
+					Font = Enum.Font.Gotham,
+				}),
+				Star3 = e("TextLabel", {
+					Size = UDim2.new(0, 4, 0, 4),
+					Position = UDim2.new(0.7, 0, 0.6, 0),
+					BackgroundTransparency = 1,
+					Text = "✦",
+					TextColor3 = Color3.fromRGB(100, 200, 255),
+					TextSize = 24,
+					Font = Enum.Font.Gotham,
+				}),
+				Star4 = e("TextLabel", {
+					Size = UDim2.new(0, 4, 0, 4),
+					Position = UDim2.new(0.15, 0, 0.7, 0),
+					BackgroundTransparency = 1,
+					Text = "✧",
+					TextColor3 = Color3.fromRGB(255, 180, 80),
+					TextSize = 18,
+					Font = Enum.Font.Gotham,
+				}),
 			}),
 
 			CloseButton = e("TextButton", {
-				Size = UDim2.new(0, 30, 0, 30),
-				Position = UDim2.new(1, -35, 0, 5),
-				BackgroundColor3 = Color3.fromRGB(200, 50, 50),
+				Size = UDim2.new(0, 50, 0, 50),
+				Position = UDim2.new(1, -70, 0, 20),
+				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 				BackgroundTransparency = 0,
 				BorderSizePixel = 0,
-				TextColor3 = COLORS.TEXT,
-				TextSize = 18,
+				TextColor3 = Color3.fromRGB(100, 100, 100),
+				TextSize = 24,
 				Font = Enum.Font.GothamBold,
-				Text = "X",
+				Text = "✕",
+				ZIndex = 100,
 				[React.Event.Activated] = props.onClose,
 			}, {
 				Corner = e("UICorner", {
-					CornerRadius = UDim.new(0, 6),
+					CornerRadius = UDim.new(0, 20),
 				}),
 			}),
 
-			CurrencyBar = e("Frame", {
-				Size = UDim2.new(1, -20, 0.06, 0),
-				Position = UDim2.new(0, 10, 0.08, 5),
-				BackgroundColor3 = Color3.fromRGB(40, 40, 50),
-				BackgroundTransparency = 0,
+			CurrencyTop = e("Frame", {
+				Size = UDim2.new(0, 200, 0, 50),
+				Position = UDim2.new(1, -290, 0, 20),
+				BackgroundTransparency = 1,
+			}, {
+				GemsDisplay = e("Frame", {
+					Size = UDim2.new(1, 0, 1, 0),
+					BackgroundColor3 = Color3.fromRGB(80, 80, 80),
+					BackgroundTransparency = 0.3,
+					BorderSizePixel = 0,
+				}, {
+					Corner = e("UICorner", {
+						CornerRadius = UDim.new(0, 20),
+					}),
+					Icon = e("TextLabel", {
+						Size = UDim2.new(0, 40, 1, 0),
+						BackgroundTransparency = 1,
+						Text = "💎",
+						TextSize = 28,
+						Font = Enum.Font.Gotham,
+					}),
+					Amount = e("TextLabel", {
+						Size = UDim2.new(1, -50, 1, 0),
+						Position = UDim2.new(0, 40, 0, 0),
+						BackgroundTransparency = 1,
+						Text = tostring(currency.gems),
+						TextColor3 = Color3.fromRGB(255, 255, 255),
+						TextSize = 24,
+						Font = Enum.Font.GothamBold,
+						TextXAlignment = Enum.TextXAlignment.Left,
+					}),
+				}),
+			}),
+
+		CategoryColumn = e("Frame", {
+			Size = UDim2.new(0, 220, 0.85, 0),
+			Position = UDim2.new(0, 20, 0.08, 0),
+				BackgroundColor3 = Color3.fromRGB(250, 250, 250),
 				BorderSizePixel = 0,
+				ZIndex = 10,
 			}, {
 				Corner = e("UICorner", {
-					CornerRadius = UDim.new(0, 6),
+					CornerRadius = UDim.new(0, 20),
 				}),
-				GemsLabel = e("TextLabel", {
-					Size = UDim2.new(0.5, 0, 1, 0),
-					Position = UDim2.new(0, 0, 0, 0),
+				Stroke = e("UIStroke", {
+					Color = Color3.fromRGB(255, 200, 50),
+					Thickness = 1,
+				}),
+				Padding = e("UIPadding", {
+					PaddingTop = UDim.new(0, 20),
+				}),
+				Content = e("Frame", {
+					Size = UDim2.new(1, -20, 1, -20),
+					Position = UDim2.new(0, 10, 0, 10),
 					BackgroundTransparency = 1,
-					Text = "💎 " .. tostring(currency.gems),
-					TextColor3 = COLORS.GEMS,
-					TextSize = 16,
-					Font = Enum.Font.GothamBold,
-				}),
-				ShardsLabel = e("TextLabel", {
-					Size = UDim2.new(0.5, 0, 1, 0),
-					Position = UDim2.new(0.5, 0, 0, 0),
-					BackgroundTransparency = 1,
-					Text = "🔷 " .. tostring(currency.shards),
-					TextColor3 = COLORS.SHARDS,
-					TextSize = 16,
-					Font = Enum.Font.GothamBold,
-				}),
+				}, categoryButtonsChildren),
 			}),
 
-			TabContainer = e("Frame", {
-				Size = UDim2.new(1, -20, 0.08, 0),
-				Position = UDim2.new(0, 10, 0.15, 5),
-				BackgroundTransparency = 1,
-			}, tabChildren),
-
-			ContentContainer = e("Frame", {
-				Size = UDim2.new(1, -20, 0.67, 0),
-				Position = UDim2.new(0, 10, 0.25, 10),
-				BackgroundTransparency = 1,
+			ContentPanel = e("Frame", {
+				Size = UDim2.new(0.5, 0, 0.85, 0),
+				Position = UDim2.new(0.635, 0, 0.08, 0),
+				BackgroundColor3 = COLORS.BACKGROUND,
+				BorderSizePixel = 0,
+				ZIndex = 5,
 			}, {
-				GemsTab = activeTab == 1 and e(GemsTab, {
-					onPurchasePack = onPurchasePack,
+				Corner = e("UICorner", {
+					CornerRadius = UDim.new(0, 20),
 				}),
-        AlertsTab = activeTab == 2 and e(CategoryTab, {
-            category = "alerts",
-            ownedItems = ownedItems,
-            equippedItems = equippedItems,
-            onBuy = onBuyItem,
-            onEquip = onEquipItem,
-        }),
-        IdentityTab = activeTab == 3 and e(CategoryTab, {
-            category = "identity",
-            ownedItems = ownedItems,
-            equippedItems = equippedItems,
-            onBuy = onBuyItem,
-            onEquip = onEquipItem,
-        }),
-        ToolsTab = activeTab == 4 and e(CategoryTab, {
-            category = "tools",
-            ownedItems = ownedItems,
-            equippedItems = equippedItems,
-            onBuy = onBuyItem,
-            onEquip = onEquipItem,
-        }),
+				Stroke = e("UIStroke", {
+					Color = Color3.fromRGB(255, 200, 50),
+					Thickness = 1,
+				}),
+				Padding = e("UIPadding", {
+					PaddingTop = UDim.new(0, 20),
+				}),
+				Content = e("Frame", {
+					Size = UDim2.new(1, -20, 1, -20),
+					Position = UDim2.new(0, 10, 0, 10),
+					BackgroundTransparency = 1,
+				}, categoryButtonsChildren),
+			}),
+
+		ContentPanel = e("Frame", {
+			Size = UDim2.new(1, -280, 0.85, 0),
+			Position = UDim2.new(0, 260, 0.08, 0),
+			BackgroundColor3 = COLORS.BACKGROUND,
+			BorderSizePixel = 0,
+			ZIndex = 5,
+		}, {
+				Corner = e("UICorner", {
+					CornerRadius = UDim.new(0, 20),
+				}),
+				Stroke = e("UIStroke", {
+					Color = COLORS.GOLD,
+					Thickness = 2,
+				}),
+
+				HeaderFrame = e("Frame", {
+					Size = UDim2.new(1, 0, 0, 50),
+					Position = UDim2.new(0, 0, 0, 0),
+					BackgroundColor3 = COLORS.HEADER,
+					BorderSizePixel = 0,
+				}, {
+					Corner = e("UICorner", {
+						CornerRadius = UDim.new(0, 20),
+					}),
+					FixCorner = e("Frame", {
+						Size = UDim2.new(1, 0, 0.5, 0),
+						Position = UDim2.new(0, 0, 0.5, 0),
+						BackgroundColor3 = COLORS.HEADER,
+						BorderSizePixel = 0,
+					}),
+					Title = e("TextLabel", {
+						Size = UDim2.new(1, 0, 1, 0),
+						BackgroundTransparency = 1,
+						Text = (CATEGORY_ICONS[CATEGORIES[activeTab]] or "") .. " " .. CATEGORIES[activeTab]:upper(),
+						TextColor3 = COLORS.GOLD,
+						TextSize = 26,
+						Font = Enum.Font.GothamBold,
+					}),
+				}),
+
+				ContentContainer = e("Frame", {
+					Size = UDim2.new(1, -30, 1, -70),
+					Position = UDim2.new(0, 15, 0, 55),
+					BackgroundTransparency = 1,
+				}, {
+					GemsTab = activeTab == 1 and e(GemsTab, {
+						onPurchasePack = onPurchasePack,
+					}),
+					AlertsTab = activeTab == 2 and e(CategoryTab, {
+						category = "alerts",
+						ownedItems = ownedItems,
+						equippedItems = equippedItems,
+						onBuy = onBuyItem,
+						onEquip = onEquipItem,
+					}),
+					IdentityTab = activeTab == 3 and e(CategoryTab, {
+						category = "identity",
+						ownedItems = ownedItems,
+						equippedItems = equippedItems,
+						onBuy = onBuyItem,
+						onEquip = onEquipItem,
+					}),
+					ToolsTab = activeTab == 4 and e(CategoryTab, {
+						category = "tools",
+						ownedItems = ownedItems,
+						equippedItems = equippedItems,
+						onBuy = onBuyItem,
+						onEquip = onEquipItem,
+					}),
+				}),
 			}),
 		}),
 	})
@@ -542,13 +820,13 @@ function ShopClient.init()
 		onClose = function() end,
 	}))
 
-MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(purchasingPlayer, gamepassId, wasPurchased)
-    if purchasingPlayer == player and wasPurchased then
-        task.wait(1)
-        shopRemote:InvokeServer("processGamepassPurchase", { gamepassId = gamepassId })
-        ShopClient.show()
-    end
-end)
+	MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(purchasingPlayer, gamepassId, wasPurchased)
+		if purchasingPlayer == player and wasPurchased then
+			task.wait(1)
+			shopRemote:InvokeServer("processGamepassPurchase", { gamepassId = gamepassId })
+			ShopClient.show()
+		end
+	end)
 
 	_G.ShopClient = ShopClient
 
