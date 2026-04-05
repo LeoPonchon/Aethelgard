@@ -206,11 +206,11 @@ local function ShopItemCard(props)
 	local isHovered, setIsHovered = React.useState(false)
 	local gradientColors = CATEGORY_GRADIENTS[item.category] or CATEGORY_GRADIENTS.tools
 
-	return e("Frame", {
-		Size = UDim2.new(0, 140, 0, 190),
-		BackgroundColor3 = COLORS.CARD_BG,
-		BorderSizePixel = 0,
-	}, {
+return e("Frame", {
+ Size = UDim2.new(0, 140, 0, 170),
+ BackgroundColor3 = COLORS.CARD_BG,
+ BorderSizePixel = 0,
+ }, {
 		Corner = e("UICorner", {
 			CornerRadius = UDim.new(0, 12),
 		}),
@@ -239,81 +239,81 @@ local function ShopItemCard(props)
 			}),
 		}),
 
-		CategoryBadge = e("Frame", {
-			Size = UDim2.new(1, -16, 0, 22),
-			Position = UDim2.new(0, 8, 0, 8),
-			BackgroundColor3 = gradientColors[1],
-			BackgroundTransparency = 0.2,
-			BorderSizePixel = 0,
-		}, {
-			Corner = e("UICorner", {
-				CornerRadius = UDim.new(0, 6),
-			}),
-			Label = e("TextLabel", {
-				Size = UDim2.new(1, 0, 1, 0),
-				BackgroundTransparency = 1,
-				Text = (CATEGORY_ICONS[item.category] or "") .. " " .. string.upper(item.category or ""),
-				TextColor3 = COLORS.TEXT,
-				TextSize = 10,
-				Font = Enum.Font.GothamBold,
-			}),
-		}),
+ CategoryBadge = e("Frame", {
+ Size = UDim2.new(1, -12, 0, 18),
+ Position = UDim2.new(0, 6, 0, 6),
+ BackgroundColor3 = gradientColors[1],
+ BackgroundTransparency = 0.2,
+ BorderSizePixel = 0,
+ }, {
+ Corner = e("UICorner", {
+ CornerRadius = UDim.new(0, 5),
+ }),
+ Label = e("TextLabel", {
+ Size = UDim2.new(1, 0, 1, 0),
+ BackgroundTransparency = 1,
+ Text = (CATEGORY_ICONS[item.category] or "") .. " " .. string.upper(item.category or ""),
+ TextColor3 = COLORS.TEXT,
+ TextSize = 9,
+ Font = Enum.Font.GothamBold,
+ }),
+ }),
 
-		NameLabel = e("TextLabel", {
-			Size = UDim2.new(1, -16, 0, 36),
-			Position = UDim2.new(0, 8, 0, 35),
-			BackgroundTransparency = 1,
-			Text = item.name,
-			TextColor3 = COLORS.TEXT,
-			TextSize = 14,
-			Font = Enum.Font.GothamBold,
-			TextWrapped = true,
-		}),
+ NameLabel = e("TextLabel", {
+ Size = UDim2.new(1, -12, 0, 28),
+ Position = UDim2.new(0, 6, 0, 26),
+ BackgroundTransparency = 1,
+ Text = item.name,
+ TextColor3 = COLORS.TEXT,
+ TextSize = 12,
+ Font = Enum.Font.GothamBold,
+ TextWrapped = true,
+ }),
 
-		DescLabel = e("TextLabel", {
-			Size = UDim2.new(1, -16, 0, 50),
-			Position = UDim2.new(0, 8, 0, 72),
-			BackgroundTransparency = 1,
-			Text = item.description or "",
-			TextColor3 = COLORS.TEXT_DIM,
-			TextSize = 10,
-			Font = Enum.Font.Gotham,
-			TextWrapped = true,
-		}),
+ DescLabel = e("TextLabel", {
+ Size = UDim2.new(1, -12, 0, 40),
+ Position = UDim2.new(0, 6, 0, 54),
+ BackgroundTransparency = 1,
+ Text = item.description or "",
+ TextColor3 = COLORS.TEXT_DIM,
+ TextSize = 9,
+ Font = Enum.Font.Gotham,
+ TextWrapped = true,
+ }),
 
-		PriceLabel = e("TextLabel", {
-			Size = UDim2.new(1, -16, 0, 20),
-			Position = UDim2.new(0, 8, 0, 125),
-			BackgroundTransparency = 1,
-			Text = isOwned and "✓ OWNED" or (tostring(item.price) .. " R$"),
-			TextColor3 = isOwned and Color3.fromRGB(100, 255, 150) or COLORS.GOLD,
-			TextSize = 13,
-			Font = Enum.Font.GothamBold,
-		}),
+ PriceLabel = e("TextLabel", {
+ Size = UDim2.new(1, -12, 0, 16),
+ Position = UDim2.new(0, 6, 0, 96),
+ BackgroundTransparency = 1,
+ Text = isOwned and "✓ OWNED" or (tostring(item.price) .. " R$"),
+ TextColor3 = isOwned and Color3.fromRGB(100, 255, 150) or COLORS.GOLD,
+ TextSize = 11,
+ Font = Enum.Font.GothamBold,
+ }),
 
-		EquippedBadge = isEquipped and e("Frame", {
-			Size = UDim2.new(1, -16, 0, 20),
-			Position = UDim2.new(0, 8, 1, -58),
-			BackgroundColor3 = Color3.fromRGB(60, 200, 100),
-			BackgroundTransparency = 0.2,
-			BorderSizePixel = 0,
-		}, {
-			Corner = e("UICorner", {
-				CornerRadius = UDim.new(0, 5),
-			}),
-			Label = e("TextLabel", {
-				Size = UDim2.new(1, 0, 1, 0),
-				BackgroundTransparency = 1,
-				Text = "✓ EQUIPPED",
-				TextColor3 = COLORS.TEXT,
-				TextSize = 10,
-				Font = Enum.Font.GothamBold,
-			}),
-		}),
+ EquippedBadge = isEquipped and e("Frame", {
+ Size = UDim2.new(1, -12, 0, 18),
+ Position = UDim2.new(0, 6, 1, -52),
+ BackgroundColor3 = Color3.fromRGB(60, 200, 100),
+ BackgroundTransparency = 0.2,
+ BorderSizePixel = 0,
+ }, {
+ Corner = e("UICorner", {
+ CornerRadius = UDim.new(0, 5),
+ }),
+ Label = e("TextLabel", {
+ Size = UDim2.new(1, 0, 1, 0),
+ BackgroundTransparency = 1,
+ Text = "✓ EQUIPPED",
+ TextColor3 = COLORS.TEXT,
+ TextSize = 9,
+ Font = Enum.Font.GothamBold,
+ }),
+ }),
 
-		ActionButton = e("TextButton", {
-			Size = UDim2.new(1, -16, 0, 32),
-			Position = UDim2.new(0, 8, 1, -42),
+ ActionButton = e("TextButton", {
+ Size = UDim2.new(1, -12, 0, 28),
+ Position = UDim2.new(0, 6, 1, -36),
 			BackgroundColor3 = isEquipped and COLORS.BUTTON_UNEQUIP or (isOwned and COLORS.BUTTON_EQUIP or COLORS.BUTTON_PURCHASE),
 			BackgroundTransparency = 0,
 			BorderSizePixel = 0,
@@ -353,8 +353,8 @@ local function GemsTab(props)
 			VerticalAlignment = Enum.VerticalAlignment.Top,
 		}),
 		Padding = e("UIPadding", {
-			PaddingTop = UDim.new(0, 1),
-			PaddingLeft = UDim.new(0, 1),
+			PaddingTop = UDim.new(0, 3),
+			PaddingLeft = UDim.new(0, 3),
 		}),
 	}
 
@@ -391,8 +391,8 @@ local function CategoryTab(props)
 			VerticalAlignment = Enum.VerticalAlignment.Top,
 		}),
 		Padding = e("UIPadding", {
-			PaddingTop = UDim.new(0, 1),
-			PaddingLeft = UDim.new(0, 1),
+			PaddingTop = UDim.new(0, 3),
+			PaddingLeft = UDim.new(0, 3),
 		}),
 	}
 
@@ -413,7 +413,7 @@ local function CategoryTab(props)
 		BackgroundTransparency = 1,
 		ScrollBarThickness = 8,
 		ScrollBarImageColor3 = COLORS.GOLD,
-		CanvasSize = UDim2.new(0, 0, 0, math.ceil(#items / 3) * 220),
+ CanvasSize = UDim2.new(0, 0, 0, math.ceil(#items / 3) * 200),
 	}, children)
 end
 
@@ -511,24 +511,15 @@ local function ShopApp(props)
 		return nil
 	end
 
-	local categoryButtonsChildren = {
-		Layout = e("UIListLayout", {
-			FillDirection = Enum.FillDirection.Vertical,
-			SortOrder = Enum.SortOrder.LayoutOrder,
-			Padding = UDim.new(0, 12),
-			HorizontalAlignment = Enum.HorizontalAlignment.Center,
-			VerticalAlignment = Enum.VerticalAlignment.Top,
-		}),
-		TitleLabel = e("TextLabel", {
-			Size = UDim2.new(1, 0, 0, 40),
-			BackgroundTransparency = 1,
-			Text = "🏪",
-			TextColor3 = COLORS.GOLD,
-			TextSize = 32,
-			Font = Enum.Font.GothamBold,
-			LayoutOrder = 0,
-		}),
-	}
+ local categoryButtonsChildren = {
+ Layout = e("UIListLayout", {
+ FillDirection = Enum.FillDirection.Vertical,
+ SortOrder = Enum.SortOrder.LayoutOrder,
+ Padding = UDim.new(0, 12),
+ HorizontalAlignment = Enum.HorizontalAlignment.Center,
+ VerticalAlignment = Enum.VerticalAlignment.Top,
+ }),
+ }
 
 	for i, categoryId in ipairs(CATEGORIES) do
 		categoryButtonsChildren["Cat_" .. i] = e(CategoryButton, {
@@ -646,29 +637,38 @@ local function ShopApp(props)
 				}),
 			}),
 
-		CategoryColumn = e("Frame", {
-			Size = UDim2.new(0, 220, 0.75, 0),
-			Position = UDim2.new(0, 20, 0.125, 0),
-				BackgroundColor3 = Color3.fromRGB(250, 250, 250),
-				BorderSizePixel = 0,
-				ZIndex = 10,
-			}, {
-				Corner = e("UICorner", {
-					CornerRadius = UDim.new(0, 20),
-				}),
-				Stroke = e("UIStroke", {
-					Color = Color3.fromRGB(255, 200, 50),
-					Thickness = 1,
-				}),
-				Padding = e("UIPadding", {
-					PaddingTop = UDim.new(0, 20),
-				}),
-				Content = e("Frame", {
-					Size = UDim2.new(1, -20, 1, -20),
-					Position = UDim2.new(0, 10, 0, 10),
-					BackgroundTransparency = 1,
-				}, categoryButtonsChildren),
-			}),
+ CategoryColumn = e("Frame", {
+ Size = UDim2.new(0, 220, 0.75, 0),
+ Position = UDim2.new(0, 20, 0.125, 0),
+ BackgroundColor3 = Color3.fromRGB(250, 250, 250),
+ BorderSizePixel = 0,
+ ZIndex = 10,
+ }, {
+ Corner = e("UICorner", {
+ CornerRadius = UDim.new(0, 20),
+ }),
+ Stroke = e("UIStroke", {
+ Color = Color3.fromRGB(255, 200, 50),
+ Thickness = 1,
+ }),
+ Padding = e("UIPadding", {
+ PaddingTop = UDim.new(0, 20),
+ }),
+ ShopTitle = e("TextLabel", {
+ Size = UDim2.new(1, -20, 0, 40),
+ Position = UDim2.new(0, 10, 0, 10),
+ BackgroundTransparency = 1,
+ Text = "SHOP",
+ TextColor3 = COLORS.GOLD,
+ TextSize = 28,
+ Font = Enum.Font.GothamBold,
+ }),
+ Content = e("Frame", {
+ Size = UDim2.new(1, -20, 1, -70),
+ Position = UDim2.new(0, 10, 0, 60),
+ BackgroundTransparency = 1,
+ }, categoryButtonsChildren),
+ }),
 
 		ContentPanel = e("Frame", {
 			Size = UDim2.new(1, -280, 0.75, 0),
