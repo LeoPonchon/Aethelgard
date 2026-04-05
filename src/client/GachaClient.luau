@@ -526,6 +526,8 @@ end
 
 local function AuraPreviewViewport(props)
 	local bannerInfo = props.bannerInfo
+	local currentBanner = props.currentBanner
+	local layoutOrder = props.LayoutOrder
 
 	local rarityKey = "common"
 	if bannerInfo and bannerInfo.featuredItemRarity then
@@ -533,12 +535,63 @@ local function AuraPreviewViewport(props)
 	end
 	local rarityColor = RARITY_COLORS[rarityKey] or Color3.fromRGB(160, 160, 170)
 
-	local viewportFrame = e("ViewportFrame", {
-		Size = UDim2.new(1, 0, 0, 200),
+	local viewportCameraRef = React.useRef(nil)
+	local previewModelRef = React.useRef(nil)
+
+	React.useEffect(function()
+		if not viewportCameraRef.current then
+			return
+		end
+
+		local camera = viewportCameraRef.current
+		camera.CFrame = CFrame.lookAt(Vector3.new(0, 2, 6), Vector3.new(0, 1, 0))
+
+		local previewModelSource = ReplicatedStorage:FindFirstChild("PreviewModel")
+		if not previewModelSource then
+			return
+		end
+
+		local existingModel = previewModelRef.current
+		if existingModel then
+			existingModel:Destroy()
+		end
+
+		local modelClone = previewModelSource:Clone()
+		modelClone.Parent = viewportCameraRef.current.Parent
+
+		local bannerData = GachaData.getBannerById(currentBanner)
+		if bannerData and bannerData.featuredItemId then
+			local aurasFolder = ReplicatedStorage:FindFirstChild("Auras")
+			if aurasFolder then
+				local auraVFX = aurasFolder:FindFirstChild(bannerData.featuredItemId)
+				if auraVFX then
+					local auraClone = auraVFX:Clone()
+					local hrp = modelClone:FindFirstChild("HumanoidRootPart")
+					if hrp then
+						auraClone.Parent = hrp
+					end
+				end
+			end
+		end
+
+		previewModelRef.current = modelClone
+
+		return function()
+			if previewModelRef.current then
+				previewModelRef.current:Destroy()
+				previewModelRef.current = nil
+			end
+		end
+	end, {currentBanner})
+
+	return e("ViewportFrame", {
+		Size = UDim2.new(1, 0, 0, 160),
 		BackgroundTransparency = 0.1,
 		BackgroundColor3 = Color3.fromRGB(20, 18, 30),
 		BorderColor3 = rarityColor,
 		BorderSizePixel = 3,
+		LayoutOrder = layoutOrder,
+		CurrentCamera = viewportCameraRef,
 	}, {
 		UIStroke = e("UIStroke", {
 			Color = rarityColor,
@@ -547,9 +600,11 @@ local function AuraPreviewViewport(props)
 		Corner = e("UICorner", {
 			CornerRadius = UDim.new(0, 12),
 		}),
+		Camera = e("Camera", {
+			Name = "ViewportCamera",
+			ref = viewportCameraRef,
+		}),
 	})
-
-	return viewportFrame
 end
 
 local function GachaApp(props)
@@ -832,22 +887,11 @@ local function GachaApp(props)
 				LayoutOrder = 1,
 			}),
 
-			AuraPreview = e("ViewportFrame", {
-				Size = UDim2.new(1, 0, 0, 160),
-				BackgroundTransparency = 0.1,
-				BackgroundColor3 = Color3.fromRGB(20, 18, 30),
-				BorderColor3 = RARITY_COLORS[bannerInfo and bannerInfo.featuredItemRarity or "common"],
-				BorderSizePixel = 3,
-				LayoutOrder = 2,
-			}, {
-				UIStroke = e("UIStroke", {
-					Color = RARITY_COLORS[bannerInfo and bannerInfo.featuredItemRarity or "common"],
-					Thickness = 2,
-				}),
-				Corner = e("UICorner", {
-					CornerRadius = UDim.new(0, 12),
-				}),
-			}),
+		AuraPreview = e(AuraPreviewViewport, {
+			bannerInfo = bannerInfo,
+			currentBanner = currentBanner,
+			LayoutOrder = 2,
+		}),
 
 			GuaranteeLabel = e("TextLabel", {
 				Size = UDim2.new(1, 0, 0, 20),
