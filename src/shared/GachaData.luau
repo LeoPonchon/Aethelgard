@@ -2,109 +2,146 @@
 -- Gacha configuration data for Aethelgard
 
 export type GachaRarity = {
-    id: string,
-    name: string,
-    color: Color3,
-    baseRate: number,
-    pityThreshold: number?,
+	id: string,
+	name: string,
+	color: Color3,
+	baseRate: number,
+	pityThreshold: number?,
 }
 
 export type GachaItem = {
-    id: string,
-    name: string,
-    type: string,
-    rarity: string,
-    description: string,
-    iconId: string?,
+	id: string,
+	name: string,
+	type: string,
+	rarity: string,
+	description: string,
+	iconId: string?,
 }
 
 export type GachaBanner = {
-    id: string,
-    name: string,
-    description: string,
-    type: string,
-    featuredItems: { string },
-    startTime: number,
-    endTime: number,
-    active: boolean,
+	id: string,
+	name: string,
+	description: string,
+	type: string,
+	featuredItems: { string },
+	startTime: number,
+	endTime: number,
+	active: boolean,
+	bannerName: string,
+	featuredItemName: string,
+	featuredItemDescription: string,
+	featuredItemRarity: string,
+	guaranteeInfo: string,
+	timeLimited: boolean,
+	boostedDropRate: boolean,
 }
 
 export type PityConfig = {
-    softPityStart: number,
-    softPityIncrement: number,
-    hardPity: number,
-    carryOver: boolean,
+	softPityStart: number,
+	softPityIncrement: number,
+	hardPity: number,
+	carryOver: boolean,
 }
 
 local GACHA_DATA = {}
 
 GACHA_DATA.RARITIES = {
-    { id = "common", name = "Common", color = Color3.fromRGB(150, 150, 150), baseRate = 0.691 },
-    { id = "rare", name = "Rare", color = Color3.fromRGB(0, 100, 255), baseRate = 0.253 },
-    { id = "epic", name = "Epic", color = Color3.fromRGB(163, 53, 238), baseRate = 0.051 },
-    { id = "legendary", name = "Legendary", color = Color3.fromRGB(255, 170, 0), baseRate = 0.005 },
+	{ id = "common", name = "Common", color = Color3.fromRGB(150, 150, 150), baseRate = 0.691 },
+	{ id = "rare", name = "Rare", color = Color3.fromRGB(0, 100, 255), baseRate = 0.253 },
+	{ id = "epic", name = "Epic", color = Color3.fromRGB(163, 53, 238), baseRate = 0.051 },
+	{ id = "legendary", name = "Legendary", color = Color3.fromRGB(255, 170, 0), baseRate = 0.005 },
 }
 
 GACHA_DATA.PITY_CONFIG = {
-    softPityStart = 70,
-    softPityIncrement = 0.01,
-    hardPity = 80,
-    carryOver = true,
+	softPityStart = 70,
+	softPityIncrement = 0.01,
+	hardPity = 80,
+	carryOver = true,
 }
 
 GACHA_DATA.ROLL_PRICES = {
-    single = 100,
-    ten = 900,
+	single = 100,
+	ten = 900,
 }
 
 GACHA_DATA.GUARANTEES = {
-    firstRollMinRarity = "rare",
-    tenRollMinRarity = "epic",
+	firstRollMinRarity = "rare",
+	tenRollMinRarity = "epic",
 }
 
+local function createDate(year, month, day, hour, min)
+	return os.time({ year = year, month = month, day = day, hour = hour or 0, min = min or 0, sec = 0 })
+end
+
+local function addDays(timestamp, days)
+	local t = os.date("*t", timestamp)
+	t.day = t.day + days
+	return os.time(t)
+end
+
+local function addWeeks(timestamp, weeks)
+	return addDays(timestamp, weeks * 7)
+end
+
+local BANNER_START_DATE = createDate(2026, 4, 5, 0, 0)
+
 GACHA_DATA.BANNERS = {
-    {
-        id = "standard_aura",
-        name = "Standard Aura Banner",
-        description = "Roll for magical auras to customize your character",
-        type = "aura",
-        featuredItems = {"golden_aura", "shadow_aura", "flame_aura"},
-        startTime = 0,
-        endTime = math.huge,
-        active = true,
-    },
-    {
-        id = "standard_accessory",
-        name = "Standard Accessory Banner",
-        description = "Roll for cosmetic accessories",
-        type = "accessory",
-        featuredItems = {"crown", "wings", "halo"},
-        startTime = 0,
-        endTime = math.huge,
-        active = true,
-    },
+	{
+		id = "standard_aura",
+		name = "Standard Aura Banner",
+		description = "Roll for magical auras to customize your character",
+		type = "aura",
+		featuredItems = {"golden_aura", "shadow_aura", "flame_aura"},
+		startTime = BANNER_START_DATE,
+		endTime = addWeeks(BANNER_START_DATE, 2),
+		active = true,
+		bannerName = "Royal Essence",
+		featuredItemName = "Golden Aura",
+		featuredItemDescription = "A majestic golden glow that surrounds your character with divine light. This legendary aura marks you as one chosen by the gods themselves.",
+		featuredItemRarity = "legendary",
+		guaranteeInfo = "Every 10 wishes guarantees at least one Epic or higher aura.",
+		timeLimited = false,
+		boostedDropRate = true,
+	},
+	{
+		id = "standard_accessory",
+		name = "Standard Accessory Banner",
+		description = "Roll for cosmetic accessories",
+		type = "accessory",
+		featuredItems = {"crown", "wings", "halo"},
+		startTime = BANNER_START_DATE,
+		endTime = addWeeks(BANNER_START_DATE, 2),
+		active = true,
+		bannerName = "Divine Regalia",
+		featuredItemName = "Royal Crown",
+		featuredItemDescription = "A crown fit for true royalty. Wearing this legendary accessory grants you an air of supreme authority and commands respect from all who gaze upon you.",
+		featuredItemRarity = "legendary",
+		guaranteeInfo = "Every 10 wishes guarantees at least one Epic or higher accessory.",
+		timeLimited = false,
+		boostedDropRate = true,
+	},
 }
 
 GACHA_DATA.AURAS = {
-    { id = "golden_aura", name = "Golden Aura", type = "aura", rarity = "legendary", description = "A majestic golden glow", iconId = "" },
-    { id = "shadow_aura", name = "Shadow Aura", type = "aura", rarity = "legendary", description = "Dark wisps of shadow", iconId = "" },
-    { id = "flame_aura", name = "Flame Aura", type = "aura", rarity = "epic", description = "Flickering flames surround you", iconId = "" },
-    { id = "ice_aura", name = "Ice Aura", type = "aura", rarity = "epic", description = "Frost crystals float around", iconId = "" },
-    { id = "nature_aura", name = "Nature Aura", type = "aura", rarity = "rare", description = "Gentle green glow", iconId = "" },
-    { id = "water_aura", name = "Water Aura", type = "aura", rarity = "rare", description = "Flowing water particles", iconId = "" },
-    { id = "wind_aura", name = "Wind Aura", type = "aura", rarity = "common", description = "Light breeze effect", iconId = "" },
-    { id = "dust_aura", name = "Dust Aura", type = "aura", rarity = "common", description = "Subtle dust particles", iconId = "" },
+	{ id = "golden_aura", name = "Golden Aura", type = "aura", rarity = "legendary", description = "A majestic golden glow", iconId = "" },
+	{ id = "shadow_aura", name = "Shadow Aura", type = "aura", rarity = "legendary", description = "Dark wisps of shadow", iconId = "" },
+	{ id = "flame_aura", name = "Flame Aura", type = "aura", rarity = "epic", description = "Flickering flames surround you", iconId = "" },
+	{ id = "ice_aura", name = "Ice Aura", type = "aura", rarity = "epic", description = "Frost crystals float around", iconId = "" },
+	{ id = "nature_aura", name = "Nature Aura", type = "aura", rarity = "rare", description = "Gentle green glow", iconId = "" },
+	{ id = "water_aura", name = "Water Aura", type = "aura", rarity = "rare", description = "Flowing water particles", iconId = "" },
+	{ id = "wind_aura", name = "Wind Aura", type = "aura", rarity = "common", description = "Light breeze effect", iconId = "" },
+	{ id = "dust_aura", name = "Dust Aura", type = "aura", rarity = "common", description = "Subtle dust particles", iconId = "" },
 }
 
 GACHA_DATA.ACCESSORIES = {
-    { id = "crown", name = "Royal Crown", type = "accessory", rarity = "legendary", description = "A crown fit for royalty", iconId = "" },
-    { id = "wings", name = "Angel Wings", type = "accessory", rarity = "legendary", description = "Divine feathered wings", iconId = "" },
-    { id = "halo", name = "Holy Halo", type = "accessory", rarity = "epic", description = "A glowing ring above your head", iconId = "" },
-    { id = "horns", name = "Demonic Horns", type = "accessory", rarity = "epic", description = "Dark twisted horns", iconId = "" },
-    { id = "cape", name = "Hero's Cape", type = "accessory", rarity = "rare", description = "A flowing cape", iconId = "" },
-    { id = "tiara", name = "Silver Tiara", type = "accessory", rarity = "rare", description = "An elegant tiara", iconId = "" },
-    { id = "earrings", name = "Gold Earrings", type = "accessory", rarity = "common", description = "Simple gold earrings", iconId = "" },
-    { id = "necklace", name = "Silver Necklace", type = "accessory", rarity = "common", description = "A simple silver chain", iconId = "" },
+	{ id = "crown", name = "Royal Crown", type = "accessory", rarity = "legendary", description = "A crown fit for royalty", iconId = "" },
+	{ id = "wings", name = "Angel Wings", type = "accessory", rarity = "legendary", description = "Divine feathered wings", iconId = "" },
+	{ id = "halo", name = "Holy Halo", type = "accessory", rarity = "epic", description = "A glowing ring above your head", iconId = "" },
+	{ id = "horns", name = "Demonic Horns", type = "accessory", rarity = "epic", description = "Dark twisted horns", iconId = "" },
+	{ id = "cape", name = "Hero's Cape", type = "accessory", rarity = "rare", description = "A flowing cape", iconId = "" },
+	{ id = "tiara", name = "Silver Tiara", type = "accessory", rarity = "rare", description = "An elegant tiara", iconId = "" },
+	{ id = "earrings", name = "Gold Earrings", type = "accessory", rarity = "common", description = "Simple gold earrings", iconId = "" },
+	{ id = "necklace", name = "Silver Necklace", type = "accessory", rarity = "common", description = "A simple silver chain", iconId = "" },
 }
 
 GACHA_DATA.DUPLICATE_VALUES = {
@@ -122,59 +159,96 @@ GACHA_DATA.SHARD_PRICES = {
 }
 
 function GACHA_DATA.getItemsByBannerType(bannerType)
-    local items = {}
-    if bannerType == "aura" then
-        for _, item in ipairs(GACHA_DATA.AURAS) do
-            table.insert(items, item)
-        end
-    elseif bannerType == "accessory" then
-        for _, item in ipairs(GACHA_DATA.ACCESSORIES) do
-            table.insert(items, item)
-        end
-    end
-    return items
+	local items = {}
+	if bannerType == "aura" then
+		for _, item in ipairs(GACHA_DATA.AURAS) do
+			table.insert(items, item)
+		end
+	elseif bannerType == "accessory" then
+		for _, item in ipairs(GACHA_DATA.ACCESSORIES) do
+			table.insert(items, item)
+		end
+	end
+	return items
 end
 
 function GACHA_DATA.getItemsByRarity(items, rarityId)
-    local filtered = {}
-    for _, item in ipairs(items) do
-        if item.rarity == rarityId then
-            table.insert(filtered, item)
-        end
-    end
-    return filtered
+	local filtered = {}
+	for _, item in ipairs(items) do
+		if item.rarity == rarityId then
+			table.insert(filtered, item)
+		end
+	end
+	return filtered
 end
 
 function GACHA_DATA.getRarityById(rarityId)
-    for _, rarity in ipairs(GACHA_DATA.RARITIES) do
-        if rarity.id == rarityId then
-            return rarity
-        end
-    end
-    return nil
+	for _, rarity in ipairs(GACHA_DATA.RARITIES) do
+		if rarity.id == rarityId then
+			return rarity
+		end
+	end
+	return nil
 end
 
 function GACHA_DATA.getBannerById(bannerId)
-    for _, banner in ipairs(GACHA_DATA.BANNERS) do
-        if banner.id == bannerId then
-            return banner
-        end
-    end
-    return nil
+	for _, banner in ipairs(GACHA_DATA.BANNERS) do
+		if banner.id == bannerId then
+			return banner
+		end
+	end
+	return nil
 end
 
 function GACHA_DATA.getItemById(itemId)
-    for _, item in ipairs(GACHA_DATA.AURAS) do
-        if item.id == itemId then
-            return item
-        end
-    end
-    for _, item in ipairs(GACHA_DATA.ACCESSORIES) do
-        if item.id == itemId then
-            return item
-        end
-    end
-    return nil
+	for _, item in ipairs(GACHA_DATA.AURAS) do
+		if item.id == itemId then
+			return item
+		end
+	end
+	for _, item in ipairs(GACHA_DATA.ACCESSORIES) do
+		if item.id == itemId then
+			return item
+		end
+	end
+	return nil
+end
+
+function GACHA_DATA.getActiveBanners()
+	local activeBanners = {}
+	for _, banner in ipairs(GACHA_DATA.BANNERS) do
+		if banner.active then
+			table.insert(activeBanners, banner)
+		end
+	end
+	return activeBanners
+end
+
+function GACHA_DATA.getAllBannerIds()
+	local ids = {}
+	for _, banner in ipairs(GACHA_DATA.BANNERS) do
+		table.insert(ids, banner.id)
+	end
+	return ids
+end
+
+function GACHA_DATA.getRemainingTime(bannerId)
+	local banner = GACHA_DATA.getBannerById(bannerId)
+	if banner and banner.endTime then
+		local remaining = banner.endTime - os.time()
+		if remaining < 0 then
+			return 0
+		end
+		return remaining
+	end
+	return 0
+end
+
+function GACHA_DATA.formatTime(seconds)
+	local days = math.floor(seconds / (24 * 60 * 60))
+	local hours = math.floor((seconds % (24 * 60 * 60)) / (60 * 60))
+	local minutes = math.floor((seconds % (60 * 60)) / 60)
+	return string.format("%d day(s) %d hour(s) %d minute(s)", days, hours, minutes)
 end
 
 return GACHA_DATA

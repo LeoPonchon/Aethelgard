@@ -315,12 +315,11 @@ function GachaSystem.purchaseWithShards(playerId: number, itemId: string)
 end
 
 function GachaSystem.init()
-    Players.PlayerRemoving:Connect(function(player)
-        playerPity[player.UserId] = nil
-        playerInventory[player.UserId] = nil
-    end)
-    
-    print("[GachaSystem] Initialized")
+	Players.PlayerRemoving:Connect(function(player)
+		playerPity[player.UserId] = nil
+	end)
+
+	print("[GachaSystem] Initialized")
 end
 
 return GachaSystem
