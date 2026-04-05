@@ -503,107 +503,23 @@ local function InventoryModal(props)
 	})
 end
 
-local function createAuraPreviewRig(auraId)
-	local previewModel = ReplicatedStorage:FindFirstChild("PreviewModel")
-	if not previewModel then return nil end
-
-	local modelClone = previewModel:Clone()
-
-	local aurasFolder = ReplicatedStorage:FindFirstChild("Auras")
-	if aurasFolder and auraId then
-		local auraVFX = aurasFolder:FindFirstChild(auraId)
-		if auraVFX then
-			local auraClone = auraVFX:Clone()
-			local hrp = modelClone:FindFirstChild("HumanoidRootPart")
-			if hrp then
-				auraClone.Parent = hrp
-			end
-		end
-	end
-
-	return modelClone
-end
-
-local function AuraPreviewViewport(props)
+local function AuraDescriptionCard(props)
 	local bannerInfo = props.bannerInfo
-	local currentBanner = props.currentBanner
 	local layoutOrder = props.LayoutOrder
 
-	local rarityKey = "common"
-	if bannerInfo and bannerInfo.featuredItemRarity then
-		rarityKey = bannerInfo.featuredItemRarity
-	end
-	local rarityColor = RARITY_COLORS[rarityKey] or Color3.fromRGB(160, 160, 170)
+	local description = bannerInfo and bannerInfo.featuredItemDescription or "A mysterious aura awaits..."
 
-	local viewportCameraRef = React.useRef(nil)
-	local previewModelRef = React.useRef(nil)
-
-	React.useEffect(function()
-		if not viewportCameraRef.current then
-			return
-		end
-
-		local camera = viewportCameraRef.current
-		camera.CFrame = CFrame.lookAt(Vector3.new(0, 2, 6), Vector3.new(0, 1, 0))
-
-		local previewModelSource = ReplicatedStorage:FindFirstChild("PreviewModel")
-		if not previewModelSource then
-			return
-		end
-
-		local existingModel = previewModelRef.current
-		if existingModel then
-			existingModel:Destroy()
-		end
-
-		local modelClone = previewModelSource:Clone()
-		modelClone.Parent = viewportCameraRef.current.Parent
-
-		local bannerData = GachaData.getBannerById(currentBanner)
-		if bannerData and bannerData.featuredItemId then
-			local aurasFolder = ReplicatedStorage:FindFirstChild("Auras")
-			if aurasFolder then
-				local auraVFX = aurasFolder:FindFirstChild(bannerData.featuredItemId)
-				if auraVFX then
-					local auraClone = auraVFX:Clone()
-					local hrp = modelClone:FindFirstChild("HumanoidRootPart")
-					if hrp then
-						auraClone.Parent = hrp
-					end
-				end
-			end
-		end
-
-		previewModelRef.current = modelClone
-
-		return function()
-			if previewModelRef.current then
-				previewModelRef.current:Destroy()
-				previewModelRef.current = nil
-			end
-		end
-	end, {currentBanner})
-
-	return e("ViewportFrame", {
-		Size = UDim2.new(1, 0, 0, 160),
-		BackgroundTransparency = 0.1,
-		BackgroundColor3 = Color3.fromRGB(20, 18, 30),
-		BorderColor3 = rarityColor,
-		BorderSizePixel = 3,
+	return e("TextLabel", {
+		Size = UDim2.new(1, 0, 0, 72),
+		BackgroundTransparency = 1,
+		Text = description,
+		TextColor3 = COLORS.TEXT_DIM,
+		TextSize = 18,
+		Font = Enum.Font.Gotham,
+		TextWrapped = true,
+		TextXAlignment = Enum.TextXAlignment.Center,
+		TextYAlignment = Enum.TextYAlignment.Top,
 		LayoutOrder = layoutOrder,
-		CurrentCamera = viewportCameraRef,
-	}, {
-		UIStroke = e("UIStroke", {
-			Color = rarityColor,
-			Thickness = 2,
-		}),
-		Corner = e("UICorner", {
-			CornerRadius = UDim.new(0, 12),
-		}),
-		Camera = e("Camera", {
-			Name = "ViewportCamera",
-			ref = viewportCameraRef,
-		}),
 	})
 end
 
@@ -851,7 +767,7 @@ local function GachaApp(props)
 
 		BannerDisplay = e("Frame", {
 			Size = UDim2.new(0.45, 0, 0.55, 0),
-			Position = UDim2.new(0.275, 0, 0.18, 0),
+			Position = UDim2.new(0.1, 0, 0.18, 0),
 			BackgroundColor3 = Color3.fromRGB(250, 250, 250),
 			BackgroundTransparency = 0,
 			BorderSizePixel = 0,
@@ -869,27 +785,26 @@ local function GachaApp(props)
 				PaddingLeft = UDim.new(0, 30),
 				PaddingRight = UDim.new(0, 30),
 			}),
-			UIListLayout = e("UIListLayout", {
-				FillDirection = Enum.FillDirection.Vertical,
-				SortOrder = Enum.SortOrder.LayoutOrder,
-				Padding = UDim.new(0, 8),
-				HorizontalAlignment = Enum.HorizontalAlignment.Center,
-			}),
+		UIListLayout = e("UIListLayout", {
+			FillDirection = Enum.FillDirection.Vertical,
+			SortOrder = Enum.SortOrder.LayoutOrder,
+			Padding = UDim.new(0, 40),
+			HorizontalAlignment = Enum.HorizontalAlignment.Center,
+		}),
 
-			AuraNameLabel = e("TextLabel", {
-				Size = UDim2.new(1, 0, 0, 32),
-				BackgroundTransparency = 1,
-				Text = bannerInfo and bannerInfo.featuredItemName or "Unknown Aura",
-				TextColor3 = RARITY_COLORS[bannerInfo and bannerInfo.featuredItemRarity or "legendary"],
-				TextSize = 26,
-				Font = Enum.Font.GothamBold,
-				TextXAlignment = Enum.TextXAlignment.Center,
-				LayoutOrder = 1,
-			}),
+		AuraNameLabel = e("TextLabel", {
+			Size = UDim2.new(1, 0, 0, 36),
+			BackgroundTransparency = 1,
+			Text = bannerInfo and bannerInfo.featuredItemName or "Unknown Aura",
+			TextColor3 = RARITY_COLORS[bannerInfo and bannerInfo.featuredItemRarity or "legendary"],
+			TextSize = 28,
+			Font = Enum.Font.GothamBold,
+			TextXAlignment = Enum.TextXAlignment.Center,
+			LayoutOrder = 1,
+		}),
 
-		AuraPreview = e(AuraPreviewViewport, {
+		AuraDescription = e(AuraDescriptionCard, {
 			bannerInfo = bannerInfo,
-			currentBanner = currentBanner,
 			LayoutOrder = 2,
 		}),
 
@@ -898,7 +813,7 @@ local function GachaApp(props)
 				BackgroundTransparency = 1,
 				Text = "Every 10 wishes guarantees at least one Epic or higher.",
 				TextColor3 = Color3.fromRGB(100, 100, 100),
-				TextSize = 13,
+				TextSize = 18,
 				Font = Enum.Font.Gotham,
 				TextWrapped = true,
 				TextXAlignment = Enum.TextXAlignment.Center,
@@ -921,7 +836,7 @@ local function GachaApp(props)
 					BackgroundTransparency = 1,
 					Text = "Time remaining",
 					TextColor3 = Color3.fromRGB(150, 150, 150),
-					TextSize = 14,
+					TextSize = 18,
 					Font = Enum.Font.Gotham,
 					TextXAlignment = Enum.TextXAlignment.Center,
 					LayoutOrder = 1,
