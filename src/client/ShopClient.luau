@@ -385,13 +385,14 @@ local function CategoryTab(props)
 
 	local children = {
 		Layout = e("UIGridLayout", {
-			CellSize = UDim2.new(0, 150, 0, 150),
-			CellPadding = UDim2.new(0, 25, 0, 25),
+			CellSize = UDim2.new(0, 150, 0, 180),
+			CellPadding = UDim2.new(0, 40, 0, 40),
 			HorizontalAlignment = Enum.HorizontalAlignment.Left,
 			VerticalAlignment = Enum.VerticalAlignment.Top,
 		}),
 		Padding = e("UIPadding", {
-			PaddingTop = UDim.new(0, 20),
+			PaddingTop = UDim.new(0, 1),
+			PaddingLeft = UDim.new(0, 1),
 		}),
 	}
 

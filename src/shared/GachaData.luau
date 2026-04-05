@@ -60,8 +60,8 @@ GACHA_DATA.PITY_CONFIG = {
 }
 
 GACHA_DATA.ROLL_PRICES = {
-	single = 100,
-	ten = 900,
+	single = 160,
+	ten = 1500,
 }
 
 GACHA_DATA.GUARANTEES = {

@@ -9,6 +9,8 @@ SHOP_DATA.GEM_PACKS = {
 	{ id = "pack_550", name = "550 Gems", robux = 249, amount = 550, productId = 3569291172 },
 	{ id = "pack_1200", name = "1200 Gems", robux = 449, amount = 1200, productId = 3569291516 },
 	{ id = "pack_2500", name = "2500 Gems", robux = 899, amount = 2500, productId = 3569291677 },
+	{ id = "pack_5000", name = "5000 Gems", robux = 1699, amount = 5000, productId = 3570506269 },
+	{ id = "pack_12000", name = "12000 Gems", robux = 3999, amount = 12000, productId = 0 },
 }
 
 SHOP_DATA.ALERT_PACKAGES = {
