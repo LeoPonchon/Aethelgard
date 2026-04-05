@@ -7,6 +7,8 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local StarterGui = game:GetService("StarterGui")
 local Lighting = game:GetService("Lighting")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
 local React = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("React"))
 local ReactRoblox = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("ReactRoblox"))
@@ -524,6 +526,73 @@ local function AuraDescriptionCard(props)
 	})
 end
 
+local previewModelInstance = nil
+local previewAuraInstance = nil
+
+local function AuraPreviewViewport(props)
+	local featuredItemId = props.featuredItemId
+	local rarity = props.rarity
+
+	React.useEffect(function()
+		if previewModelInstance then
+			previewModelInstance:Destroy()
+			previewModelInstance = nil
+		end
+		if previewAuraInstance then
+			previewAuraInstance:Destroy()
+			previewAuraInstance = nil
+		end
+
+		local previewModel = ReplicatedStorage:FindFirstChild("PreviewModel")
+		if not previewModel then
+			warn("[GachaClient] PreviewModel not found in ReplicatedStorage")
+			return
+		end
+
+		local camera = Workspace.CurrentCamera
+		local cameraCFrame = camera.CFrame
+
+		local modelPosition = cameraCFrame * CFrame.new(3, 0, -4)
+
+		local clonedModel = previewModel:Clone()
+		previewModelInstance = clonedModel
+
+		clonedModel.Parent = Workspace
+		clonedModel:PivotTo(modelPosition)
+
+		local humanoidRootPart = clonedModel:FindFirstChild("HumanoidRootPart")
+		if featuredItemId and humanoidRootPart then
+			local aurasFolder = ReplicatedStorage:FindFirstChild("Auras")
+			if aurasFolder then
+				local auraVFX = aurasFolder:FindFirstChild(featuredItemId)
+				if auraVFX then
+					local auraInstance = auraVFX:Clone()
+					auraInstance.Parent = humanoidRootPart
+					if auraInstance:IsA("BasePart") then
+						auraInstance.Position = humanoidRootPart.Position
+					end
+					previewAuraInstance = auraInstance
+				else
+					warn("[GachaClient] Aura VFX not found:", featuredItemId)
+				end
+			end
+		end
+
+		return function()
+			if previewModelInstance then
+				previewModelInstance:Destroy()
+				previewModelInstance = nil
+			end
+			if previewAuraInstance then
+				previewAuraInstance:Destroy()
+				previewAuraInstance = nil
+			end
+		end
+	end, {featuredItemId, rarity})
+
+	return nil
+end
+
 local function GachaApp(props)
 	local isVisible = props.isVisible
 	local currentBanner, setCurrentBanner = React.useState("standard_aura")
@@ -604,7 +673,7 @@ local function GachaApp(props)
 
 	React.useEffect(function()
 		if isVisible then
-			blurEffect.Size = 24
+			blurEffect.Size = 0
 		else
 			blurEffect.Size = 0
 		end
@@ -732,26 +801,26 @@ local function GachaApp(props)
 				}),
 			}),
 
-		BannerDisplay = e("Frame", {
-			Size = UDim2.new(0.45, 0, 0.55, 0),
-			Position = UDim2.new(0.1, 0, 0.18, 0),
-			BackgroundColor3 = Color3.fromRGB(250, 250, 250),
-			BackgroundTransparency = 0,
-			BorderSizePixel = 0,
-		}, {
-			Corner = e("UICorner", {
-				CornerRadius = UDim.new(0, 20),
-			}),
-			Stroke = e("UIStroke", {
-				Color = Color3.fromRGB(255, 200, 50),
-				Thickness = 2,
-			}),
-			UIPadding = e("UIPadding", {
-				PaddingTop = UDim.new(0, 15),
-				PaddingBottom = UDim.new(0, 15),
-				PaddingLeft = UDim.new(0, 30),
-				PaddingRight = UDim.new(0, 30),
-			}),
+	BannerDisplay = e("Frame", {
+		Size = UDim2.new(0.35, 0, 0.55, 0),
+		Position = UDim2.new(0.1, 0, 0.18, 0),
+		BackgroundColor3 = Color3.fromRGB(250, 250, 250),
+		BackgroundTransparency = 0,
+		BorderSizePixel = 0,
+	}, {
+		Corner = e("UICorner", {
+			CornerRadius = UDim.new(0, 20),
+		}),
+		Stroke = e("UIStroke", {
+			Color = Color3.fromRGB(255, 200, 50),
+			Thickness = 2,
+		}),
+		UIPadding = e("UIPadding", {
+			PaddingTop = UDim.new(0, 15),
+			PaddingBottom = UDim.new(0, 15),
+			PaddingLeft = UDim.new(0, 30),
+			PaddingRight = UDim.new(0, 30),
+		}),
 		UIListLayout = e("UIListLayout", {
 			FillDirection = Enum.FillDirection.Vertical,
 			SortOrder = Enum.SortOrder.LayoutOrder,
@@ -775,53 +844,58 @@ local function GachaApp(props)
 			LayoutOrder = 2,
 		}),
 
-			GuaranteeLabel = e("TextLabel", {
-				Size = UDim2.new(1, 0, 0, 20),
-				BackgroundTransparency = 1,
-				Text = "Every 10 wishes guarantees at least one Epic or higher.",
-				TextColor3 = Color3.fromRGB(100, 100, 100),
-				TextSize = 18,
-				Font = Enum.Font.Gotham,
-				TextWrapped = true,
-				TextXAlignment = Enum.TextXAlignment.Center,
-				LayoutOrder = 3,
-			}),
-
-			TimeSection = e("Frame", {
-				Size = UDim2.new(1, 0, 0, 40),
-				BackgroundTransparency = 1,
-				LayoutOrder = 4,
-			}, {
-				UIListLayout = e("UIListLayout", {
-					FillDirection = Enum.FillDirection.Vertical,
-					SortOrder = Enum.SortOrder.LayoutOrder,
-					Padding = UDim.new(0, 2),
-					HorizontalAlignment = Enum.HorizontalAlignment.Center,
-				}),
-				TimeLabel = e("TextLabel", {
-					Size = UDim2.new(1, 0, 0, 20),
-					BackgroundTransparency = 1,
-					Text = "Time remaining",
-					TextColor3 = Color3.fromRGB(150, 150, 150),
-					TextSize = 18,
-					Font = Enum.Font.Gotham,
-					TextXAlignment = Enum.TextXAlignment.Center,
-					LayoutOrder = 1,
-				}),
-				TimeValue = e("TextLabel", {
-					Size = UDim2.new(1, 0, 0, 24),
-					BackgroundTransparency = 1,
-					Text = GachaData.formatTime(GachaData.getRemainingTime(currentBanner)),
-					TextColor3 = Color3.fromRGB(80, 80, 80),
-					TextSize = 18,
-					Font = Enum.Font.GothamBold,
-					TextXAlignment = Enum.TextXAlignment.Center,
-					LayoutOrder = 2,
-				}),
-			}),
+		GuaranteeLabel = e("TextLabel", {
+			Size = UDim2.new(1, 0, 0, 20),
+			BackgroundTransparency = 1,
+			Text = "Every 10 wishes guarantees at least one Epic or higher.",
+			TextColor3 = Color3.fromRGB(100, 100, 100),
+			TextSize = 18,
+			Font = Enum.Font.Gotham,
+			TextWrapped = true,
+			TextXAlignment = Enum.TextXAlignment.Center,
+			LayoutOrder = 3,
 		}),
 
-			RollButtonsContainer = e("Frame", {
+		TimeSection = e("Frame", {
+			Size = UDim2.new(1, 0, 0, 40),
+			BackgroundTransparency = 1,
+			LayoutOrder = 4,
+		}, {
+			UIListLayout = e("UIListLayout", {
+				FillDirection = Enum.FillDirection.Vertical,
+				SortOrder = Enum.SortOrder.LayoutOrder,
+				Padding = UDim.new(0, 2),
+				HorizontalAlignment = Enum.HorizontalAlignment.Center,
+			}),
+			TimeLabel = e("TextLabel", {
+				Size = UDim2.new(1, 0, 0, 20),
+				BackgroundTransparency = 1,
+				Text = "Time remaining",
+				TextColor3 = Color3.fromRGB(150, 150, 150),
+				TextSize = 18,
+				Font = Enum.Font.Gotham,
+				TextXAlignment = Enum.TextXAlignment.Center,
+				LayoutOrder = 1,
+			}),
+			TimeValue = e("TextLabel", {
+				Size = UDim2.new(1, 0, 0, 24),
+				BackgroundTransparency = 1,
+				Text = GachaData.formatTime(GachaData.getRemainingTime(currentBanner)),
+				TextColor3 = Color3.fromRGB(80, 80, 80),
+				TextSize = 18,
+				Font = Enum.Font.GothamBold,
+				TextXAlignment = Enum.TextXAlignment.Center,
+				LayoutOrder = 2,
+			}),
+		}),
+	}),
+
+	AuraPreview = e(AuraPreviewViewport, {
+		featuredItemId = bannerInfo and bannerInfo.featuredItems and bannerInfo.featuredItems[1],
+		rarity = bannerInfo and bannerInfo.featuredItemRarity,
+	}),
+
+	RollButtonsContainer = e("Frame", {
 				Size = UDim2.new(0, 320, 0, 70),
 				Position = UDim2.new(1, -340, 1, -90),
 				BackgroundTransparency = 1,
