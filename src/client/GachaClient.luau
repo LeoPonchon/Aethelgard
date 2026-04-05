@@ -6,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local StarterGui = game:GetService("StarterGui")
+local Lighting = game:GetService("Lighting")
 
 local React = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("React"))
 local ReactRoblox = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("ReactRoblox"))
@@ -593,6 +594,22 @@ local function GachaApp(props)
 		end
 	end
 
+	local blurEffect = Lighting:FindFirstChild("GachaBlur")
+	if not blurEffect then
+		blurEffect = Instance.new("BlurEffect")
+		blurEffect.Name = "GachaBlur"
+		blurEffect.Size = 0
+		blurEffect.Parent = Lighting
+	end
+
+	React.useEffect(function()
+		if isVisible then
+			blurEffect.Size = 24
+		else
+			blurEffect.Size = 0
+		end
+	end, {isVisible})
+
 	if not isVisible then
 		return nil
 	end
@@ -661,56 +678,6 @@ local function GachaApp(props)
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 		}, {
-			BackgroundImage = e("ImageLabel", {
-				Size = UDim2.new(1, 0, 1, 0),
-				BackgroundTransparency = 1,
-				Image = "rbxassetid://119971043013965",
-				ScaleType = Enum.ScaleType.Crop,
-			}),
-
-			BackgroundParticles = e("Frame", {
-				Size = UDim2.new(1, 0, 1, 0),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-			}, {
-				Star1 = e("TextLabel", {
-					Size = UDim2.new(0, 4, 0, 4),
-					Position = UDim2.new(0.1, 0, 0.2, 0),
-					BackgroundTransparency = 1,
-					Text = "✦",
-					TextColor3 = Color3.fromRGB(255, 200, 100),
-					TextSize = 20,
-					Font = Enum.Font.Gotham,
-				}),
-				Star2 = e("TextLabel", {
-					Size = UDim2.new(0, 4, 0, 4),
-					Position = UDim2.new(0.85, 0, 0.15, 0),
-					BackgroundTransparency = 1,
-					Text = "✧",
-					TextColor3 = Color3.fromRGB(200, 150, 255),
-					TextSize = 16,
-					Font = Enum.Font.Gotham,
-				}),
-				Star3 = e("TextLabel", {
-					Size = UDim2.new(0, 4, 0, 4),
-					Position = UDim2.new(0.7, 0, 0.6, 0),
-					BackgroundTransparency = 1,
-					Text = "✦",
-					TextColor3 = Color3.fromRGB(100, 200, 255),
-					TextSize = 24,
-					Font = Enum.Font.Gotham,
-				}),
-				Star4 = e("TextLabel", {
-					Size = UDim2.new(0, 4, 0, 4),
-					Position = UDim2.new(0.15, 0, 0.7, 0),
-					BackgroundTransparency = 1,
-					Text = "✧",
-					TextColor3 = Color3.fromRGB(255, 180, 80),
-					TextSize = 18,
-					Font = Enum.Font.Gotham,
-				}),
-			}),
-
 			CloseButton = e("TextButton", {
 				Size = UDim2.new(0, 50, 0, 50),
 				Position = UDim2.new(1, -70, 0, 20),
