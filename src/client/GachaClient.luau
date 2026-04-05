@@ -503,6 +503,55 @@ local function InventoryModal(props)
 	})
 end
 
+local function createAuraPreviewRig(auraId)
+	local previewModel = ReplicatedStorage:FindFirstChild("PreviewModel")
+	if not previewModel then return nil end
+
+	local modelClone = previewModel:Clone()
+
+	local aurasFolder = ReplicatedStorage:FindFirstChild("Auras")
+	if aurasFolder and auraId then
+		local auraVFX = aurasFolder:FindFirstChild(auraId)
+		if auraVFX then
+			local auraClone = auraVFX:Clone()
+			local hrp = modelClone:FindFirstChild("HumanoidRootPart")
+			if hrp then
+				auraClone.Parent = hrp
+			end
+		end
+	end
+
+	return modelClone
+end
+
+local function AuraPreviewViewport(props)
+	local bannerInfo = props.bannerInfo
+
+	local rarityKey = "common"
+	if bannerInfo and bannerInfo.featuredItemRarity then
+		rarityKey = bannerInfo.featuredItemRarity
+	end
+	local rarityColor = RARITY_COLORS[rarityKey] or Color3.fromRGB(160, 160, 170)
+
+	local viewportFrame = e("ViewportFrame", {
+		Size = UDim2.new(1, 0, 0, 200),
+		BackgroundTransparency = 0.1,
+		BackgroundColor3 = Color3.fromRGB(20, 18, 30),
+		BorderColor3 = rarityColor,
+		BorderSizePixel = 3,
+	}, {
+		UIStroke = e("UIStroke", {
+			Color = rarityColor,
+			Thickness = 2,
+		}),
+		Corner = e("UICorner", {
+			CornerRadius = UDim.new(0, 12),
+		}),
+	})
+
+	return viewportFrame
+end
+
 local function GachaApp(props)
 	local isVisible = props.isVisible
 	local currentBanner, setCurrentBanner = React.useState("standard_aura")
@@ -745,125 +794,106 @@ local function GachaApp(props)
 				}),
 			}),
 
-			BannerDisplay = e("Frame", {
-				Size = UDim2.new(0.45, 0, 0.6, 0),
-				Position = UDim2.new(0.275, 0, 0.2, 0),
-				BackgroundColor3 = Color3.fromRGB(250, 250, 250),
-				BackgroundTransparency = 0,
-				BorderSizePixel = 0,
+		BannerDisplay = e("Frame", {
+			Size = UDim2.new(0.45, 0, 0.55, 0),
+			Position = UDim2.new(0.275, 0, 0.18, 0),
+			BackgroundColor3 = Color3.fromRGB(250, 250, 250),
+			BackgroundTransparency = 0,
+			BorderSizePixel = 0,
+		}, {
+			Corner = e("UICorner", {
+				CornerRadius = UDim.new(0, 20),
+			}),
+			Stroke = e("UIStroke", {
+				Color = Color3.fromRGB(255, 200, 50),
+				Thickness = 2,
+			}),
+			UIPadding = e("UIPadding", {
+				PaddingTop = UDim.new(0, 15),
+				PaddingBottom = UDim.new(0, 15),
+				PaddingLeft = UDim.new(0, 30),
+				PaddingRight = UDim.new(0, 30),
+			}),
+			UIListLayout = e("UIListLayout", {
+				FillDirection = Enum.FillDirection.Vertical,
+				SortOrder = Enum.SortOrder.LayoutOrder,
+				Padding = UDim.new(0, 8),
+				HorizontalAlignment = Enum.HorizontalAlignment.Center,
+			}),
+
+			AuraNameLabel = e("TextLabel", {
+				Size = UDim2.new(1, 0, 0, 32),
+				BackgroundTransparency = 1,
+				Text = bannerInfo and bannerInfo.featuredItemName or "Unknown Aura",
+				TextColor3 = RARITY_COLORS[bannerInfo and bannerInfo.featuredItemRarity or "legendary"],
+				TextSize = 26,
+				Font = Enum.Font.GothamBold,
+				TextXAlignment = Enum.TextXAlignment.Center,
+				LayoutOrder = 1,
+			}),
+
+			AuraPreview = e("ViewportFrame", {
+				Size = UDim2.new(1, 0, 0, 160),
+				BackgroundTransparency = 0.1,
+				BackgroundColor3 = Color3.fromRGB(20, 18, 30),
+				BorderColor3 = RARITY_COLORS[bannerInfo and bannerInfo.featuredItemRarity or "common"],
+				BorderSizePixel = 3,
+				LayoutOrder = 2,
 			}, {
+				UIStroke = e("UIStroke", {
+					Color = RARITY_COLORS[bannerInfo and bannerInfo.featuredItemRarity or "common"],
+					Thickness = 2,
+				}),
 				Corner = e("UICorner", {
-					CornerRadius = UDim.new(0, 20),
+					CornerRadius = UDim.new(0, 12),
 				}),
-				Stroke = e("UIStroke", {
-					Color = Color3.fromRGB(255, 200, 50),
-					Thickness = 1,
-				}),
-				UIPadding = e("UIPadding", {
-					PaddingTop = UDim.new(0, 15),
-					PaddingBottom = UDim.new(0, 15),
-					PaddingLeft = UDim.new(0, 25),
-					PaddingRight = UDim.new(0, 25),
-				}),
+			}),
+
+			GuaranteeLabel = e("TextLabel", {
+				Size = UDim2.new(1, 0, 0, 20),
+				BackgroundTransparency = 1,
+				Text = "Every 10 wishes guarantees at least one Epic or higher.",
+				TextColor3 = Color3.fromRGB(100, 100, 100),
+				TextSize = 13,
+				Font = Enum.Font.Gotham,
+				TextWrapped = true,
+				TextXAlignment = Enum.TextXAlignment.Center,
+				LayoutOrder = 3,
+			}),
+
+			TimeSection = e("Frame", {
+				Size = UDim2.new(1, 0, 0, 40),
+				BackgroundTransparency = 1,
+				LayoutOrder = 4,
+			}, {
 				UIListLayout = e("UIListLayout", {
 					FillDirection = Enum.FillDirection.Vertical,
 					SortOrder = Enum.SortOrder.LayoutOrder,
-					Padding = UDim.new(0, 12),
+					Padding = UDim.new(0, 2),
 					HorizontalAlignment = Enum.HorizontalAlignment.Center,
 				}),
-
-				TitleLabel = e("TextLabel", {
-					Size = UDim2.new(1, 0, 0, 36),
+				TimeLabel = e("TextLabel", {
+					Size = UDim2.new(1, 0, 0, 20),
 					BackgroundTransparency = 1,
-					Text = bannerInfo and bannerInfo.bannerName or "Unknown Banner",
-					TextColor3 = Color3.fromRGB(255, 200, 50),
-					TextSize = 32,
-					Font = Enum.Font.GothamBold,
+					Text = "Time remaining",
+					TextColor3 = Color3.fromRGB(150, 150, 150),
+					TextSize = 14,
+					Font = Enum.Font.Gotham,
 					TextXAlignment = Enum.TextXAlignment.Center,
 					LayoutOrder = 1,
 				}),
-
-				MultiInfo = e("TextLabel", {
-					Size = UDim2.new(1, 0, 0, 20),
+				TimeValue = e("TextLabel", {
+					Size = UDim2.new(1, 0, 0, 24),
 					BackgroundTransparency = 1,
-					Text = bannerInfo and bannerInfo.guaranteeInfo or "",
-					TextColor3 = Color3.fromRGB(100, 100, 100),
-					TextSize = 13,
-					Font = Enum.Font.Gotham,
-					TextWrapped = true,
+					Text = GachaData.formatTime(GachaData.getRemainingTime(currentBanner)),
+					TextColor3 = Color3.fromRGB(80, 80, 80),
+					TextSize = 18,
+					Font = Enum.Font.GothamBold,
 					TextXAlignment = Enum.TextXAlignment.Center,
 					LayoutOrder = 2,
 				}),
-
-				BoostedAura = (bannerInfo and bannerInfo.boostedDropRate) and e("TextLabel", {
-					Size = UDim2.new(1, 0, 0, 20),
-					BackgroundTransparency = 1,
-					Text = bannerInfo.featuredItemName .. " drop rate boosted!",
-					TextColor3 = Color3.fromRGB(255, 150, 50),
-					TextSize = 14,
-					Font = Enum.Font.GothamBold,
-					TextWrapped = true,
-					TextXAlignment = Enum.TextXAlignment.Center,
-					LayoutOrder = 3,
-				}) or nil,
-
-				FeaturedItemName = e("TextLabel", {
-					Size = UDim2.new(1, 0, 0, 24),
-					BackgroundTransparency = 1,
-					Text = bannerInfo and ("Featured: " .. bannerInfo.featuredItemName) or "",
-					TextColor3 = RARITY_COLORS[bannerInfo and bannerInfo.featuredItemRarity or "common"],
-					TextSize = 18,
-					Font = Enum.Font.GothamBold,
-					TextWrapped = true,
-					TextXAlignment = Enum.TextXAlignment.Center,
-					LayoutOrder = 4,
-				}),
-
-				FeaturedDesc = e("TextLabel", {
-					Size = UDim2.new(1, 0, 0, 50),
-					BackgroundTransparency = 1,
-					Text = bannerInfo and bannerInfo.featuredItemDescription or "",
-					TextColor3 = Color3.fromRGB(130, 130, 130),
-					TextSize = 12,
-					Font = Enum.Font.Gotham,
-					TextWrapped = true,
-					TextXAlignment = Enum.TextXAlignment.Center,
-					LayoutOrder = 5,
-				}),
-
-				TimeSection = e("Frame", {
-					Size = UDim2.new(1, 0, 0, 45),
-					BackgroundTransparency = 1,
-					LayoutOrder = 6,
-				}, {
-					UIListLayout = e("UIListLayout", {
-						FillDirection = Enum.FillDirection.Vertical,
-						SortOrder = Enum.SortOrder.LayoutOrder,
-						Padding = UDim.new(0, 4),
-						HorizontalAlignment = Enum.HorizontalAlignment.Center,
-					}),
-					TimeLabel = e("TextLabel", {
-						Size = UDim2.new(1, 0, 0, 16),
-						BackgroundTransparency = 1,
-						Text = "Time Remaining:",
-						TextColor3 = Color3.fromRGB(150, 150, 150),
-						TextSize = 12,
-						Font = Enum.Font.Gotham,
-						TextXAlignment = Enum.TextXAlignment.Center,
-						LayoutOrder = 1,
-					}),
-					TimeValue = e("TextLabel", {
-						Size = UDim2.new(1, 0, 0, 20),
-						BackgroundTransparency = 1,
-						Text = GachaData.formatTime(GachaData.getRemainingTime(currentBanner)),
-						TextColor3 = Color3.fromRGB(80, 80, 80),
-						TextSize = 16,
-						Font = Enum.Font.GothamBold,
-						TextXAlignment = Enum.TextXAlignment.Center,
-						LayoutOrder = 2,
-					}),
-				}),
 			}),
+		}),
 
 			RollButtonsContainer = e("Frame", {
 				Size = UDim2.new(0, 320, 0, 70),
