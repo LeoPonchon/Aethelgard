@@ -126,6 +126,15 @@ SHOP_DATA.RP_TOOLS = {
 		category = "tools",
 		gamepassId = 1779490021,
 	},
+	{
+		id = "rp_scroll2",
+		name = "Royal Decree Scroll",
+		description = "Official scroll for announcements",
+		price = 69,
+		type = "tool",
+		category = "tools",
+		gamepassId = 1779490021,
+	},
 }
 
 SHOP_DATA.CATEGORIES = {

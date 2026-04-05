@@ -6,6 +6,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local MarketplaceService = game:GetService("MarketplaceService")
+local Lighting = game:GetService("Lighting")
 
 local React = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("React"))
 local ReactRoblox = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("ReactRoblox"))
@@ -347,12 +348,12 @@ local function GemsTab(props)
 	local children = {
 		Layout = e("UIGridLayout", {
 			CellSize = UDim2.new(0, 150, 0, 180),
-			CellPadding = UDim2.new(0, 15, 0, 15),
+			CellPadding = UDim2.new(0, 40, 0, 40),
 			HorizontalAlignment = Enum.HorizontalAlignment.Center,
 			VerticalAlignment = Enum.VerticalAlignment.Top,
 		}),
 		Padding = e("UIPadding", {
-			PaddingTop = UDim.new(0, 10),
+			PaddingTop = UDim.new(0, 20),
 		}),
 	}
 
@@ -384,12 +385,12 @@ local function CategoryTab(props)
 	local children = {
 		Layout = e("UIGridLayout", {
 			CellSize = UDim2.new(0, 150, 0, 200),
-			CellPadding = UDim2.new(0, 15, 0, 15),
+			CellPadding = UDim2.new(0, 25, 0, 25),
 			HorizontalAlignment = Enum.HorizontalAlignment.Center,
 			VerticalAlignment = Enum.VerticalAlignment.Top,
 		}),
 		Padding = e("UIPadding", {
-			PaddingTop = UDim.new(0, 10),
+			PaddingTop = UDim.new(0, 20),
 		}),
 	}
 
@@ -488,6 +489,22 @@ local function ShopApp(props)
 		end
 	end
 
+	local blurEffect = Lighting:FindFirstChild("ShopBlur")
+	if not blurEffect then
+		blurEffect = Instance.new("BlurEffect")
+		blurEffect.Name = "ShopBlur"
+		blurEffect.Size = 0
+		blurEffect.Parent = Lighting
+	end
+
+	React.useEffect(function()
+		if isVisible then
+			blurEffect.Size = 24
+		else
+			blurEffect.Size = 0
+		end
+	end, {isVisible})
+
 	if not isVisible then
 		return nil
 	end
@@ -527,19 +544,12 @@ local function ShopApp(props)
 		IgnoreGuiInset = true,
 		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
 	}, {
-		MainContainer = e("Frame", {
-			Size = UDim2.new(1, 0, 1, 0),
-			BackgroundTransparency = 1,
-			BorderSizePixel = 0,
-		}, {
-			BackgroundImage = e("ImageLabel", {
-				Size = UDim2.new(1, 0, 1, 0),
-				BackgroundTransparency = 1,
-				Image = "rbxassetid://119971043013965",
-				ScaleType = Enum.ScaleType.Crop,
-			}),
-
-			BackgroundParticles = e("Frame", {
+	MainContainer = e("Frame", {
+		Size = UDim2.new(1, 0, 1, 0),
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+	}, {
+		BackgroundParticles = e("Frame", {
 				Size = UDim2.new(1, 0, 1, 0),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
@@ -682,51 +692,18 @@ local function ShopApp(props)
 				}, categoryButtonsChildren),
 			}),
 
-		ContentPanel = e("Frame", {
-			Size = UDim2.new(1, -280, 0.85, 0),
-			Position = UDim2.new(0, 260, 0.08, 0),
-			BackgroundColor3 = COLORS.BACKGROUND,
-			BorderSizePixel = 0,
-			ZIndex = 5,
+	ContentPanel = e("Frame", {
+		Size = UDim2.new(1, -280, 0.85, 0),
+		Position = UDim2.new(0, 260, 0.08, 0),
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		ZIndex = 5,
+	}, {
+		ContentContainer = e("Frame", {
+			Size = UDim2.new(1, 0, 1, 0),
+			Position = UDim2.new(0, 0, 0, 0),
+			BackgroundTransparency = 1,
 		}, {
-				Corner = e("UICorner", {
-					CornerRadius = UDim.new(0, 20),
-				}),
-				Stroke = e("UIStroke", {
-					Color = COLORS.GOLD,
-					Thickness = 2,
-				}),
-
-				HeaderFrame = e("Frame", {
-					Size = UDim2.new(1, 0, 0, 50),
-					Position = UDim2.new(0, 0, 0, 0),
-					BackgroundColor3 = COLORS.HEADER,
-					BorderSizePixel = 0,
-				}, {
-					Corner = e("UICorner", {
-						CornerRadius = UDim.new(0, 20),
-					}),
-					FixCorner = e("Frame", {
-						Size = UDim2.new(1, 0, 0.5, 0),
-						Position = UDim2.new(0, 0, 0.5, 0),
-						BackgroundColor3 = COLORS.HEADER,
-						BorderSizePixel = 0,
-					}),
-					Title = e("TextLabel", {
-						Size = UDim2.new(1, 0, 1, 0),
-						BackgroundTransparency = 1,
-						Text = (CATEGORY_ICONS[CATEGORIES[activeTab]] or "") .. " " .. CATEGORIES[activeTab]:upper(),
-						TextColor3 = COLORS.GOLD,
-						TextSize = 26,
-						Font = Enum.Font.GothamBold,
-					}),
-				}),
-
-				ContentContainer = e("Frame", {
-					Size = UDim2.new(1, -30, 1, -70),
-					Position = UDim2.new(0, 15, 0, 55),
-					BackgroundTransparency = 1,
-				}, {
 					GemsTab = activeTab == 1 and e(GemsTab, {
 						onPurchasePack = onPurchasePack,
 					}),
