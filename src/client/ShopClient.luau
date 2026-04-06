@@ -6,7 +6,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local MarketplaceService = game:GetService("MarketplaceService")
-local Lighting = game:GetService("Lighting")
+local UserInputService = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
 
 local React = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("React"))
 local ReactRoblox = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("ReactRoblox"))
@@ -491,19 +492,55 @@ local function ShopApp(props)
 		end
 	end
 
-	local blurEffect = Lighting:FindFirstChild("ShopBlur")
-	if not blurEffect then
-		blurEffect = Instance.new("BlurEffect")
-		blurEffect.Name = "ShopBlur"
-		blurEffect.Size = 0
-		blurEffect.Parent = Lighting
-	end
+	local character = player.Character
+	local savedWalkSpeed = nil
+	local savedJumpPower = nil
+	local savedChatEnabled = nil
+	local savedBackpackEnabled = nil
 
 	React.useEffect(function()
 		if isVisible then
-			blurEffect.Size = 24
+			UserInputService.ModalEnabled = true
+
+			savedChatEnabled = StarterGui:GetCoreGuiEnabled(Enum.CoreGuiType.Chat)
+			savedBackpackEnabled = StarterGui:GetCoreGuiEnabled(Enum.CoreGuiType.Backpack)
+			StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, false)
+			StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+
+			if character then
+				local humanoid = character:FindFirstChild("Humanoid")
+				if humanoid then
+					savedWalkSpeed = humanoid.WalkSpeed
+					savedJumpPower = humanoid.JumpPower
+					humanoid.WalkSpeed = 0
+					humanoid.JumpPower = 0
+				end
+			end
 		else
-			blurEffect.Size = 0
+			UserInputService.ModalEnabled = false
+
+			if savedChatEnabled ~= nil then
+				StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, savedChatEnabled)
+				savedChatEnabled = nil
+			end
+			if savedBackpackEnabled ~= nil then
+				StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, savedBackpackEnabled)
+				savedBackpackEnabled = nil
+			end
+
+			if character then
+				local humanoid = character:FindFirstChild("Humanoid")
+				if humanoid then
+					if savedWalkSpeed then
+						humanoid.WalkSpeed = savedWalkSpeed
+						savedWalkSpeed = nil
+					end
+					if savedJumpPower then
+						humanoid.JumpPower = savedJumpPower
+						savedJumpPower = nil
+					end
+				end
+			end
 		end
 	end, {isVisible})
 

@@ -529,6 +529,10 @@ end
 local previewModelInstance = nil
 local previewAuraInstance = nil
 local cameraConnection = nil
+local savedWalkSpeed = nil
+local savedJumpPower = nil
+local savedChatEnabled = nil
+local savedBackpackEnabled = nil
 
 local function AuraPreviewViewport(props)
 	local featuredItemId = props.featuredItemId
@@ -560,6 +564,11 @@ local function AuraPreviewViewport(props)
 
 		UserInputService.ModalEnabled = true
 
+		savedChatEnabled = StarterGui:GetCoreGuiEnabled(Enum.CoreGuiType.Chat)
+		savedBackpackEnabled = StarterGui:GetCoreGuiEnabled(Enum.CoreGuiType.Backpack)
+		StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, false)
+		StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+
 		local humanoid = nil
 		if character then
 			humanoid = character:FindFirstChild("Humanoid")
@@ -573,6 +582,8 @@ local function AuraPreviewViewport(props)
 				playerDisplay.Enabled = false
 			end
 			if humanoid then
+				savedWalkSpeed = humanoid.WalkSpeed
+				savedJumpPower = humanoid.JumpPower
 				humanoid.WalkSpeed = 0
 				humanoid.JumpPower = 0
 			end
@@ -627,10 +638,19 @@ local function AuraPreviewViewport(props)
 				cameraConnection:Disconnect()
 				cameraConnection = nil
 			end
-			
+
 			camera.CameraType = Enum.CameraType.Custom
 
 			UserInputService.ModalEnabled = false
+
+			if savedChatEnabled ~= nil then
+				StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, savedChatEnabled)
+				savedChatEnabled = nil
+			end
+			if savedBackpackEnabled ~= nil then
+				StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, savedBackpackEnabled)
+				savedBackpackEnabled = nil
+			end
 
 			if character then
 				for _, part in ipairs(character:GetDescendants()) do
@@ -644,8 +664,14 @@ local function AuraPreviewViewport(props)
 				end
 				local humanoid = character:FindFirstChild("Humanoid")
 				if humanoid then
-					humanoid.WalkSpeed = 16
-					humanoid.JumpPower = 50
+					if savedWalkSpeed then
+						humanoid.WalkSpeed = savedWalkSpeed
+						savedWalkSpeed = nil
+					end
+					if savedJumpPower then
+						humanoid.JumpPower = savedJumpPower
+						savedJumpPower = nil
+					end
 				end
 			end
 
@@ -731,27 +757,11 @@ local function GachaApp(props)
 			print("[GachaClient] Calling onItemEquipped callback")
 			cb(item)
 		end
-	end
-
-	local blurEffect = Lighting:FindFirstChild("GachaBlur")
-	if not blurEffect then
-		blurEffect = Instance.new("BlurEffect")
-		blurEffect.Name = "GachaBlur"
-		blurEffect.Size = 0
-		blurEffect.Parent = Lighting
-	end
-
-	React.useEffect(function()
-		if isVisible then
-			blurEffect.Size = 0
-		else
-			blurEffect.Size = 0
 		end
-	end, {isVisible})
 
-	if not isVisible then
-		return nil
-	end
+		if not isVisible then
+			return nil
+		end
 
 	local pityPercent = math.clamp(pityRolls / 80, 0, 1)
 
