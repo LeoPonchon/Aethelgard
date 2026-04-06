@@ -31,6 +31,9 @@ local NotificationSystem = require(script:WaitForChild("NotificationSystem"))
 local DayNightCycle = require(script:WaitForChild("DayNightCycle"))
 local AuraServerSystem = require(script:WaitForChild("AuraServerSystem"))
 
+PlayerDataSystem.init()
+CurrencySystem.setPlayerDataSystem(PlayerDataSystem)
+
 local systems = {
 	DayNightCycle,
 	PlayerDisplaySystem,
@@ -190,7 +193,9 @@ auraRemote.OnServerInvoke = function(player, action, data)
 end
 
 local function onPlayerAdded(player)
-	player.Chatted:Connect(function(message)
+		PlayerDataSystem.loadPlayerData(player)
+		
+		player.Chatted:Connect(function(message)
 		local emoteId = EmoteSystem.parseChatCommand(message)
 		if emoteId then
 			local canUse, reason = EmoteSystem.canUseEmote(player.UserId, emoteId, nil, nil)

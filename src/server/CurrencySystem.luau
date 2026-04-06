@@ -1,6 +1,7 @@
 --!nonstrict
 -- Currency System for Aethelgard
 -- Manages premium currency (Robux purchases) and secondary currency (duplicate conversion)
+-- Syncs with PlayerDataSystem for persistence
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
@@ -22,127 +23,122 @@ CurrencySystem.ROBUX_PACKS = {
 }
 
 CurrencySystem.ROLL_COST = {
-    single = 100,
-    ten = 900,
+	single = 100,
+	ten = 900,
 }
 
-local playerCurrency = {}
-local playerSecondaryCurrency = {}
+local PlayerDataSystem = nil
 
-local DEFAULT_CURRENCY = 0
-local DEFAULT_SECONDARY = 0
+CurrencySystem.CURRENCY_NAME = "Gems"
+CurrencySystem.SECONDARY_CURRENCY_NAME = "Shards"
+
+function CurrencySystem.setPlayerDataSystem(pds)
+	PlayerDataSystem = pds
+end
 
 function CurrencySystem.getCurrency(playerId: number): number
-    if not playerCurrency[playerId] then
-        playerCurrency[playerId] = DEFAULT_CURRENCY
-    end
-    return playerCurrency[playerId]
+	if PlayerDataSystem then
+		return PlayerDataSystem.getGems(playerId)
+	end
+	return 0
 end
 
 function CurrencySystem.getSecondaryCurrency(playerId: number): number
-    if not playerSecondaryCurrency[playerId] then
-        playerSecondaryCurrency[playerId] = DEFAULT_SECONDARY
-    end
-    return playerSecondaryCurrency[playerId]
+	if PlayerDataSystem then
+		return PlayerDataSystem.getShards(playerId)
+	end
+	return 0
 end
 
 function CurrencySystem.addCurrency(playerId: number, amount: number): number
-    local current = CurrencySystem.getCurrency(playerId)
-    playerCurrency[playerId] = current + amount
-    return playerCurrency[playerId]
+	if PlayerDataSystem then
+		return PlayerDataSystem.addGems(playerId, amount)
+	end
+	return 0
 end
 
 function CurrencySystem.addSecondaryCurrency(playerId: number, amount: number): number
-    local current = CurrencySystem.getSecondaryCurrency(playerId)
-    playerSecondaryCurrency[playerId] = current + amount
-    return playerSecondaryCurrency[playerId]
+	if PlayerDataSystem then
+		return PlayerDataSystem.addShards(playerId, amount)
+	end
+	return 0
 end
 
 function CurrencySystem.spendCurrency(playerId: number, amount: number): (boolean, string?)
-    local current = CurrencySystem.getCurrency(playerId)
-    if current < amount then
-        return false, "Insufficient " .. CurrencySystem.CURRENCY_NAME
-    end
-    playerCurrency[playerId] = current - amount
-    return true, nil
+	if PlayerDataSystem then
+		return PlayerDataSystem.spendGems(playerId, amount)
+	end
+	return false, "PlayerDataSystem not available"
 end
 
 function CurrencySystem.spendSecondaryCurrency(playerId: number, amount: number): (boolean, string?)
-    local current = CurrencySystem.getSecondaryCurrency(playerId)
-    if current < amount then
-        return false, "Insufficient " .. CurrencySystem.SECONDARY_CURRENCY_NAME
-    end
-    playerSecondaryCurrency[playerId] = current - amount
-    return true, nil
+	if PlayerDataSystem then
+		return PlayerDataSystem.spendShards(playerId, amount)
+	end
+	return false, "PlayerDataSystem not available"
 end
 
 function CurrencySystem.canAfford(playerId: number, amount: number): boolean
-    return CurrencySystem.getCurrency(playerId) >= amount
+	return CurrencySystem.getCurrency(playerId) >= amount
 end
 
 function CurrencySystem.canAffordSecondary(playerId: number, amount: number): boolean
-    return CurrencySystem.getSecondaryCurrency(playerId) >= amount
+	return CurrencySystem.getSecondaryCurrency(playerId) >= amount
 end
 
 function CurrencySystem.convertDuplicateToCurrency(playerId: number, itemRarity: string): number
-    local value = GachaData.DUPLICATE_VALUES[itemRarity] or 0
-    if value > 0 then
-        CurrencySystem.addSecondaryCurrency(playerId, value)
-    end
-    return value
+	local value = GachaData.DUPLICATE_VALUES[itemRarity] or 0
+	if value > 0 then
+		CurrencySystem.addSecondaryCurrency(playerId, value)
+	end
+	return value
 end
 
 function CurrencySystem.getPackByProductId(productId: number)
-    for _, pack in ipairs(CurrencySystem.ROBUX_PACKS) do
-        if pack.productId == productId then
-            return pack
-        end
-    end
-    return nil
+	for _, pack in ipairs(CurrencySystem.ROBUX_PACKS) do
+		if pack.productId == productId then
+			return pack
+		end
+	end
+	return nil
 end
 
 function CurrencySystem.processRobuxPurchase(player: Player, productId: number): boolean
-    local pack = CurrencySystem.getPackByProductId(productId)
-    if not pack then
-        return false
-    end
-    
-    CurrencySystem.addCurrency(player.UserId, pack.amount)
-    
-    local playerGui = player:FindFirstChild("PlayerGui")
-    if playerGui then
-        local notificationRemote = ReplicatedStorage:FindFirstChild("CurrencyNotification")
-        if notificationRemote then
-            notificationRemote:FireClient(player, {
-                type = "purchase",
-                amount = pack.amount,
-                total = CurrencySystem.getCurrency(player.UserId),
-            })
-        end
-    end
-    
-    return true
+	local pack = CurrencySystem.getPackByProductId(productId)
+	if not pack then
+		return false
+	end
+
+	CurrencySystem.addCurrency(player.UserId, pack.amount)
+	
+	if PlayerDataSystem then
+		PlayerDataSystem.recordPurchase(player.UserId, "gems", productId, pack.robux, pack.amount)
+	end
+
+	local playerGui = player:FindFirstChild("PlayerGui")
+	if playerGui then
+		local notificationRemote = ReplicatedStorage:FindFirstChild("CurrencyNotification")
+		if notificationRemote then
+			notificationRemote:FireClient(player, {
+				type = "purchase",
+				amount = pack.amount,
+				total = CurrencySystem.getCurrency(player.UserId),
+			})
+		end
+	end
+
+	return true
 end
 
 function CurrencySystem.init()
-	Players.PlayerAdded:Connect(function(player)
-		playerCurrency[player.UserId] = DEFAULT_CURRENCY
-		playerSecondaryCurrency[player.UserId] = DEFAULT_SECONDARY
-	end)
-
-	Players.PlayerRemoving:Connect(function(player)
-		playerCurrency[player.UserId] = nil
-		playerSecondaryCurrency[player.UserId] = nil
-	end)
-
 	print("[CurrencySystem] Initialized")
 end
 
 function CurrencySystem.getPlayerCurrencyData(playerId: number)
-    return {
-        gems = CurrencySystem.getCurrency(playerId),
-        shards = CurrencySystem.getSecondaryCurrency(playerId),
-    }
+	return {
+		gems = CurrencySystem.getCurrency(playerId),
+		shards = CurrencySystem.getSecondaryCurrency(playerId),
+	}
 end
 
 return CurrencySystem
